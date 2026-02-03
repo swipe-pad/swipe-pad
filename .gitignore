@@ -41,4 +41,12 @@ yarn-error.log*
 next-env.d.ts
 
 # legacy archive
-old/
+.old
+.agent
+.agents
+.gemini
+.direnv
+v0-readonly
+.cursor
+.github
+!.agent/rules
