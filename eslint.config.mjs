@@ -9,7 +9,7 @@ const eslintConfig = defineConfig([
   betterTailwind.configs.recommended,
   {
     rules: {
-      // Ajustes específicos para better-tailwindcss
+      // Specific settings for better-tailwindcss
       "better-tailwindcss/no-unknown-classes": "off",
       "better-tailwindcss/enforce-consistent-class-order": [
         "warn",

@@ -1,5 +1,5 @@
 {
-  description = "Entorno de desarrollo para Swipe-pad";
+  description = "Development environment for Swipe-pad";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -16,17 +16,17 @@
           buildInputs = with pkgs; [
             nodejs_22
             bun
-            # corepack para tener pnpm/yarn si los necesitas
+            # corepack to have pnpm/yarn if needed
             corepack_22
-            # git por si acaso no está en el path
+            # git in case it is not in the path
             git
           ];
 
           shellHook = ''
-            echo "🚀 Entorno de desarrollo de Swipe-pad cargado"
+            echo "🚀 Swipe-pad development environment loaded"
             echo "📦 Node.js: $(node --version)"
             echo "🍞 Bun: $(bun --version)"
-            echo "🛠️  Usa 'bun dev' para empezar"
+            echo "🛠️  Use 'bun dev' to start"
           '';
         };
       });
