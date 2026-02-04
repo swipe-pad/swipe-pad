@@ -42,12 +42,13 @@ next-env.d.ts
 
 # legacy archive
 .old
-.agent
+.agent/*
+!.agent/rules/
+!.agent/workflows/
 .agents
 .gemini
 .direnv
 v0-readonly
 .cursor
 .github
-!.agent/rules
 .opencode
