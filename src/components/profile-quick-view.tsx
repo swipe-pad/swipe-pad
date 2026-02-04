@@ -5,8 +5,9 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { X, Star, Clock, Award, Compass, Gift, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useDisconnect as useThirdwebDisconnect } from "thirdweb/react"
+import { useDisconnect as useThirdwebDisconnect, useActiveWallet } from "thirdweb/react"
 import { useDisconnect as useWagmiDisconnect } from "wagmi"
+import { useApp } from "@/context/AppContext"
 import type { Project } from "@/lib/data"
 
 interface ProfileQuickViewProps {
@@ -39,11 +40,16 @@ export function ProfileQuickView({
   const [currentY, setCurrentY] = useState<number | null>(null)
   const modalRef = useRef<HTMLDivElement>(null)
   const { disconnect: disconnectThirdweb } = useThirdwebDisconnect()
+  const activeWallet = useActiveWallet()
   const { disconnect: disconnectWagmi } = useWagmiDisconnect()
+  const { setWalletConnected } = useApp()
 
   const handleLogout = () => {
-    disconnectThirdweb()
+    if (activeWallet) {
+      disconnectThirdweb(activeWallet)
+    }
     disconnectWagmi()
+    setWalletConnected(false)
     onClose()
   }
 
