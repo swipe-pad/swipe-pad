@@ -3,7 +3,10 @@
 import type React from "react"
 
 import { useState } from "react"
-import { X, Camera, CheckCircle } from "lucide-react"
+import { X, Camera, CheckCircle, LogOut } from "lucide-react"
+import { useDisconnect as useThirdwebDisconnect, useActiveWallet } from "thirdweb/react"
+import { useDisconnect as useWagmiDisconnect } from "wagmi"
+import { useApp } from "@/context/AppContext"
 
 interface EditProfileProps {
   isOpen: boolean
@@ -41,7 +44,22 @@ export function EditProfile({ isOpen, onClose, onSave, currentProfile }: EditPro
     ens: currentProfile.ens || "",
   })
 
+
+
   const [imagePreview, setImagePreview] = useState(formData.image)
+  const { disconnect: disconnectThirdweb } = useThirdwebDisconnect()
+  const activeWallet = useActiveWallet()
+  const { disconnect: disconnectWagmi } = useWagmiDisconnect()
+  const { setWalletConnected } = useApp()
+
+  const handleLogout = () => {
+    if (activeWallet) {
+      disconnectThirdweb(activeWallet)
+    }
+    disconnectWagmi()
+    setWalletConnected(false)
+    onClose()
+  }
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -308,6 +326,17 @@ export function EditProfile({ isOpen, onClose, onSave, currentProfile }: EditPro
               className="flex-1 py-3 bg-[#FFD600] hover:bg-[#E6C200] text-black font-medium rounded-lg transition-colors"
             >
               Save Profile
+            </button>
+          </div>
+
+          {/* Logout Button */}
+          <div className="pt-2 border-t border-gray-700">
+             <button
+              onClick={handleLogout}
+              className="flex items-center justify-center space-x-2 w-full py-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 font-medium transition-colors border border-red-500/30"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Log out from SwipePad</span>
             </button>
           </div>
         </div>

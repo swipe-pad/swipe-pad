@@ -55,7 +55,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     if (!walletConnected) {
         return (
-            <main className="flex min-h-screen flex-col items-center justify-center text-white relative overflow-hidden bg-black">
+            <main className="flex min-h-screen flex-col items-center justify-center text-white relative overflow-hidden">
                 <StarryBackground />
                 <PageContainer>
                     <WalletConnect onConnect={() => setWalletConnected(true)} />
@@ -71,7 +71,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <main className="flex min-h-screen flex-col items-center justify-center text-white relative overflow-hidden bg-black">
+        <main className="flex min-h-screen flex-col items-center justify-center text-white relative overflow-hidden">
             <StarryBackground />
 
             <PageContainer>
@@ -112,7 +112,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             <nav className="flex justify-between w-full px-6 space-x-2">
                                 <button
                                     className="flex items-center justify-center w-12 h-12 rounded-full relative hover:scale-105 transition-transform"
-                                    onClick={() => setShowProfileQuickView(true)}
+                                    onClick={() => setShowEditProfile(true)}
                                 >
                                     <img
                                         src={userProfile.image || "/placeholder.svg"}
