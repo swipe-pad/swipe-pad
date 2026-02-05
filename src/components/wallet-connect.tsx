@@ -83,12 +83,12 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
           Support regenerative projects with micro-donations through simple swipes on the Celo blockchain.
         </p>
 
-        <div className="w-full max-w-sm flex justify-center">
+        <div className="w-full max-w-sm">
           {isInjectedEnv ? (
             <button
               onClick={handleInjectedConnect}
               disabled={isConnecting}
-              className="w-full bg-[#FFD600] hover:bg-[#E6C200] text-black font-bold py-4 px-6 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
+              className="w-full bg-[#FFD600] hover:bg-[#E6C200] text-black font-bold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mb-4"
             >
               {isConnecting ? (
                 <>
@@ -97,56 +97,67 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
                 </>
               ) : (
                 <>
-                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm2 2a1 1 0 000 2h.01a1 1 0 100-2H5zm3 0a1 1 0 000 2h3a1 1 0 100-2H8z"
-                      clipRule="evenodd"
-                    />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M20 7h-9" />
+                    <path d="M14 17H5" />
+                    <circle cx="17" cy="17" r="3" />
+                    <circle cx="7" cy="7" r="3" />
                   </svg>
-                  Enter MiniApp
+                  Connect Wallet
                 </>
               )}
             </button>
           ) : (
-            <ConnectButton
-              client={client}
-              chain={celo}
-              wallets={wallets}
-              accountAbstraction={{
-                chain: celo,
-                sponsorGas: true, // Gasless transactions - app pays for gas!
-              }}
-              theme="dark"
-              connectButton={{
-                label: "Connect Wallet",
-                className: "!bg-[#FFD600] !text-black !font-bold !py-4 !px-6 !rounded-xl !h-auto !w-full",
-                style: {
-                  backgroundColor: "#FFD600",
-                  color: "black",
-                  borderRadius: "0.75rem",
-                  height: "3.5rem",
-                  width: "100%",
-                }
-              }}
-              connectModal={{
-                title: "Connect to SwipePad",
-                size: "compact",
-              }}
-              detailsButton={{
-                displayBalanceToken: {
-                  [celo.id]: "0x765DE816845861e75A25fCA122bb6898B8B1282a", // cUSD on Celo Mainnet
-                }
-              }}
-            />
+            <div className="w-full flex justify-center">
+              <ConnectButton
+                client={client}
+                chain={celo}
+                wallets={wallets}
+                accountAbstraction={{
+                  chain: celo,
+                  sponsorGas: true,
+                }}
+                theme="dark"
+                connectButton={{
+                  label: "Connect Wallet",
+                  className: "!bg-[#FFD600] !text-black !font-bold !py-4 !px-6 !rounded-xl !h-auto !w-full !flex !items-center !justify-center !gap-2",
+                  style: {
+                    backgroundColor: "#FFD600",
+                    color: "black",
+                    borderRadius: "0.75rem",
+                    height: "3.5rem",
+                    width: "100%",
+                  }
+                }}
+                connectModal={{
+                  title: "Connect to SwipePad",
+                  size: "compact",
+                }}
+                detailsButton={{
+                  displayBalanceToken: {
+                    [celo.id]: "0x765DE816845861e75A25fCA122bb6898B8B1282a",
+                  }
+                }}
+              />
+            </div>
           )}
-        </div>
 
-        <div className="text-center mt-4">
-          <p className="text-xs text-gray-400 max-w-xs mx-auto">
-            By connecting, you agree to our Terms of Service and Privacy Policy. Your funds remain secure in your
-            wallet at all times.
-          </p>
+          <div className="text-center mt-4">
+            <p className="text-xs text-gray-400 max-w-xs mx-auto">
+              By connecting, you agree to our Terms of Service and Privacy Policy. Your funds remain secure in your
+              wallet at all times.
+            </p>
+          </div>
         </div>
       </div>
     </div>
