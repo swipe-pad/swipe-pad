@@ -28,7 +28,7 @@ export function AmountSelector({ onSelect, availableProjects }: AmountSelectorPr
   const totalCards = availableProjects ?? projects.length
 
   return (
-    <div className="px-6">
+    <div className="px-6 py-4">
       <h2 className="text-xl font-bold mb-2 text-white">Select Donation Amount</h2>
 
       <p className="text-sm text-gray-400 mb-6">Available Cards to Swipe: {totalCards}</p>
