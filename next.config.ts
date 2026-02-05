@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV === 'development'
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -9,7 +11,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  reactCompiler: true,
+  reactCompiler: !isDev,
   typescript: {
     ignoreBuildErrors: true,
   },
