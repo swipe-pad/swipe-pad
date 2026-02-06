@@ -263,7 +263,7 @@ export function ProjectCard({
         </div>
 
         {/* Boost Badge */}
-        {project.boostAmount && project.boostAmount > 0 && (
+        {(project.boostAmount ?? 0) > 0 && (
           <div className="absolute top-3 right-3">
             <div className="bg-yellow-400 text-black text-xs px-2 py-1 rounded-full flex items-center space-x-1">
               <Zap className="w-3 h-3" />
