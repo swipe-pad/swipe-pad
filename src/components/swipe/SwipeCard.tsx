@@ -51,39 +51,41 @@ export function SwipeCard({ campaign, onSwipe, index }: SwipeCardProps) {
       onDragEnd={handleDragEnd}
       className="absolute inset-0 p-4"
     >
-      <Card className="h-full w-full overflow-hidden border-none shadow-xl bg-card">
-        <div className="relative h-3/5 w-full bg-muted">
-             {/* Fallback image if validation fails or placeholders */}
-            <Image
-                src={campaign.imageUrl}
-                alt={campaign.title}
-                fill
-                className="object-cover pointer-events-none"
-                draggable={false}
-            />
-            <div className="absolute top-4 left-4">
-                <Badge variant="secondary" className="backdrop-blur-md bg-white/30 text-white border-white/20">
-                    {campaign.category}
-                </Badge>
-            </div>
+      <Card className="size-full overflow-hidden border-none bg-card shadow-xl">
+        <div className="relative h-3/5 w-full bg-card">
+          {/* Fallback image if validation fails or placeholders */}
+          <Image
+            src={campaign.imageUrl}
+            alt={campaign.title}
+            fill
+            className="pointer-events-none object-cover"
+            draggable={false}
+          />
+          <div className="absolute top-4 left-4">
+            <Badge variant="secondary" className="
+              bg-white/30 text-white backdrop-blur-md
+            ">
+              {campaign.category}
+            </Badge>
+          </div>
         </div>
-        
+
         <div className="p-6">
-            <h2 className="text-2xl font-bold mb-2">{campaign.title}</h2>
-            <p className="text-muted-foreground line-clamp-3">
-                {campaign.description}
-            </p>
-            
-            <div className="mt-4 flex justify-between items-center text-sm">
-                <div className="flex flex-col">
-                    <span className="text-muted-foreground">Goal</span>
-                    <span className="font-semibold">${campaign.fundingGoal}</span>
-                </div>
-                 <div className="flex flex-col text-right">
-                    <span className="text-muted-foreground">Raised</span>
-                    <span className="font-semibold text-primary">${campaign.currentFunding}</span>
-                </div>
+          <h2 className="mb-2 text-2xl font-bold">{campaign.title}</h2>
+          <p className="line-clamp-3 text-muted-foreground">
+            {campaign.description}
+          </p>
+
+          <div className="mt-4 flex items-center justify-between text-sm">
+            <div className="flex flex-col">
+              <span className="text-muted-foreground">Goal</span>
+              <span className="font-semibold">${campaign.fundingGoal}</span>
             </div>
+            <div className="flex flex-col text-right">
+              <span className="text-muted-foreground">Raised</span>
+              <span className="font-semibold text-primary">${campaign.currentFunding}</span>
+            </div>
+          </div>
         </div>
       </Card>
     </motion.div>
