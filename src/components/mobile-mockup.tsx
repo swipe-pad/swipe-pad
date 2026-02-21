@@ -8,23 +8,34 @@ interface MobileMockupProps {
 
 export function MobileMockup({ children }: MobileMockupProps) {
   return (
-    <div className="relative z-10 flex items-center justify-center min-h-screen p-8">
+    <div className="
+      relative z-10 flex min-h-screen items-center justify-center p-8
+    ">
       {/* iPhone Frame */}
       <div className="relative">
         {/* Phone Body */}
-        <div className="relative bg-black rounded-[3rem] p-2 shadow-2xl">
+        <div className="relative rounded-[3rem] bg-black p-2 shadow-2xl">
           {/* Screen */}
-          <div className="bg-black rounded-[2.5rem] overflow-hidden w-[375px] h-[812px] relative">
+          <div className="
+            relative h-[812px] w-[375px] overflow-hidden rounded-[2.5rem]
+            bg-black
+          ">
             {/* Notch */}
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-36 h-6 bg-black rounded-b-2xl z-20"></div>
+            <div className="
+              absolute top-0 left-1/2 z-20 h-6 w-36 -translate-x-1/2 transform
+              rounded-b-2xl bg-black
+            "></div>
 
             {/* Screen Content */}
-            <div className="w-full h-full bg-gray-900 overflow-hidden">{children}</div>
+            <div className="size-full overflow-hidden bg-gray-900">{children}</div>
           </div>
         </div>
 
         {/* Home Indicator */}
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gray-600 rounded-full"></div>
+        <div className="
+          absolute bottom-2 left-1/2 h-1 w-32 -translate-x-1/2 transform
+          rounded-full bg-gray-600
+        "></div>
       </div>
     </div>
   )

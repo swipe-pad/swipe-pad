@@ -9,12 +9,14 @@ interface ToggleMenuProps {
 
 export function ToggleMenu({ viewMode, setViewMode }: ToggleMenuProps) {
   return (
-    <div className="flex justify-center w-full mb-4">
-      <div className="flex p-1 bg-gray-700/30 rounded-full">
+    <div className="mb-4 flex w-full justify-center">
+      <div className="flex rounded-full bg-gray-700/30 p-1">
         <button
           className={cn(
-            "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-            viewMode === "swipe" ? "bg-gray-800 text-white font-bold" : "bg-transparent text-gray-400",
+            "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+            viewMode === "swipe" ? "bg-gray-800 font-bold text-white" : `
+              bg-transparent text-gray-400
+            `,
           )}
           onClick={() => setViewMode("swipe")}
         >
@@ -22,8 +24,10 @@ export function ToggleMenu({ viewMode, setViewMode }: ToggleMenuProps) {
         </button>
         <button
           className={cn(
-            "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-            viewMode === "list" ? "bg-gray-800 text-white font-bold" : "bg-transparent text-gray-400",
+            "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+            viewMode === "list" ? "bg-gray-800 font-bold text-white" : `
+              bg-transparent text-gray-400
+            `,
           )}
           onClick={() => setViewMode("list")}
         >
