@@ -9,7 +9,7 @@ export default function ProfilePage() {
     const { userStats } = useApp()
 
     return (
-        <div className="px-6 py-6">
+        <div className="p-6">
             <UserProfile stats={userStats} onBack={() => router.back()} />
         </div>
     )
