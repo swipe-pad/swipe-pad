@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 import { useDisconnect as useThirdwebDisconnect, useActiveWallet } from "thirdweb/react"
 import { useDisconnect as useWagmiDisconnect } from "wagmi"
 import { useApp } from "@/context/AppContext"
-import type { Project } from "@/lib/data"
+import type { Project } from "@/lib/useConvexData"
 
 interface ProfileQuickViewProps {
   isOpen: boolean
@@ -124,14 +124,17 @@ export function ProfileQuickView({
   return (
     <div
       className={cn(
-        "fixed inset-0 bg-black/60 z-50 transition-opacity duration-300",
-        isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
+        "fixed inset-0 z-50 bg-black/60 transition-opacity duration-300",
+        isOpen ? "opacity-100" : "pointer-events-none opacity-0",
       )}
     >
       <div
         ref={modalRef}
         className={cn(
-          "fixed bottom-0 left-0 right-0 bg-[#1F2732] rounded-t-2xl shadow-xl transition-transform duration-300 max-h-[85vh] overflow-hidden",
+          `
+            fixed inset-x-0 bottom-0 max-h-[85vh] overflow-hidden rounded-t-2xl
+            bg-[#1F2732] shadow-xl transition-transform duration-300
+          `,
           isOpen ? "translate-y-0" : "translate-y-full",
         )}
         style={{ transform: `translateY(${offset}px)` }}
@@ -140,39 +143,46 @@ export function ProfileQuickView({
         onTouchEnd={handleTouchEnd}
       >
         {/* Drag handle */}
-        <div className="w-full flex justify-center pt-2 pb-4">
-          <div className="w-12 h-1 bg-gray-600 rounded-full"></div>
+        <div className="flex w-full justify-center pt-2 pb-4">
+          <div className="h-1 w-12 rounded-full bg-gray-600"></div>
         </div>
 
         {/* Header with close button and logout */}
-        <div className="px-5 flex justify-between items-center mb-4">
+        <div className="mb-4 flex items-center justify-between px-5">
           <div className="flex items-center space-x-3">
             <h2 className="text-xl font-bold">Your Profile</h2>
             <button
               onClick={handleLogout}
-              className="flex items-center space-x-1 px-2 py-1 rounded-md bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs transition-colors border border-red-500/20"
+              className="
+                flex items-center space-x-1 rounded-md border border-red-500/20
+                bg-red-500/10 px-2 py-1 text-xs text-red-400 transition-colors
+                hover:bg-red-500/20
+              "
             >
-              <LogOut className="w-3 h-3" />
+              <LogOut className="size-3" />
               <span>Log out</span>
             </button>
           </div>
-          <button onClick={onClose} className="p-1 rounded-full bg-gray-800">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="rounded-full bg-gray-800 p-1">
+            <X className="size-5" />
           </button>
         </div>
 
         {/* User info */}
-        <div className="px-5 flex items-center mb-6">
-          <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mr-4">
+        <div className="mb-6 flex items-center px-5">
+          <div className="
+            mr-4 flex size-16 items-center justify-center rounded-full
+            bg-gray-700
+          ">
             <span className="text-2xl">👤</span>
           </div>
           <div>
             <h3 className="text-lg font-bold">MiniPay User</h3>
-            <div className="flex space-x-3 mt-1">
-              <div className="text-sm bg-gray-800 px-2 py-1 rounded-full">
+            <div className="mt-1 flex space-x-3">
+              <div className="rounded-full bg-gray-800 px-2 py-1 text-sm">
                 <span className="text-gray-400">Donations:</span> {userStats.totalDonations}
               </div>
-              <div className="text-sm bg-gray-800 px-2 py-1 rounded-full">
+              <div className="rounded-full bg-gray-800 px-2 py-1 text-sm">
                 <span className="text-gray-400">Streak:</span> {userStats.streak}d
               </div>
             </div>
@@ -180,18 +190,18 @@ export function ProfileQuickView({
         </div>
 
         {/* Balance display */}
-        <div className="px-5 mb-6">
-          <h4 className="text-sm uppercase text-gray-400 mb-2">Your Balance</h4>
+        <div className="mb-6 px-5">
+          <h4 className="mb-2 text-sm text-gray-400 uppercase">Your Balance</h4>
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-gray-800 p-3 rounded-lg text-center">
+            <div className="rounded-lg bg-gray-800 p-3 text-center">
               <p className="text-lg font-bold text-[#FFD600]">125.75</p>
               <p className="text-xs text-gray-400">cUSD</p>
             </div>
-            <div className="bg-gray-800 p-3 rounded-lg text-center">
+            <div className="rounded-lg bg-gray-800 p-3 text-center">
               <p className="text-lg font-bold text-[#FFD600]">50.20</p>
               <p className="text-xs text-gray-400">cEUR</p>
             </div>
-            <div className="bg-gray-800 p-3 rounded-lg text-center">
+            <div className="rounded-lg bg-gray-800 p-3 text-center">
               <p className="text-lg font-bold text-[#FFD600]">75.50</p>
               <p className="text-xs text-gray-400">cOP</p>
             </div>
@@ -199,33 +209,35 @@ export function ProfileQuickView({
         </div>
 
         {/* Navigation tabs - Now showing all 6 tabs */}
-        <div className="flex border-b border-gray-800 mb-4 px-2 overflow-x-auto scrollbar-hide">
+        <div className="
+          scrollbar-hide mb-4 flex overflow-x-auto border-b border-gray-800 px-2
+        ">
           <TabButton
-            icon={<Clock className="w-4 h-4 mr-1" />}
+            icon={<Clock className="mr-1 size-4" />}
             label="History"
             isActive={activeTab === "history"}
             onClick={() => setActiveTab("history")}
           />
           <TabButton
-            icon={<Star className="w-4 h-4 mr-1" />}
+            icon={<Star className="mr-1 size-4" />}
             label="Favorites"
             isActive={activeTab === "favorites"}
             onClick={() => setActiveTab("favorites")}
           />
           <TabButton
-            icon={<Award className="w-4 h-4 mr-1" />}
+            icon={<Award className="mr-1 size-4" />}
             label="Badges"
             isActive={activeTab === "badges"}
             onClick={() => setActiveTab("badges")}
           />
           <TabButton
-            icon={<Compass className="w-4 h-4 mr-1" />}
+            icon={<Compass className="mr-1 size-4" />}
             label="Categories"
             isActive={activeTab === "categories"}
             onClick={() => setActiveTab("categories")}
           />
           <TabButton
-            icon={<Gift className="w-4 h-4 mr-1" />}
+            icon={<Gift className="mr-1 size-4" />}
             label="Rewards"
             isActive={activeTab === "rewards"}
             onClick={() => setActiveTab("rewards")}
@@ -233,18 +245,20 @@ export function ProfileQuickView({
         </div>
 
         {/* Tab content */}
-        <div className="px-5 overflow-y-auto pb-8" style={{ maxHeight: "calc(85vh - 180px)" }}>
+        <div className="overflow-y-auto px-5 pb-8" style={{ maxHeight: "calc(85vh - 180px)" }}>
           {activeTab === "history" && (
             <div>
-              <h4 className="text-sm uppercase text-gray-400 mb-3">Recent Activity</h4>
+              <h4 className="mb-3 text-sm text-gray-400 uppercase">Recent Activity</h4>
               {recentDonations.length > 0 ? (
                 <div className="space-y-3">
                   {recentDonations.map((donation, index) => (
-                    <div key={index} className="bg-gray-800 rounded-lg p-3 flex items-center">
+                    <div key={index} className="
+                      flex items-center rounded-lg bg-gray-800 p-3
+                    ">
                       <img
                         src={donation.project.imageUrl || "/placeholder.svg"}
                         alt={donation.project.name}
-                        className="w-12 h-12 rounded-md object-cover mr-3"
+                        className="mr-3 size-12 rounded-md object-cover"
                       />
                       <div className="flex-1">
                         <p className="font-medium">{donation.project.name}</p>
@@ -259,8 +273,8 @@ export function ProfileQuickView({
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-400">
-                  <Clock className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <div className="py-8 text-center text-gray-400">
+                  <Clock className="mx-auto mb-2 size-12 opacity-50" />
                   <p>No donation history yet</p>
                   <p className="text-sm">Your recent donations will appear here</p>
                 </div>
@@ -270,29 +284,34 @@ export function ProfileQuickView({
 
           {activeTab === "favorites" && (
             <div>
-              <h4 className="text-sm uppercase text-gray-400 mb-3">Saved Projects</h4>
+              <h4 className="mb-3 text-sm text-gray-400 uppercase">Saved Projects</h4>
               {savedProjects.length > 0 ? (
                 <div className="space-y-3">
                   {savedProjects.map((project) => (
-                    <div key={project.id} className="bg-gray-800 rounded-lg p-3 flex items-center">
+                    <div key={project.id} className="
+                      flex items-center rounded-lg bg-gray-800 p-3
+                    ">
                       <img
                         src={project.imageUrl || "/placeholder.svg"}
                         alt={project.name}
-                        className="w-12 h-12 rounded-md object-cover mr-3"
+                        className="mr-3 size-12 rounded-md object-cover"
                       />
                       <div className="flex-1">
                         <p className="font-medium">{project.name}</p>
                         <p className="text-xs text-gray-400">{project.category}</p>
                       </div>
-                      <button className="bg-[#677FEB] hover:bg-[#5A6FD3] text-white text-sm py-1 px-3 rounded-lg">
+                      <button className="
+                        rounded-lg bg-[#677FEB] px-3 py-1 text-sm text-white
+                        hover:bg-[#5A6FD3]
+                      ">
                         Donate
                       </button>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-400">
-                  <Star className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <div className="py-8 text-center text-gray-400">
+                  <Star className="mx-auto mb-2 size-12 opacity-50" />
                   <p>No favorites yet</p>
                   <p className="text-sm">Bookmark projects to find them here</p>
                 </div>
@@ -302,23 +321,35 @@ export function ProfileQuickView({
 
           {activeTab === "badges" && (
             <div>
-              <h4 className="text-sm uppercase text-gray-400 mb-3">Your Achievements</h4>
+              <h4 className="mb-3 text-sm text-gray-400 uppercase">Your Achievements</h4>
               <div className="space-y-3">
                 {userBadges.map((badge) => (
                   <div
                     key={badge.id}
-                    className={`p-3 rounded-lg flex items-center ${badge.earned ? "bg-[#FFD600]/10" : "bg-gray-800"}`}
+                    className={`
+                      flex items-center rounded-lg p-3
+                      ${badge.earned ? `bg-[#FFD600]/10` : `bg-gray-800`}
+                    `}
                   >
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${badge.earned ? "bg-[#FFD600] text-black" : "bg-gray-700 text-gray-500"}`}
+                      className={`
+                        mr-3 flex size-10 items-center justify-center
+                        rounded-full
+                        ${badge.earned ? `bg-[#FFD600] text-black` : `
+                          bg-gray-700 text-gray-500
+                        `}
+                      `}
                     >
-                      <Award className="w-5 h-5" />
+                      <Award className="size-5" />
                     </div>
                     <div className="flex-1">
-                      <p className={`font-medium ${badge.earned ? "text-[#FFD600]" : "text-gray-400"}`}>{badge.name}</p>
+                      <p className={`
+                        font-medium
+                        ${badge.earned ? `text-[#FFD600]` : `text-gray-400`}
+                      `}>{badge.name}</p>
                       <p className="text-xs text-gray-400">{badge.description}</p>
                     </div>
-                    {badge.earned && <Award className="w-5 h-5 text-[#FFD600]" />}
+                    {badge.earned && <Award className="size-5 text-[#FFD600]" />}
                   </div>
                 ))}
               </div>
@@ -327,20 +358,23 @@ export function ProfileQuickView({
 
           {activeTab === "categories" && (
             <div>
-              <h4 className="text-sm uppercase text-gray-400 mb-3">Categories You Support</h4>
+              <h4 className="mb-3 text-sm text-gray-400 uppercase">Categories You Support</h4>
               {topCategories.length > 0 ? (
                 <div className="space-y-4">
                   {topCategories.map((category, index) => (
-                    <div key={index} className="bg-gray-800 rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-2">
+                    <div key={index} className="rounded-lg bg-gray-800 p-4">
+                      <div className="mb-2 flex items-center justify-between">
                         <h5 className="font-medium">{category}</h5>
-                        <span className="text-xs bg-[#677FEB]/20 text-[#677FEB] px-2 py-1 rounded-full">
+                        <span className="
+                          rounded-full bg-[#677FEB]/20 px-2 py-1 text-xs
+                          text-[#677FEB]
+                        ">
                           {Math.floor(Math.random() * 5) + 1} projects
                         </span>
                       </div>
-                      <div className="w-full bg-gray-700 rounded-full h-2 mb-1">
+                      <div className="mb-1 h-2 w-full rounded-full bg-gray-700">
                         <div
-                          className="bg-[#677FEB] h-2 rounded-full"
+                          className="h-2 rounded-full bg-[#677FEB]"
                           style={{ width: `${Math.floor(Math.random() * 60) + 40}%` }}
                         ></div>
                       </div>
@@ -350,13 +384,17 @@ export function ProfileQuickView({
                     </div>
                   ))}
 
-                  <button className="w-full py-3 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors mt-2">
+                  <button className="
+                    mt-2 w-full rounded-lg bg-gray-800 py-3 font-medium
+                    text-white transition-colors
+                    hover:bg-gray-700
+                  ">
                     View All Categories
                   </button>
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-400">
-                  <Compass className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <div className="py-8 text-center text-gray-400">
+                  <Compass className="mx-auto mb-2 size-12 opacity-50" />
                   <p>No categories yet</p>
                   <p className="text-sm">Donate to projects to see categories here</p>
                 </div>
@@ -366,18 +404,21 @@ export function ProfileQuickView({
 
           {activeTab === "rewards" && (
             <div>
-              <h4 className="text-sm uppercase text-gray-400 mb-3">Your Impact Points</h4>
+              <h4 className="mb-3 text-sm text-gray-400 uppercase">Your Impact Points</h4>
 
-              <div className="bg-gray-800 rounded-lg p-4 mb-4">
-                <div className="flex justify-between items-center mb-3">
+              <div className="mb-4 rounded-lg bg-gray-800 p-4">
+                <div className="mb-3 flex items-center justify-between">
                   <h5 className="font-medium">Trust Score</h5>
-                  <span className="text-[#FFD600] font-bold text-lg">
+                  <span className="text-lg font-bold text-[#FFD600]">
                     {userStats.totalDonations * 10 + userStats.streak * 5} pts
                   </span>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-3 mb-2">
+                <div className="mb-2 h-3 w-full rounded-full bg-gray-700">
                   <div
-                    className="bg-gradient-to-r from-[#677FEB] to-[#FFD600] h-3 rounded-full"
+                    className="
+                      h-3 rounded-full bg-linear-to-r from-[#677FEB]
+                      to-[#FFD600]
+                    "
                     style={{ width: `${Math.min(100, userStats.totalDonations * 5 + userStats.streak * 2)}%` }}
                   ></div>
                 </div>
@@ -388,14 +429,19 @@ export function ProfileQuickView({
                 </div>
               </div>
 
-              <h4 className="text-sm uppercase text-gray-400 mb-3">Unlocked Rewards</h4>
+              <h4 className="mb-3 text-sm text-gray-400 uppercase">Unlocked Rewards</h4>
 
               {userStats.totalDonations > 0 ? (
                 <div className="space-y-3">
                   {userStats.totalDonations >= 5 && (
-                    <div className="bg-gray-800 rounded-lg p-3 flex items-center">
-                      <div className="w-10 h-10 rounded-full bg-[#FFD600] flex items-center justify-center mr-3">
-                        <Gift className="w-5 h-5 text-black" />
+                    <div className="
+                      flex items-center rounded-lg bg-gray-800 p-3
+                    ">
+                      <div className="
+                        mr-3 flex size-10 items-center justify-center
+                        rounded-full bg-[#FFD600]
+                      ">
+                        <Gift className="size-5 text-black" />
                       </div>
                       <div className="flex-1">
                         <p className="font-medium">Early Supporter</p>
@@ -405,9 +451,14 @@ export function ProfileQuickView({
                   )}
 
                   {userStats.streak >= 3 && (
-                    <div className="bg-gray-800 rounded-lg p-3 flex items-center">
-                      <div className="w-10 h-10 rounded-full bg-[#FFD600] flex items-center justify-center mr-3">
-                        <Gift className="w-5 h-5 text-black" />
+                    <div className="
+                      flex items-center rounded-lg bg-gray-800 p-3
+                    ">
+                      <div className="
+                        mr-3 flex size-10 items-center justify-center
+                        rounded-full bg-[#FFD600]
+                      ">
+                        <Gift className="size-5 text-black" />
                       </div>
                       <div className="flex-1">
                         <p className="font-medium">Streak Bonus</p>
@@ -416,9 +467,14 @@ export function ProfileQuickView({
                     </div>
                   )}
 
-                  <div className="bg-gray-800 rounded-lg p-3 flex items-center opacity-50">
-                    <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center mr-3">
-                      <Gift className="w-5 h-5 text-gray-500" />
+                  <div className="
+                    flex items-center rounded-lg bg-gray-800 p-3 opacity-50
+                  ">
+                    <div className="
+                      mr-3 flex size-10 items-center justify-center rounded-full
+                      bg-gray-700
+                    ">
+                      <Gift className="size-5 text-gray-500" />
                     </div>
                     <div className="flex-1">
                       <p className="font-medium">Community Spotlight</p>
@@ -427,8 +483,8 @@ export function ProfileQuickView({
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-400">
-                  <Gift className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <div className="py-8 text-center text-gray-400">
+                  <Gift className="mx-auto mb-2 size-12 opacity-50" />
                   <p>No rewards yet</p>
                   <p className="text-sm">Make donations to unlock rewards</p>
                 </div>
@@ -438,7 +494,10 @@ export function ProfileQuickView({
         </div>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#1F2732] to-transparent h-12 pointer-events-none"></div>
+        <div className="
+          pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-t
+          from-[#1F2732] to-transparent
+        "></div>
       </div>
     </div>
   )
@@ -456,7 +515,9 @@ function TabButton({ icon, label, isActive, onClick }: TabButtonProps) {
     <button
       className={cn(
         "flex items-center px-3 py-2 text-sm whitespace-nowrap",
-        isActive ? "text-[#FFD600] border-b-2 border-[#FFD600]" : "text-gray-400",
+        isActive ? "border-b-2 border-[#FFD600] text-[#FFD600]" : `
+          text-gray-400
+        `,
       )}
       onClick={onClick}
     >
