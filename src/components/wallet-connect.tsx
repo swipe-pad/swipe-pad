@@ -4,15 +4,11 @@ import { useEffect, useState } from "react"
 import { useConnect, useAccount as useWagmiAccount } from "wagmi"
 import { injected } from "wagmi/connectors"
 import { ConnectButton, useActiveAccount } from "thirdweb/react"
-import { createThirdwebClient } from "thirdweb"
 import { inAppWallet, createWallet } from "thirdweb/wallets"
 import { isMiniPay, isFarcaster } from "@/lib/minipay-utils"
+import { client } from "@/lib/thirdweb-client"
 import { StarryBackground } from "./starry-background"
 import { celo } from "thirdweb/chains"
-
-const client = createThirdwebClient({
-  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID!,
-})
 
 // Configure wallets with in-app wallet for easy onboarding
 const wallets = [
@@ -68,18 +64,23 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
   }
 
   return (
-    <div className="relative flex flex-col items-center justify-center py-12 px-6 h-full overflow-hidden">
+    <div className="
+      relative flex h-full flex-col items-center justify-center overflow-hidden
+      px-6 py-12
+    ">
       <StarryBackground />
 
-      <div className="flex-1 flex flex-col items-center justify-center relative z-10">
-        <div className="mb-8 flex justify-center w-full">
-          <h1 className="text-4xl font-bold text-center" style={{ fontFamily: "Pixelify Sans, monospace" }}>
+      <div className="
+        relative z-10 flex flex-1 flex-col items-center justify-center
+      ">
+        <div className="mb-8 flex w-full justify-center">
+          <h1 className="text-center text-4xl font-bold" style={{ fontFamily: "Pixelify Sans, monospace" }}>
             SwipePad
           </h1>
         </div>
 
-        <h2 className="text-2xl font-bold mb-2 text-center">Welcome to SwipePad!</h2>
-        <p className="text-gray-300 text-center mb-8 max-w-sm">
+        <h2 className="mb-2 text-center text-2xl font-bold">Welcome to SwipePad!</h2>
+        <p className="mb-8 max-w-sm text-center text-gray-300">
           Support regenerative projects with micro-donations through simple swipes on the Celo blockchain.
         </p>
 
@@ -88,11 +89,19 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
             <button
               onClick={handleInjectedConnect}
               disabled={isConnecting}
-              className="w-full bg-[#FFD600] hover:bg-[#E6C200] text-black font-bold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mb-4"
+              className="
+                mb-4 flex w-full items-center justify-center gap-2 rounded-xl
+                bg-[#FFD600] px-6 py-4 font-bold text-black transition-all
+                duration-200
+                hover:bg-[#E6C200]
+              "
             >
               {isConnecting ? (
                 <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
+                  <div className="
+                    mr-2 size-5 animate-spin rounded-full border-b-2
+                    border-black
+                  "></div>
                   Connecting...
                 </>
               ) : (
@@ -108,17 +117,16 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <path d="M20 7h-9" />
-                    <path d="M14 17H5" />
-                    <circle cx="17" cy="17" r="3" />
-                    <circle cx="7" cy="7" r="3" />
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                    <polyline points="10 17 15 12 10 7" />
+                    <line x1="15" x2="3" y1="12" y2="12" />
                   </svg>
-                  Connect Wallet
+                  Enter App
                 </>
               )}
             </button>
           ) : (
-            <div className="w-full flex justify-center">
+            <div className="flex w-full justify-center">
               <ConnectButton
                 client={client}
                 chain={celo}
@@ -129,7 +137,7 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
                 }}
                 theme="dark"
                 connectButton={{
-                  label: "Connect Wallet",
+                  label: "Enter App",
                   className: "!bg-[#FFD600] !text-black !font-bold !py-4 !px-6 !rounded-xl !h-auto !w-full !flex !items-center !justify-center !gap-2",
                   style: {
                     backgroundColor: "#FFD600",
@@ -140,7 +148,7 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
                   }
                 }}
                 connectModal={{
-                  title: "Connect to SwipePad",
+                  title: "Enter SwipePad",
                   size: "compact",
                 }}
                 detailsButton={{
@@ -152,8 +160,8 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
             </div>
           )}
 
-          <div className="text-center mt-4">
-            <p className="text-xs text-gray-400 max-w-xs mx-auto">
+          <div className="mt-4 text-center">
+            <p className="mx-auto max-w-xs text-xs text-gray-400">
               By connecting, you agree to our Terms of Service and Privacy Policy. Your funds remain secure in your
               wallet at all times.
             </p>
