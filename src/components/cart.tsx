@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import type { Project } from "@/lib/data"
+import type { Project } from "@/lib/useConvexData"
 import type { StableCoin } from "@/components/amount-selector"
 
 interface CartItem {
@@ -48,24 +48,34 @@ export function Cart({ items, onClose, onCheckout }: CartProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1F2732] rounded-xl w-full max-w-md p-6 shadow-xl max-h-[80vh] flex flex-col">
-        <div className="flex justify-between items-start mb-4">
+    <div className="
+      fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4
+    ">
+      <div className="
+        flex max-h-[80vh] w-full max-w-md flex-col rounded-xl bg-[#1F2732] p-6
+        shadow-xl
+      ">
+        <div className="mb-4 flex items-start justify-between">
           <h3 className="text-xl font-bold">Your Donations</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
+          <button onClick={onClose} className="
+            text-gray-400
+            hover:text-white
+          ">
             <XIcon />
           </button>
         </div>
 
         {items.length === 0 ? (
-          <div className="text-center py-8">
+          <div className="py-8 text-center">
             <p className="text-gray-400">Your cart is empty</p>
           </div>
         ) : (
           <>
-            <div className="overflow-y-auto flex-1 -mx-6 px-6">
+            <div className="-mx-6 flex-1 overflow-y-auto px-6">
               {items.map((item, index) => (
-                <div key={index} className="py-3 border-b border-gray-700 flex justify-between">
+                <div key={index} className="
+                  flex justify-between border-b border-gray-700 py-3
+                ">
                   <div>
                     <h4 className="font-medium">{item.project.name}</h4>
                     <p className="text-sm text-gray-400">{item.project.category}</p>
@@ -79,13 +89,15 @@ export function Cart({ items, onClose, onCheckout }: CartProps) {
               ))}
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-700">
+            <div className="mt-4 border-t border-gray-700 pt-4">
               <div className="mb-6">
-                <h4 className="font-medium mb-2">Total by Currency:</h4>
+                <h4 className="mb-2 font-medium">Total by Currency:</h4>
                 {Object.entries(totals).map(
                   ([currency, amount]) =>
                     amount > 0 && (
-                      <div key={currency} className="flex justify-between text-sm mb-1">
+                      <div key={currency} className="
+                        mb-1 flex justify-between text-sm
+                      ">
                         <span>{currency}:</span>
                         <span className="font-bold">{amount.toFixed(2)}</span>
                       </div>
@@ -94,7 +106,9 @@ export function Cart({ items, onClose, onCheckout }: CartProps) {
               </div>
 
               {items.length < 5 ? (
-                <div className="bg-yellow-900/30 text-yellow-300 p-3 rounded-lg mb-4 text-sm">
+                <div className="
+                  mb-4 rounded-lg bg-yellow-900/30 p-3 text-sm text-yellow-300
+                ">
                   Please select {5 - items.length} more project{items.length === 4 ? "" : "s"} to proceed
                 </div>
               ) : null}
@@ -102,16 +116,22 @@ export function Cart({ items, onClose, onCheckout }: CartProps) {
               <button
                 onClick={handleCheckout}
                 disabled={items.length < 5 || isProcessing}
-                className={`w-full py-3 font-medium rounded-lg transition-colors ${
+                className={`
+                  w-full rounded-lg py-3 font-medium transition-colors
+                  ${
                   items.length >= 5 && !isProcessing
-                    ? "bg-[#677FEB] hover:bg-[#5A6FD3] text-white"
-                    : "bg-gray-700 text-gray-400 cursor-not-allowed"
-                }`}
+                    ? `
+                      bg-[#677FEB] text-white
+                      hover:bg-[#5A6FD3]
+                    `
+                    : "cursor-not-allowed bg-gray-700 text-gray-400"
+                }
+                `}
               >
                 {isProcessing ? (
                   <span className="flex items-center justify-center">
                     <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      className="mr-2 -ml-1 size-4 animate-spin text-white"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { X, Share2, Copy, MessageSquare, Twitter } from "lucide-react"
-import type { Project } from "@/lib/data"
+import type { Project } from "@/lib/useConvexData"
 
 // Add Telegram icon component
 function TelegramIcon({ className }: { className?: string }) {
@@ -101,21 +101,26 @@ export function ShareModal({ project, isOpen, onClose }: ShareModalProps) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1F2732] rounded-xl w-full max-w-md p-6 shadow-xl">
-        <div className="flex justify-between items-start mb-4">
+    <div className="
+      fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4
+    ">
+      <div className="w-full max-w-md rounded-xl bg-[#1F2732] p-6 shadow-xl">
+        <div className="mb-4 flex items-start justify-between">
           <h3 className="text-xl font-bold">Share Project</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="
+            text-gray-400
+            hover:text-white
+          ">
+            <X className="size-5" />
           </button>
         </div>
 
         <div className="mb-6">
-          <div className="flex items-center space-x-3 mb-4">
+          <div className="mb-4 flex items-center space-x-3">
             <img
-              src={project.imageUrl || `/placeholder.svg?height=48&width=48&query=${encodeURIComponent(project.name)}`}
+              src={project.imageUrl || "/placeholder.svg"}
               alt={project.name}
-              className="w-12 h-12 object-cover rounded-md"
+              className="size-12 rounded-md object-cover"
             />
             <div>
               <h4 className="font-medium">{project.name}</h4>
@@ -126,59 +131,86 @@ export function ShareModal({ project, isOpen, onClose }: ShareModalProps) {
 
         <div className="space-y-4">
           <div>
-            <h4 className="text-sm font-medium mb-3">Share inside MiniPay</h4>
+            <h4 className="mb-3 text-sm font-medium">Share inside MiniPay</h4>
             <button
               onClick={handleMiniPayShare}
-              className="w-full py-3 bg-[#677FEB] hover:bg-[#5A6FD3] text-white font-medium rounded-lg transition-colors flex items-center justify-center"
+              className="
+                flex w-full items-center justify-center rounded-lg bg-[#677FEB]
+                py-3 font-medium text-white transition-colors
+                hover:bg-[#5A6FD3]
+              "
             >
-              <MessageSquare className="w-4 h-4 mr-2" /> Share with MiniPay Contacts
+              <MessageSquare className="mr-2 size-4" /> Share with MiniPay Contacts
             </button>
           </div>
 
           <div>
-            <h4 className="text-sm font-medium mb-3">Share outside MiniPay</h4>
+            <h4 className="mb-3 text-sm font-medium">Share outside MiniPay</h4>
             <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => handleExternalShare("twitter")}
-                className="flex flex-col items-center justify-center p-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                className="
+                  flex flex-col items-center justify-center rounded-lg
+                  bg-gray-800 p-3 transition-colors
+                  hover:bg-gray-700
+                "
               >
-                <Twitter className="w-6 h-6 mb-1" />
+                <Twitter className="mb-1 size-6" />
                 <span className="text-xs">Twitter</span>
               </button>
               <button
                 onClick={() => handleExternalShare("telegram")}
-                className="flex flex-col items-center justify-center p-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                className="
+                  flex flex-col items-center justify-center rounded-lg
+                  bg-gray-800 p-3 transition-colors
+                  hover:bg-gray-700
+                "
               >
-                <TelegramIcon className="w-6 h-6 mb-1" />
+                <TelegramIcon className="mb-1 size-6" />
                 <span className="text-xs">Telegram</span>
               </button>
               <button
                 onClick={() => handleExternalShare("other")}
-                className="flex flex-col items-center justify-center p-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                className="
+                  flex flex-col items-center justify-center rounded-lg
+                  bg-gray-800 p-3 transition-colors
+                  hover:bg-gray-700
+                "
               >
-                <Share2 className="w-6 h-6 mb-1" />
+                <Share2 className="mb-1 size-6" />
                 <span className="text-xs">More</span>
               </button>
             </div>
           </div>
 
           <div>
-            <h4 className="text-sm font-medium mb-3">Copy link</h4>
+            <h4 className="mb-3 text-sm font-medium">Copy link</h4>
             <div className="flex items-center">
-              <div className="flex-1 bg-gray-800 rounded-l-lg py-2 px-3 text-sm text-gray-300 truncate">{shareUrl}</div>
+              <div className="
+                flex-1 truncate rounded-l-lg bg-gray-800 px-3 py-2 text-sm
+                text-gray-300
+              ">{shareUrl}</div>
               <button
                 onClick={handleCopyLink}
-                className={`py-2 px-3 rounded-r-lg transition-colors ${
-                  copied ? "bg-green-600 text-white" : "bg-gray-700 hover:bg-gray-600 text-white"
-                }`}
+                className={`
+                  rounded-r-lg px-3 py-2 transition-colors
+                  ${
+                  copied ? "bg-green-600 text-white" : `
+                    bg-gray-700 text-white
+                    hover:bg-gray-600
+                  `
+                }
+                `}
               >
-                {copied ? "Copied!" : <Copy className="w-4 h-4" />}
+                {copied ? "Copied!" : <Copy className="size-4" />}
               </button>
             </div>
           </div>
         </div>
 
-        {shareStatus && <div className="mt-4 p-2 bg-gray-800 text-center rounded-lg text-sm">{shareStatus}</div>}
+        {shareStatus && <div className="
+          mt-4 rounded-lg bg-gray-800 p-2 text-center text-sm
+        ">{shareStatus}</div>}
       </div>
     </div>
   )
