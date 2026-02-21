@@ -1,7 +1,7 @@
 "use client"
 
 import { ProjectCard } from "@/components/project-card"
-import type { Project } from "@/lib/data"
+import type { Project } from "@/lib/useConvexData"
 
 interface CategorySectionProps {
   category: string
@@ -13,9 +13,9 @@ interface CategorySectionProps {
 export function CategorySection({ category, projects, onDonate, onBoost }: CategorySectionProps) {
   return (
     <div className="mb-8">
-      <h2 className="text-xl font-bold mb-4 flex items-center">
+      <h2 className="mb-4 flex items-center text-xl font-bold">
         <span className="mr-2">{category}</span>
-        <span className="text-sm text-gray-400 font-normal">({projects.length})</span>
+        <span className="text-sm font-normal text-gray-400">({projects.length})</span>
       </h2>
 
       <div className="overflow-x-auto">

@@ -7,8 +7,10 @@ import { Heart, MessageCircle, Flag, Zap, ExternalLink, X, ThumbsUp } from "luci
 import { BoostModal } from "@/components/boost-modal"
 import { ShareModal } from "@/components/share-modal"
 import { ReportModal } from "@/components/report-modal"
-import type { Project } from "@/lib/data"
+import type { Project } from "@/lib/useConvexData"
 import type { DonationAmount, StableCoin } from "@/components/amount-selector"
+import { stripMarkdown } from "@/lib/markdown"
+import Image from "next/image"
 
 interface ProjectCardProps {
   project: Project
@@ -98,6 +100,7 @@ export function ProjectCard({
   donationAmount,
   donationCurrency,
 }: ProjectCardProps) {
+  const ENABLE_REPORTS = false
   const [isLiked, setIsLiked] = useState(project.userHasLiked || false)
   const [likeCount, setLikeCount] = useState(project.likes || 0)
   const [showBoostModal, setShowBoostModal] = useState(false)
@@ -111,6 +114,7 @@ export function ProjectCard({
   const [startX, setStartX] = useState(0)
   const [currentX, setCurrentX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
+  const [isMouseDown, setIsMouseDown] = useState(false)
   const [dragThreshold] = useState(50)
 
   // Separate handlers for heart and like button
@@ -146,13 +150,23 @@ export function ProjectCard({
     }
   }
 
+  const normalizeExternalUrl = (url: string): string | null => {
+    if (!url || url === "NA") return null
+    try {
+      const parsed = new URL(url, "https://")
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null
+      return parsed.href
+    } catch {
+      return null
+    }
+  }
+
   const handleExternalLink = (e: React.MouseEvent, url: string) => {
     e.preventDefault()
     e.stopPropagation()
-    if (url === "NA") {
-      return
-    }
-    window.open(url, "_blank", "noopener,noreferrer")
+    const safeUrl = normalizeExternalUrl(url)
+    if (!safeUrl) return
+    window.open(safeUrl, "_blank", "noopener,noreferrer")
   }
 
   const handleReport = (reason: string, customReason?: string) => {
@@ -221,11 +235,67 @@ export function ProjectCard({
   const handleMouseDown = (e: React.MouseEvent) => {
     if (viewMode !== "swipe") return
     e.preventDefault()
+    setStartX(e.clientX)
+    setCurrentX(e.clientX)
+    setIsMouseDown(true)
+    setIsDragging(false)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (viewMode !== "swipe" || !isMouseDown) return
+    setCurrentX(e.clientX)
+    const diff = e.clientX - startX
+
+    if (Math.abs(diff) > 10) {
+      setIsDragging(true)
+    }
+
+    if (cardRef.current && isDragging) {
+      cardRef.current.style.transform = `translateX(${diff}px) rotate(${diff * 0.1}deg)`
+    }
+  }
+
+  const handleMouseUp = () => {
+    if (!isMouseDown) return
+
+    if (!isDragging || viewMode !== "swipe") {
+      if (cardRef.current) {
+        cardRef.current.style.transform = ""
+      }
+      setIsMouseDown(false)
+      setIsDragging(false)
+      return
+    }
+
+    const diff = currentX - startX
+
+    if (cardRef.current) {
+      cardRef.current.style.transform = ""
+    }
+
+    if (Math.abs(diff) > dragThreshold) {
+      if (diff > 0 && onSwipeRight) {
+        onSwipeRight()
+      } else if (diff < 0 && onSwipeLeft) {
+        onSwipeLeft()
+      }
+    }
+
+    setStartX(0)
+    setCurrentX(0)
+    setIsMouseDown(false)
+    setIsDragging(false)
+  }
+
+  const handleMouseLeave = () => {
+    if (isMouseDown) {
+      handleMouseUp()
+    }
   }
 
   const getImageSrc = () => {
-    if (imageError || !project.imageUrl || project.imageUrl === "NA") {
-      return `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(project.name + " " + project.category)}`
+    if (imageError || !project.imageUrl || project.imageUrl === "NA" || project.imageUrl === "/placeholder.svg") {
+      return "/placeholder.svg"
     }
     return project.imageUrl
   }
@@ -233,40 +303,55 @@ export function ProjectCard({
   const cardContent = (
     <div
       ref={cardRef}
-      className="bg-gray-800 rounded-2xl overflow-hidden shadow-lg border border-gray-700 select-none"
+      className="overflow-hidden rounded-2xl bg-gray-800 shadow-lg select-none"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
     >
       {/* Project Image */}
       <div className="relative h-48 bg-gray-700">
         {imageLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-700">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FFD600]"></div>
+          <div className="
+            absolute inset-0 flex items-center justify-center bg-gray-700
+          ">
+            <div className="
+              size-8 animate-spin rounded-full border-b-2 border-[#FFD600]
+            "></div>
           </div>
         )}
 
-        <img
+        <Image
           src={getImageSrc() || "/placeholder.svg"}
           alt={project.name}
-          className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoading ? "opacity-0" : "opacity-100"}`}
+          fill
+          className={`
+            object-cover transition-opacity duration-300
+            ${imageLoading ? `opacity-0` : `opacity-100`}
+          `}
           onError={handleImageError}
           onLoad={handleImageLoad}
-          loading="lazy"
-          draggable={false}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
 
         {/* Category Badge */}
         <div className="absolute top-3 left-3">
-          <span className="bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded-full">{project.category}</span>
+          <span className="
+            bg-opacity-70 rounded-full bg-black px-2 py-1 text-xs text-white
+          ">{project.category}</span>
         </div>
 
         {/* Boost Badge */}
         {(project.boostAmount ?? 0) > 0 && (
           <div className="absolute top-3 right-3">
-            <div className="bg-yellow-400 text-black text-xs px-2 py-1 rounded-full flex items-center space-x-1">
-              <Zap className="w-3 h-3" />
+            <div className="
+              flex items-center space-x-1 rounded-full bg-yellow-400 px-2 py-1
+              text-xs text-black
+            ">
+              <Zap className="size-3" />
               <span>Boosted</span>
             </div>
           </div>
@@ -275,24 +360,27 @@ export function ProjectCard({
 
       {/* Project Info */}
       <div className="p-4">
-        <div className="flex items-start justify-between mb-3">
+        <div className="mb-3 flex items-start justify-between">
           <div className="flex-1">
-            <h3 className="text-lg font-bold text-white mb-1 line-clamp-1">{project.name}</h3>
-            <p className="text-gray-300 text-sm line-clamp-2 mb-3">
-              {project.description || "No description available"}
+            <h3 className="mb-1 line-clamp-1 text-lg font-bold text-white">{project.name}</h3>
+            <p className="mb-3 line-clamp-2 text-sm text-gray-300">
+              {stripMarkdown(project.description) || "No description available"}
             </p>
           </div>
         </div>
 
         {/* Social Links - Show based on availability */}
-        <div className="flex items-center space-x-3 mb-4 flex-wrap gap-y-2">
+        <div className="mb-4 flex flex-wrap items-center space-x-3 gap-y-2">
           {project.github && (
             <button
               onClick={(e) => handleExternalLink(e, project.github!)}
-              className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
+              className="
+                flex items-center space-x-1 text-gray-400 transition-colors
+                hover:text-white
+              "
               title="GitHub"
             >
-              <GitHubIcon className="w-4 h-4" />
+              <GitHubIcon className="size-4" />
               <span className="text-xs">GitHub</span>
             </button>
           )}
@@ -300,10 +388,13 @@ export function ProjectCard({
           {project.linkedin && (
             <button
               onClick={(e) => handleExternalLink(e, project.linkedin!)}
-              className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
+              className="
+                flex items-center space-x-1 text-gray-400 transition-colors
+                hover:text-white
+              "
               title="LinkedIn"
             >
-              <LinkedInIcon className="w-4 h-4" />
+              <LinkedInIcon className="size-4" />
               <span className="text-xs">LinkedIn</span>
             </button>
           )}
@@ -311,10 +402,13 @@ export function ProjectCard({
           {project.farcaster && (
             <button
               onClick={(e) => handleExternalLink(e, project.farcaster!)}
-              className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
+              className="
+                flex items-center space-x-1 text-gray-400 transition-colors
+                hover:text-white
+              "
               title="Farcaster"
             >
-              <FarcasterIcon className="w-4 h-4" />
+              <FarcasterIcon className="size-4" />
               <span className="text-xs">Farcaster</span>
             </button>
           )}
@@ -322,10 +416,13 @@ export function ProjectCard({
           {project.website && project.website !== "NA" && (
             <button
               onClick={(e) => handleExternalLink(e, project.website!)}
-              className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
+              className="
+                flex items-center space-x-1 text-gray-400 transition-colors
+                hover:text-white
+              "
               title="Website"
             >
-              <WebsiteIcon className="w-4 h-4" />
+              <WebsiteIcon className="size-4" />
               <span className="text-xs">Website</span>
             </button>
           )}
@@ -333,10 +430,13 @@ export function ProjectCard({
           {project.twitter && project.twitter !== "NA" && (
             <button
               onClick={(e) => handleExternalLink(e, project.twitter!)}
-              className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
+              className="
+                flex items-center space-x-1 text-gray-400 transition-colors
+                hover:text-white
+              "
               title="Twitter"
             >
-              <XIcon className="w-4 h-4" />
+              <XIcon className="size-4" />
               <span className="text-xs">Twitter</span>
             </button>
           )}
@@ -344,10 +444,13 @@ export function ProjectCard({
           {project.discord && project.discord !== "NA" && (
             <button
               onClick={(e) => handleExternalLink(e, project.discord!)}
-              className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
+              className="
+                flex items-center space-x-1 text-gray-400 transition-colors
+                hover:text-white
+              "
               title="Discord"
             >
-              <DiscordIcon className="w-4 h-4" />
+              <DiscordIcon className="size-4" />
               <span className="text-xs">Discord</span>
             </button>
           )}
@@ -359,57 +462,82 @@ export function ProjectCard({
             {/* Like Button */}
             <button
               onClick={handleHeartLike}
-              className="flex items-center space-x-1 text-gray-400 hover:text-red-400 transition-colors"
+              className="
+                flex items-center space-x-1 text-gray-400 transition-colors
+                hover:text-red-400
+              "
             >
-              <Heart className={`w-5 h-5 ${isLiked ? "fill-red-400 text-red-400" : ""}`} />
+              <Heart className={`
+                size-5
+                ${isLiked ? "fill-red-400 text-red-400" : ""}
+              `} />
               <span className="text-xs">{likeCount}</span>
             </button>
 
             {/* Comment Button */}
             <button
               onClick={(e) => handleButtonClick(e, () => console.log("Comment clicked"))}
-              className="flex items-center space-x-1 text-gray-400 hover:text-blue-400 transition-colors"
+              className="
+                flex items-center space-x-1 text-gray-400 transition-colors
+                hover:text-blue-400
+              "
             >
-              <MessageCircle className="w-5 h-5" />
+              <MessageCircle className="size-5" />
               <span className="text-xs">{project.comments}</span>
             </button>
 
             {/* Share Button */}
             <button
               onClick={(e) => handleButtonClick(e, () => setShowShareModal(true))}
-              className="flex items-center space-x-1 text-gray-400 hover:text-green-400 transition-colors"
+              className="
+                flex items-center space-x-1 text-gray-400 transition-colors
+                hover:text-green-400
+              "
             >
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="size-4" />
               <span className="text-xs">Share</span>
             </button>
 
             {/* Report Button */}
-            <button
-              onClick={(e) => handleButtonClick(e, () => setShowReportModal(true))}
-              className="text-gray-500 hover:text-red-400 transition-colors"
-            >
-              <Flag className="w-4 h-4" />
-            </button>
+            {ENABLE_REPORTS ? (
+              <button
+                onClick={(e) => handleButtonClick(e, () => setShowReportModal(true))}
+                className="
+                  text-gray-500 transition-colors
+                  hover:text-red-400
+                "
+              >
+                <Flag className="size-4" />
+              </button>
+            ) : null}
           </div>
 
           {/* Boost Button */}
           <button
             onClick={(e) => handleButtonClick(e, () => setShowBoostModal(true))}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-lg font-medium text-xs flex items-center space-x-1 transition-colors"
+            className="
+              flex items-center space-x-1 rounded-lg bg-blue-500 px-2 py-1
+              text-xs font-medium text-white transition-colors
+              hover:bg-blue-600
+            "
           >
-            <Zap className="w-4 h-4" />
+            <Zap className="size-4" />
             <span>Boost</span>
           </button>
         </div>
 
         {/* Swipe Mode Actions */}
         {viewMode === "swipe" && (
-          <div className="flex space-x-3 mt-4">
+          <div className="mt-4 flex space-x-3">
             <button
               onClick={(e) => handleButtonClick(e, () => onSwipeLeft && onSwipeLeft())}
-              className="flex-1 py-2 bg-gray-600 hover:bg-gray-500 text-white font-medium rounded-lg transition-colors flex items-center justify-center text-sm"
+              className="
+                flex flex-1 items-center justify-center rounded-lg bg-gray-600
+                py-2 text-sm font-medium text-white transition-colors
+                hover:bg-gray-500
+              "
             >
-              <X className="w-4 h-4 mr-2" />
+              <X className="mr-2 size-4" />
               Skip
             </button>
             <button
@@ -419,9 +547,13 @@ export function ProjectCard({
                   onSwipeRight && onSwipeRight()
                 })
               }
-              className="flex-1 py-2 bg-[#FFD600] hover:bg-yellow-500 text-black font-medium rounded-lg transition-colors flex items-center justify-center text-sm"
+              className="
+                flex flex-1 items-center justify-center rounded-lg bg-[#FFD600]
+                py-2 text-sm font-medium text-black transition-colors
+                hover:bg-yellow-500
+              "
             >
-              <ThumbsUp className="w-4 h-4 mr-2" />
+              <ThumbsUp className="mr-2 size-4" />
               Like
             </button>
           </div>
@@ -436,7 +568,11 @@ export function ProjectCard({
                 onDonate()
               })
             }
-            className="w-full mt-4 py-2 bg-[#FFD600] hover:bg-yellow-500 text-black font-medium rounded-lg transition-colors text-sm"
+            className="
+              mt-4 w-full rounded-lg bg-[#FFD600] py-2 text-sm font-medium
+              text-black transition-colors
+              hover:bg-yellow-500
+            "
           >
             Like
           </button>
@@ -455,7 +591,7 @@ export function ProjectCard({
         <ShareModal project={project} isOpen={showShareModal} onClose={() => setShowShareModal(false)} />
       )}
 
-      {showReportModal && (
+      {ENABLE_REPORTS && showReportModal && (
         <ReportModal
           isOpen={showReportModal}
           onClose={() => setShowReportModal(false)}
@@ -467,7 +603,7 @@ export function ProjectCard({
   )
 
   if (viewMode === "category") {
-    return <div className="flex-shrink-0 w-80">{cardContent}</div>
+    return <div className="w-80 shrink-0">{cardContent}</div>
   }
 
   return cardContent

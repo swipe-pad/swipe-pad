@@ -2,7 +2,7 @@
 
 import { useRef } from "react"
 import { cn } from "@/lib/utils"
-import { categories } from "@/lib/data"
+import { useCategories } from "@/lib/useConvexData"
 
 interface CategoryMenuProps {
   selectedCategory: string
@@ -12,6 +12,7 @@ interface CategoryMenuProps {
 
 export function CategoryMenu({ selectedCategory, setSelectedCategory, setCurrentProjectIndex }: CategoryMenuProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const categories = useCategories()
 
   const handleCategoryClick = (category: string) => {
     setSelectedCategory(category)
@@ -25,10 +26,10 @@ export function CategoryMenu({ selectedCategory, setSelectedCategory, setCurrent
   const visibleCategories = categories
 
   return (
-    <div className="relative w-full mb-3">
+    <div className="relative mb-3 w-full">
       <div
         ref={scrollRef}
-        className="flex space-x-3 overflow-x-auto pb-2 px-6 scrollbar-hide"
+        className="scrollbar-hide flex space-x-3 overflow-x-auto px-6 pb-2"
         style={{
           WebkitOverflowScrolling: "touch",
           scrollbarWidth: "none",
@@ -39,8 +40,14 @@ export function CategoryMenu({ selectedCategory, setSelectedCategory, setCurrent
           <button
             key={category}
             className={cn(
-              "px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors flex-shrink-0 font-medium",
-              selectedCategory === category ? "bg-[#FFD600] text-black" : "bg-gray-700 text-gray-300 hover:bg-gray-600",
+              `
+                shrink-0 rounded-full px-4 py-2 text-sm font-medium
+                whitespace-nowrap transition-colors
+              `,
+              selectedCategory === category ? "bg-[#FFD600] text-black" : `
+                bg-gray-700 text-gray-300
+                hover:bg-gray-600
+              `,
             )}
             onClick={() => handleCategoryClick(category)}
           >
@@ -49,9 +56,9 @@ export function CategoryMenu({ selectedCategory, setSelectedCategory, setCurrent
         ))}
       </div>
 
-      <div className="w-full h-1 bg-gray-800 rounded-full mx-6 mt-1">
+      <div className="mx-6 mt-1 h-1 w-full rounded-full bg-gray-800">
         <div
-          className="h-1 bg-[#FFD600] rounded-full transition-all duration-300"
+          className="h-1 rounded-full bg-[#FFD600] transition-all duration-300"
           style={{
             width: `${Math.min(100, (100 / visibleCategories.length) * 2)}%`,
             marginLeft: `${(selectedCategory ? categories.indexOf(selectedCategory) : 0) * (100 / visibleCategories.length)}%`,
