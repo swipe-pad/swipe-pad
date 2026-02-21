@@ -8,8 +8,11 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <div className="relative flex flex-col h-full w-full max-w-md mx-auto bg-background overflow-hidden border-x border-white/5">
-      <main className="flex-1 overflow-y-auto no-scrollbar pb-24 relative">
+    <div className="
+      relative mx-auto flex size-full max-w-md flex-col overflow-hidden border-x
+      border-white/5 bg-background
+    ">
+      <main className="no-scrollbar relative flex-1 overflow-y-auto pb-24">
         {children}
       </main>
       <BottomNav />
