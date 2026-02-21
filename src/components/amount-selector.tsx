@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { projects } from "@/lib/data"
+import { useProjects } from "@/lib/useConvexData"
 
 export type DonationAmount = "0.01¢" | "0.10¢" | "0.50¢" | "1 Stable"
 export type StableCoin = "cUSD" | "USDC" | "USDT"
@@ -16,6 +16,7 @@ export function AmountSelector({ onSelect, availableProjects }: AmountSelectorPr
   const [selectedAmount, setSelectedAmount] = useState<DonationAmount>("0.01¢")
   const [selectedCurrency, setSelectedCurrency] = useState<StableCoin>("cUSD")
   const [selectedSwipes, setSelectedSwipes] = useState<ConfirmSwipes>(20)
+  const projects = useProjects()
 
   const amounts: DonationAmount[] = ["0.01¢", "0.10¢", "0.50¢", "1 Stable"]
   const currencies: StableCoin[] = ["cUSD", "USDC", "USDT"]
@@ -29,20 +30,26 @@ export function AmountSelector({ onSelect, availableProjects }: AmountSelectorPr
 
   return (
     <div className="px-6 py-4">
-      <h2 className="text-xl font-bold mb-2 text-white">Select Donation Amount</h2>
+      <h2 className="mb-2 text-xl font-bold text-white">Select Donation Amount</h2>
 
-      <p className="text-sm text-gray-400 mb-6">Available Cards to Swipe: {totalCards}</p>
+      <p className="mb-6 text-sm text-gray-400">Available Cards to Swipe: {totalCards}</p>
 
       {/* Amount Selection */}
       <div className="mb-6">
-        <h3 className="text-base font-medium mb-3 text-gray-300">Amount per swipe:</h3>
+        <h3 className="mb-3 text-base font-medium text-gray-300">Amount per swipe:</h3>
         <div className="grid grid-cols-4 gap-2">
           {amounts.map((amount) => (
             <button
               key={amount}
               onClick={() => setSelectedAmount(amount)}
-              className={`py-3 px-2 rounded-lg font-medium transition-colors text-sm ${selectedAmount === amount ? "bg-[#FFD600] text-black" : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                }`}
+              className={`
+                rounded-lg px-2 py-3 text-sm font-medium transition-colors
+                ${selectedAmount === amount ? `bg-[#FFD600] text-black` : `
+                  bg-gray-700 text-gray-300
+                  hover:bg-gray-600
+                `
+                }
+              `}
             >
               {amount}
             </button>
@@ -52,16 +59,22 @@ export function AmountSelector({ onSelect, availableProjects }: AmountSelectorPr
 
       {/* Stablecoin Selection */}
       <div className="mb-6">
-        <h3 className="text-base font-medium mb-3 text-gray-300">Stablecoin:</h3>
+        <h3 className="mb-3 text-base font-medium text-gray-300">Stablecoin:</h3>
         <div className="grid grid-cols-3 gap-3">
           {currencies.map((currency) => (
             <button
               key={currency}
               onClick={() => setSelectedCurrency(currency)}
-              className={`py-3 px-4 rounded-lg font-medium transition-colors ${selectedCurrency === currency
+              className={`
+                rounded-lg px-4 py-3 font-medium transition-colors
+                ${selectedCurrency === currency
                   ? "bg-[#FFD600] text-black"
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                }`}
+                  : `
+                    bg-gray-700 text-gray-300
+                    hover:bg-gray-600
+                  `
+                }
+              `}
             >
               {currency}
             </button>
@@ -71,14 +84,20 @@ export function AmountSelector({ onSelect, availableProjects }: AmountSelectorPr
 
       {/* Confirm Swipes Selection */}
       <div className="mb-8">
-        <h3 className="text-base font-medium mb-3 text-gray-300">Confirm swipes:</h3>
+        <h3 className="mb-3 text-base font-medium text-gray-300">Confirm swipes:</h3>
         <div className="grid grid-cols-3 gap-3">
           {swipeOptions.map((swipes) => (
             <button
               key={swipes}
               onClick={() => setSelectedSwipes(swipes)}
-              className={`py-3 px-4 rounded-lg font-medium transition-colors ${selectedSwipes === swipes ? "bg-[#FFD600] text-black" : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                }`}
+              className={`
+                rounded-lg px-4 py-3 font-medium transition-colors
+                ${selectedSwipes === swipes ? `bg-[#FFD600] text-black` : `
+                  bg-gray-700 text-gray-300
+                  hover:bg-gray-600
+                `
+                }
+              `}
             >
               {swipes}
             </button>
@@ -89,7 +108,11 @@ export function AmountSelector({ onSelect, availableProjects }: AmountSelectorPr
       {/* Start Swiping Button */}
       <button
         onClick={handleConfirm}
-        className="w-full py-4 bg-[#FFD600] hover:bg-[#E6C200] text-black font-bold rounded-lg transition-colors"
+        className="
+          w-full rounded-lg bg-[#FFD600] py-4 font-bold text-black
+          transition-colors
+          hover:bg-[#E6C200]
+        "
       >
         Start Swiping
       </button>

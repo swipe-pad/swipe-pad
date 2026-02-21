@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import type { Project } from "@/lib/data"
+import type { Project } from "@/lib/useConvexData"
 
 interface DonationModalProps {
   project: Project
@@ -22,26 +22,37 @@ export function DonationModal({ project, onClose, onDonate }: DonationModalProps
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1F2732] rounded-xl w-full max-w-md p-6 shadow-xl">
-        <div className="flex justify-between items-start mb-4">
+    <div className="
+      fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4
+    ">
+      <div className="w-full max-w-md rounded-xl bg-[#1F2732] p-6 shadow-xl">
+        <div className="mb-4 flex items-start justify-between">
           <h3 className="text-xl font-bold">Donate to {project.name}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
+          <button onClick={onClose} className="
+            text-gray-400
+            hover:text-white
+          ">
             <XIcon />
           </button>
         </div>
 
-        <p className="text-gray-300 mb-6">{project.description}</p>
+        <p className="mb-6 text-gray-300">{project.description}</p>
 
         <div className="mb-6">
-          <h4 className="text-sm font-medium mb-3">Select amount (cUSD)</h4>
+          <h4 className="mb-3 text-sm font-medium">Select amount (cUSD)</h4>
           <div className="grid grid-cols-3 gap-3">
             {[5, 10, 20].map((value) => (
               <button
                 key={value}
-                className={`py-3 rounded-lg font-medium transition-colors ${
-                  amount === value ? "bg-[#FFD600] text-black" : "bg-gray-700 text-white hover:bg-gray-600"
-                }`}
+                className={`
+                  rounded-lg py-3 font-medium transition-colors
+                  ${
+                  amount === value ? "bg-[#FFD600] text-black" : `
+                    bg-gray-700 text-white
+                    hover:bg-gray-600
+                  `
+                }
+                `}
                 onClick={() => {
                   setAmount(value)
                   setCustomAmount("")
@@ -54,9 +65,11 @@ export function DonationModal({ project, onClose, onDonate }: DonationModalProps
         </div>
 
         <div className="mb-6">
-          <h4 className="text-sm font-medium mb-2">Custom amount (cUSD)</h4>
+          <h4 className="mb-2 text-sm font-medium">Custom amount (cUSD)</h4>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+            <span className="
+              absolute top-1/2 left-3 -translate-y-1/2 text-gray-400
+            ">$</span>
             <input
               type="number"
               value={customAmount}
@@ -65,7 +78,11 @@ export function DonationModal({ project, onClose, onDonate }: DonationModalProps
                 setAmount(null)
               }}
               placeholder="Enter amount"
-              className="w-full bg-gray-700 rounded-lg py-3 pl-8 pr-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#677FEB]"
+              className="
+                w-full rounded-lg bg-gray-700 py-3 pr-3 pl-8 text-white
+                placeholder-gray-400
+                focus:ring-2 focus:ring-[#677FEB] focus:outline-none
+              "
             />
           </div>
         </div>
@@ -73,18 +90,28 @@ export function DonationModal({ project, onClose, onDonate }: DonationModalProps
         <div className="flex space-x-3">
           <button
             onClick={onClose}
-            className="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
+            className="
+              flex-1 rounded-lg bg-gray-700 py-3 font-medium text-white
+              transition-colors
+              hover:bg-gray-600
+            "
           >
             Cancel
           </button>
           <button
             onClick={handleDonate}
             disabled={!amount && !customAmount}
-            className={`flex-1 py-3 font-medium rounded-lg transition-colors ${
+            className={`
+              flex-1 rounded-lg py-3 font-medium transition-colors
+              ${
               amount || customAmount
-                ? "bg-[#677FEB] hover:bg-[#5A6FD3] text-white"
-                : "bg-gray-700 text-gray-400 cursor-not-allowed"
-            }`}
+                ? `
+                  bg-[#677FEB] text-white
+                  hover:bg-[#5A6FD3]
+                `
+                : "cursor-not-allowed bg-gray-700 text-gray-400"
+            }
+            `}
           >
             Donate
           </button>
