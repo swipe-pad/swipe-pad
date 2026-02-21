@@ -1,7 +1,6 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect } from "react"
-import { projects, categories, type Project } from "@/lib/data"
 import type { DonationAmount, StableCoin, ConfirmSwipes } from "@/components/amount-selector"
 
 interface AppContextType {
@@ -27,13 +26,39 @@ interface AppContextType {
     setCurrentProjectIndex: React.Dispatch<React.SetStateAction<number>>
     walletConnected: boolean
     setWalletConnected: React.Dispatch<React.SetStateAction<boolean>>
+    walletAddress: string | null
+    setWalletAddress: React.Dispatch<React.SetStateAction<string | null>>
+    betaUserId: string | null
+    setBetaUserId: React.Dispatch<React.SetStateAction<string | null>>
+    betaStatus: "guest" | "pending" | "approved" | "active" | "rejected" | null
+    setBetaStatus: React.Dispatch<React.SetStateAction<"guest" | "pending" | "approved" | "active" | "rejected" | null>>
+    creditsRemaining: number
+    setCreditsRemaining: React.Dispatch<React.SetStateAction<number>>
+    creditsMax: number
+    setCreditsMax: React.Dispatch<React.SetStateAction<number>>
+    hasCompletedOnboarding: boolean
+    setHasCompletedOnboarding: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
     const [walletConnected, setWalletConnected] = useState(false)
-    const [selectedCategory, setSelectedCategory] = useState(categories[0] || "Regeneration")
+    const [walletAddress, setWalletAddress] = useState<string | null>(null)
+    const [betaUserId, setBetaUserId] = useState<string | null>(null)
+    const [betaStatus, setBetaStatus] = useState<"guest" | "pending" | "approved" | "active" | "rejected" | null>(null)
+    const [creditsRemaining, setCreditsRemaining] = useState(0)
+    const [creditsMax, setCreditsMax] = useState(0)
+    const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(() => {
+        if (typeof window === "undefined") return false
+
+        try {
+            return window.localStorage.getItem("swipepad:onboarding-complete") === "1"
+        } catch {
+            return false
+        }
+    })
+    const [selectedCategory, setSelectedCategory] = useState("Regeneration")
     const [currentProjectIndex, setCurrentProjectIndex] = useState(0)
     const [cart, setCart] = useState<any[]>([])
     const [donationAmount, setDonationAmount] = useState<DonationAmount | null>(null)
@@ -82,6 +107,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         USDT: 150.0,
     })
 
+    useEffect(() => {
+        try {
+            window.localStorage.setItem("swipepad:onboarding-complete", hasCompletedOnboarding ? "1" : "0")
+        } catch (error) {
+            console.error("Failed to persist onboarding state:", error)
+        }
+    }, [hasCompletedOnboarding])
+
     return (
         <AppContext.Provider
             value={{
@@ -95,7 +128,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 swipeCount, setSwipeCount,
                 selectedCategory, setSelectedCategory,
                 currentProjectIndex, setCurrentProjectIndex,
-                walletConnected, setWalletConnected
+                walletConnected, setWalletConnected,
+                walletAddress, setWalletAddress,
+                betaUserId, setBetaUserId,
+                betaStatus, setBetaStatus,
+                creditsRemaining, setCreditsRemaining,
+                creditsMax, setCreditsMax,
+                hasCompletedOnboarding, setHasCompletedOnboarding,
             }}
         >
             {children}

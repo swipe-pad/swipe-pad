@@ -14,14 +14,30 @@ import { BadgeNotification } from "@/components/badge-notification"
 import { ProfileQuickView } from "@/components/profile-quick-view"
 import { EditProfile } from "@/components/edit-profile"
 import { ProjectRegistrationForm } from "@/components/project-registration-form"
-import { useState } from "react"
-import { projects } from "@/lib/data"
+import { BetaBanner } from "@/components/beta-banner"
+import { useEffect, useState } from "react"
+import { useProjects } from "@/lib/useConvexData"
+import { useActiveAccount } from "thirdweb/react"
+import { useAccount as useWagmiAccount } from "wagmi"
+import { useMutation } from "convex/react"
+import { api } from "../../../convex/_generated/api"
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard"
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
     const isMobile = useMobile()
     const pathname = usePathname()
+    const projects = useProjects()
+    const thirdwebAccount = useActiveAccount()
+    const { address: wagmiAddress } = useWagmiAccount()
+    const ensureGuestUser = useMutation(api.waitlist.ensureGuestUser)
     const {
         walletConnected, setWalletConnected,
+        walletAddress, setWalletAddress,
+        betaUserId, setBetaUserId,
+        betaStatus, setBetaStatus,
+        creditsRemaining, setCreditsRemaining,
+        creditsMax, setCreditsMax,
+        hasCompletedOnboarding, setHasCompletedOnboarding,
         userProfile, setUserProfile,
         userStats,
         userBalance,
@@ -38,28 +54,78 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const [showEditProfile, setShowEditProfile] = useState(false)
     const [showRegistrationForm, setShowRegistrationForm] = useState(false)
 
+    const ENABLE_PROJECT_REGISTRATION = false
+
+    useEffect(() => {
+        const nextAddress = thirdwebAccount?.address ?? wagmiAddress ?? null
+        setWalletAddress(nextAddress)
+    }, [thirdwebAccount?.address, wagmiAddress, setWalletAddress])
+
+    useEffect(() => {
+        const address = walletAddress
+        if (!walletConnected || !address) return
+        let isMounted = true
+
+        ensureGuestUser({ wallet: address, chain: "celo" })
+            .then((result) => {
+                if (!isMounted) return
+                setBetaUserId(result.userId)
+                setBetaStatus(result.status)
+                setCreditsRemaining(result.remaining)
+                setCreditsMax(result.max)
+            })
+            .catch((error) => {
+                console.error("Failed to initialize beta user:", error)
+            })
+
+        return () => {
+            isMounted = false
+        }
+    }, [walletConnected, walletAddress, ensureGuestUser, setBetaUserId, setBetaStatus, setCreditsRemaining, setCreditsMax])
+
     if (isMobile === undefined) {
         return (
-            <main className="flex min-h-screen items-center justify-center bg-black">
+            <main className="
+              flex min-h-screen items-center justify-center bg-black
+            ">
                 <StarryBackground />
             </main>
         )
     }
 
-    const PageContainer = ({ children }: { children: React.ReactNode }) => {
+    const renderPageContainer = (children: React.ReactNode) => {
         if (isMobile) {
-            return <div className="relative z-10 w-full h-screen flex flex-col overflow-hidden">{children}</div>
+            return <div className="
+              relative z-10 flex h-screen w-full flex-col overflow-hidden
+            ">{children}</div>
         }
         return <MobileMockup>{children}</MobileMockup>
     }
 
+    if (!hasCompletedOnboarding) {
+        return (
+            <main className="
+              relative flex min-h-screen flex-col items-center justify-center
+              overflow-hidden text-white
+            ">
+                <StarryBackground />
+                {renderPageContainer(
+                    <OnboardingWizard onComplete={() => setHasCompletedOnboarding(true)} />
+                )}
+            </main>
+        )
+    }
+
     if (!walletConnected) {
         return (
-            <main className="flex min-h-screen flex-col items-center justify-center text-white relative overflow-hidden">
+            <main className="
+              relative flex min-h-screen flex-col items-center justify-center
+              overflow-hidden text-white
+            ">
                 <StarryBackground />
-                <PageContainer>
+                {renderPageContainer(
                     <WalletConnect onConnect={() => setWalletConnected(true)} />
-                </PageContainer>
+                )}
             </main>
         )
     }
@@ -71,68 +137,141 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <main className="flex min-h-screen flex-col items-center justify-center text-white relative overflow-hidden">
+        <main className="
+          relative flex min-h-screen flex-col items-center justify-center
+          overflow-hidden text-white
+        ">
             <StarryBackground />
 
-            <PageContainer>
-                <div className="w-full h-full flex flex-col overflow-hidden app-content-wrapper">
+            {renderPageContainer(
+                <>
+                    <div className="
+                      app-content-wrapper flex size-full flex-col
+                      overflow-hidden
+                    ">
                     {/* Header */}
-                    <header className="sticky top-0 z-40 bg-gray-900/60 backdrop-blur-xl border-b border-gray-800/50 view-header">
+                    <header className="
+                      view-header sticky top-0 z-40 border-b border-gray-800/50
+                      bg-gray-900/60 backdrop-blur-xl
+                    ">
                         <div className="flex flex-col items-center py-3">
-                            <div className="flex items-center justify-between w-full mb-4 px-6">
+                            <div className="
+                              mb-3 flex w-full items-center justify-between px-6
+                            ">
                                 <div className="w-8"></div>
-                                <div className="flex-1 flex justify-center">
+                                <div className="flex flex-1 justify-center">
                                     <Link href="/swipe">
                                         <h1
-                                            className="text-lg font-bold text-center text-white cursor-pointer hover:text-[#FFD600] transition-colors"
+                                            className="
+                                              cursor-pointer text-center text-lg
+                                              font-bold text-white
+                                              transition-colors
+                                              hover:text-[#FFD600]
+                                            "
                                             style={{ fontFamily: "Pixelify Sans, monospace" }}
                                         >
                                             SwipePad
                                         </h1>
                                     </Link>
                                 </div>
-                                <button
-                                    onClick={() => setShowRegistrationForm(true)}
-                                    className="flex items-center justify-center w-8 h-8 rounded-full bg-[#677FEB] text-white hover:bg-[#5A6FD3] transition-colors shadow-lg shadow-[#677FEB]/20"
-                                >
-                                    <RegisterIcon />
-                                </button>
+                                {ENABLE_PROJECT_REGISTRATION ? (
+                                    <button
+                                        onClick={() => setShowRegistrationForm(true)}
+                                        className="
+                                          flex size-8 items-center
+                                          justify-center rounded-full
+                                          bg-[#677FEB] text-white shadow-lg
+                                          shadow-[#677FEB]/20 transition-colors
+                                          hover:bg-[#5A6FD3]
+                                        "
+                                    >
+                                        <RegisterIcon />
+                                    </button>
+                                ) : (
+                                    <div className="w-8" />
+                                )}
+                            </div>
+
+                            {/* Beta Banner */}
+                            <div className="mb-3 px-6">
+                                <BetaBanner chain="celo" />
                             </div>
 
                             {donationAmount && (
-                                <div className="bg-gray-800/40 backdrop-blur-md rounded-full px-4 py-1 mb-4 flex items-center border border-gray-700/50">
-                                    <span className="text-[#FFD600] font-bold text-base mr-1">{userBalance[donationCurrency]}</span>
-                                    <span className="text-gray-400 text-sm mr-1">{donationCurrency}</span>
-                                    <button className="text-gray-400 hover:text-white">
+                                <div className="
+                                  mb-4 flex items-center rounded-full border
+                                  border-gray-700/50 bg-gray-800/40 px-4 py-1
+                                  backdrop-blur-md
+                                ">
+                                    <span className="
+                                      mr-1 text-base font-bold text-[#FFD600]
+                                    ">{userBalance[donationCurrency]}</span>
+                                    <span className="mr-1 text-sm text-gray-400">{donationCurrency}</span>
+                                    <button className="
+                                      text-gray-400
+                                      hover:text-white
+                                    ">
                                         <ChevronDownIcon />
                                     </button>
                                 </div>
                             )}
 
-                            <nav className="flex justify-between w-full px-6 space-x-2">
+                            <nav className="
+                              flex w-full justify-between space-x-2 px-6
+                            ">
                                 <button
-                                    className="flex items-center justify-center w-12 h-12 rounded-full relative hover:scale-105 transition-transform"
+                                    className="
+                                      relative flex size-12 items-center
+                                      justify-center rounded-full
+                                      transition-transform
+                                      hover:scale-105
+                                    "
                                     onClick={() => setShowEditProfile(true)}
                                 >
                                     <img
                                         src={userProfile.image || "/placeholder.svg"}
                                         alt="Profile"
-                                        className="w-12 h-12 rounded-full object-cover border-2 border-gray-800 shadow-xl"
+                                        className="
+                                          size-12 rounded-full border-2
+                                          border-gray-800 object-cover shadow-xl
+                                        "
                                     />
                                 </button>
                                 <Link
                                     href="/trending"
-                                    className={`flex items-center justify-center w-12 h-12 rounded-full transition-all ${pathname === '/trending' ? 'bg-[#FFD600] text-black shadow-lg shadow-[#FFD600]/20' : 'bg-gray-800/50 text-white hover:bg-gray-700'}`}
+                                    className={`
+                                      flex size-12 items-center justify-center
+                                      rounded-full transition-all
+                                      ${pathname === '/trending' ? `
+                                        bg-[#FFD600] text-black shadow-lg
+                                        shadow-[#FFD600]/20
+                                      ` : `
+                                        bg-gray-800/50 text-white
+                                        hover:bg-gray-700
+                                      `}
+                                    `}
                                 >
                                     <TrendingIcon />
                                 </Link>
                                 <button
-                                    className="flex items-center justify-center w-12 h-12 rounded-full bg-[#677FEB] relative hover:bg-[#5A6FD3] transition-colors shadow-lg shadow-[#677FEB]/30"
+                                    className="
+                                      relative flex size-12 items-center
+                                      justify-center rounded-full bg-[#677FEB]
+                                      shadow-lg shadow-[#677FEB]/30
+                                      transition-colors
+                                      hover:bg-[#5A6FD3]
+                                    "
                                     onClick={() => setShowCart(true)}
                                 >
                                     <CartIcon />
                                     {cart.length > 0 && (
-                                        <span className="absolute -top-1 -right-1 bg-[#FFD600] text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
+                                        <span className="
+                                          absolute -top-1 -right-1 flex size-5
+                                          animate-bounce items-center
+                                          justify-center rounded-full
+                                          bg-[#FFD600] text-xs font-bold
+                                          text-black
+                                        ">
                                             {cart.length}
                                         </span>
                                     )}
@@ -141,7 +280,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         </div>
                     </header>
 
-                    <div className="flex-1 overflow-y-auto view-content custom-scrollbar">
+                    <div className="
+                      view-content custom-scrollbar flex-1 overflow-y-auto
+                    ">
                         {children}
                     </div>
                 </div>
@@ -170,12 +311,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     onSave={(data) => setUserProfile((prev: any) => ({ ...prev, ...data }))}
                     currentProfile={userProfile}
                 />
-                <ProjectRegistrationForm
-                    isOpen={showRegistrationForm}
-                    onClose={() => setShowRegistrationForm(false)}
-                    onSubmit={(data) => console.log(data)}
-                />
-            </PageContainer>
+                    {ENABLE_PROJECT_REGISTRATION && (
+                        <ProjectRegistrationForm
+                            isOpen={showRegistrationForm}
+                            onClose={() => setShowRegistrationForm(false)}
+                            onSubmit={(data) => console.log(data)}
+                        />
+                    )}
+                </>
+            )}
         </main>
     )
 }

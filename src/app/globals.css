@@ -210,3 +210,17 @@
 canvas {
   pointer-events: none;
 }
+
+@keyframes onboarding-float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: onboarding-float 4s ease-in-out infinite;
+}
