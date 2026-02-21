@@ -52,47 +52,63 @@ export function ProjectRegistrationForm({ isOpen, onClose, onSubmit }: ProjectRe
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1F2732] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
-        <div className="sticky top-0 bg-[#1F2732] p-6 border-b border-gray-700">
-          <div className="flex justify-between items-center">
+    <div className="
+      fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4
+    ">
+      <div className="
+        max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-[#1F2732]
+        shadow-xl
+      ">
+        <div className="sticky top-0 border-b border-gray-700 bg-[#1F2732] p-6">
+          <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold">Project Registration</h2>
-            <button onClick={onClose} className="text-gray-400 hover:text-white">
-              <X className="w-6 h-6" />
+            <button onClick={onClose} className="
+              text-gray-400
+              hover:text-white
+            ">
+              <X className="size-6" />
             </button>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 p-6">
           {/* Project Name */}
           <div>
-            <label className="block text-sm font-medium mb-2">Project Name *</label>
+            <label className="mb-2 block text-sm font-medium">Project Name *</label>
             <input
               type="text"
               required
               value={formData.projectName}
               onChange={(e) => handleInputChange("projectName", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#FFD600] focus:outline-none"
+              className="
+                w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
+                text-white
+                focus:border-[#FFD600] focus:outline-none
+              "
               placeholder="Enter project name"
             />
           </div>
 
           {/* Representative Name */}
           <div>
-            <label className="block text-sm font-medium mb-2">Name of Representative *</label>
+            <label className="mb-2 block text-sm font-medium">Name of Representative *</label>
             <input
               type="text"
               required
               value={formData.representativeName}
               onChange={(e) => handleInputChange("representativeName", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#FFD600] focus:outline-none"
+              className="
+                w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
+                text-white
+                focus:border-[#FFD600] focus:outline-none
+              "
               placeholder="Enter representative name"
             />
           </div>
 
           {/* Project Type */}
           <div>
-            <label className="block text-sm font-medium mb-2">Type *</label>
+            <label className="mb-2 block text-sm font-medium">Type *</label>
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
@@ -121,24 +137,32 @@ export function ProjectRegistrationForm({ isOpen, onClose, onSubmit }: ProjectRe
 
           {/* Twitter of Project */}
           <div>
-            <label className="block text-sm font-medium mb-2">Twitter of Project</label>
+            <label className="mb-2 block text-sm font-medium">Twitter of Project</label>
             <input
               type="url"
               value={formData.twitterProject}
               onChange={(e) => handleInputChange("twitterProject", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#FFD600] focus:outline-none"
+              className="
+                w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
+                text-white
+                focus:border-[#FFD600] focus:outline-none
+              "
               placeholder="https://twitter.com/yourproject"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium mb-2">Description *</label>
+            <label className="mb-2 block text-sm font-medium">Description *</label>
             <textarea
               required
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#FFD600] focus:outline-none"
+              className="
+                w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
+                text-white
+                focus:border-[#FFD600] focus:outline-none
+              "
               placeholder="Describe your project"
               rows={4}
             />
@@ -146,11 +170,15 @@ export function ProjectRegistrationForm({ isOpen, onClose, onSubmit }: ProjectRe
 
           {/* Team Twitter Accounts */}
           <div>
-            <label className="block text-sm font-medium mb-2">Twitter accounts from Team of project</label>
+            <label className="mb-2 block text-sm font-medium">Twitter accounts from Team of project</label>
             <textarea
               value={formData.teamTwitterAccounts}
               onChange={(e) => handleInputChange("teamTwitterAccounts", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#FFD600] focus:outline-none"
+              className="
+                w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
+                text-white
+                focus:border-[#FFD600] focus:outline-none
+              "
               placeholder="@teammember1, @teammember2, etc."
               rows={2}
             />
@@ -158,19 +186,23 @@ export function ProjectRegistrationForm({ isOpen, onClose, onSubmit }: ProjectRe
 
           {/* Representative Contact */}
           <div>
-            <label className="block text-sm font-medium mb-2">Telegram or WhatsApp of Representative</label>
+            <label className="mb-2 block text-sm font-medium">Telegram or WhatsApp of Representative</label>
             <input
               type="text"
               value={formData.representativeContact}
               onChange={(e) => handleInputChange("representativeContact", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#FFD600] focus:outline-none"
+              className="
+                w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
+                text-white
+                focus:border-[#FFD600] focus:outline-none
+              "
               placeholder="@username or phone number"
             />
           </div>
 
           {/* Social Links */}
           <div>
-            <label className="block text-sm font-medium mb-2">Zora, Lens, Farcaster</label>
+            <label className="mb-2 block text-sm font-medium">Zora, Lens, Farcaster</label>
             <div className="space-y-2">
               {formData.socialLinks.map((link, index) => (
                 <input
@@ -178,7 +210,11 @@ export function ProjectRegistrationForm({ isOpen, onClose, onSubmit }: ProjectRe
                   type="url"
                   value={link}
                   onChange={(e) => handleSocialLinkChange(index, e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#FFD600] focus:outline-none"
+                  className="
+                    w-full rounded-lg border border-gray-600 bg-gray-800 px-3
+                    py-2 text-white
+                    focus:border-[#FFD600] focus:outline-none
+                  "
                   placeholder="https://"
                 />
               ))}
@@ -187,26 +223,35 @@ export function ProjectRegistrationForm({ isOpen, onClose, onSubmit }: ProjectRe
 
           {/* Identity Check */}
           <div>
-            <label className="block text-sm font-medium mb-2">Identity Check</label>
-            <div className="bg-gray-800 border border-gray-600 rounded-lg py-2 px-3">
+            <label className="mb-2 block text-sm font-medium">Identity Check</label>
+            <div className="
+              rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
+            ">
               <a
                 href="https://self.xyz"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#FFD600] hover:text-[#E6C200] flex items-center"
+                className="
+                  flex items-center text-[#FFD600]
+                  hover:text-[#E6C200]
+                "
               >
-                Self Protocol <ExternalLink className="w-4 h-4 ml-1" />
+                Self Protocol <ExternalLink className="ml-1 size-4" />
               </a>
             </div>
           </div>
 
           {/* Community */}
           <div>
-            <label className="block text-sm font-medium mb-2">Community</label>
+            <label className="mb-2 block text-sm font-medium">Community</label>
             <select
               value={formData.community}
               onChange={(e) => handleInputChange("community", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#FFD600] focus:outline-none"
+              className="
+                w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
+                text-white
+                focus:border-[#FFD600] focus:outline-none
+              "
             >
               <option value="">Select a community</option>
               {communities.map((community) => (
@@ -219,19 +264,27 @@ export function ProjectRegistrationForm({ isOpen, onClose, onSubmit }: ProjectRe
               type="text"
               value={formData.community.includes("Other:") ? formData.community.replace("Other:", "") : ""}
               onChange={(e) => handleInputChange("community", `Other:${e.target.value}`)}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#FFD600] focus:outline-none mt-2"
+              className="
+                mt-2 w-full rounded-lg border border-gray-600 bg-gray-800 px-3
+                py-2 text-white
+                focus:border-[#FFD600] focus:outline-none
+              "
               placeholder="Or type your community"
             />
           </div>
 
           {/* Category */}
           <div>
-            <label className="block text-sm font-medium mb-2">Category *</label>
+            <label className="mb-2 block text-sm font-medium">Category *</label>
             <select
               required
               value={formData.category}
               onChange={(e) => handleInputChange("category", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#FFD600] focus:outline-none"
+              className="
+                w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
+                text-white
+                focus:border-[#FFD600] focus:outline-none
+              "
             >
               <option value="">Select a category</option>
               {categories.map((category) => (
@@ -244,19 +297,23 @@ export function ProjectRegistrationForm({ isOpen, onClose, onSubmit }: ProjectRe
 
           {/* Website */}
           <div>
-            <label className="block text-sm font-medium mb-2">Website</label>
+            <label className="mb-2 block text-sm font-medium">Website</label>
             <input
               type="url"
               value={formData.website}
               onChange={(e) => handleInputChange("website", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#FFD600] focus:outline-none"
+              className="
+                w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
+                text-white
+                focus:border-[#FFD600] focus:outline-none
+              "
               placeholder="https://yourproject.com"
             />
           </div>
 
           {/* Wallet Type */}
           <div>
-            <label className="block text-sm font-medium mb-2">Wallet Type *</label>
+            <label className="mb-2 block text-sm font-medium">Wallet Type *</label>
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
@@ -297,18 +354,26 @@ export function ProjectRegistrationForm({ isOpen, onClose, onSubmit }: ProjectRe
               required
               value={formData.walletAddress}
               onChange={(e) => handleInputChange("walletAddress", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#FFD600] focus:outline-none mt-2"
+              className="
+                mt-2 w-full rounded-lg border border-gray-600 bg-gray-800 px-3
+                py-2 text-white
+                focus:border-[#FFD600] focus:outline-none
+              "
               placeholder="0x... or yourname.eth"
             />
           </div>
 
           {/* Previous Work */}
           <div>
-            <label className="block text-sm font-medium mb-2">Your previous Work: videos or pictures</label>
+            <label className="mb-2 block text-sm font-medium">Your previous Work: videos or pictures</label>
             <textarea
               value={formData.previousWork}
               onChange={(e) => handleInputChange("previousWork", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#FFD600] focus:outline-none"
+              className="
+                w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
+                text-white
+                focus:border-[#FFD600] focus:outline-none
+              "
               placeholder="Links to videos, images, or descriptions of previous work"
               rows={3}
             />
@@ -316,12 +381,16 @@ export function ProjectRegistrationForm({ isOpen, onClose, onSubmit }: ProjectRe
 
           {/* Discord */}
           <div>
-            <label className="block text-sm font-medium mb-2">Discord</label>
+            <label className="mb-2 block text-sm font-medium">Discord</label>
             <input
               type="text"
               value={formData.discord}
               onChange={(e) => handleInputChange("discord", e.target.value)}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white focus:border-[#FFD600] focus:outline-none"
+              className="
+                w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
+                text-white
+                focus:border-[#FFD600] focus:outline-none
+              "
               placeholder="username#1234 or discord server link"
             />
           </div>
@@ -331,13 +400,21 @@ export function ProjectRegistrationForm({ isOpen, onClose, onSubmit }: ProjectRe
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
+              className="
+                flex-1 rounded-lg bg-gray-700 py-3 font-medium text-white
+                transition-colors
+                hover:bg-gray-600
+              "
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 py-3 bg-[#FFD600] hover:bg-[#E6C200] text-black font-medium rounded-lg transition-colors"
+              className="
+                flex-1 rounded-lg bg-[#FFD600] py-3 font-medium text-black
+                transition-colors
+                hover:bg-[#E6C200]
+              "
             >
               Submit Project
             </button>

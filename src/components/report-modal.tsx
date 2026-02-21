@@ -45,36 +45,44 @@ export function ReportModal({ isOpen, onClose, projectName, onSubmit }: ReportMo
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1F2732] rounded-xl w-full max-w-md p-6 shadow-xl">
-        <div className="flex justify-between items-start mb-4">
+    <div className="
+      fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4
+    ">
+      <div className="w-full max-w-md rounded-xl bg-[#1F2732] p-6 shadow-xl">
+        <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center space-x-2">
-            <Flag className="w-5 h-5 text-red-400" />
+            <Flag className="size-5 text-red-400" />
             <h3 className="text-xl font-bold">Report Project</h3>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="
+            text-gray-400
+            hover:text-white
+          ">
+            <X className="size-5" />
           </button>
         </div>
 
         <div className="mb-4">
-          <p className="text-gray-300 text-sm mb-2">Reporting:</p>
-          <p className="text-white font-semibold truncate">{projectName}</p>
+          <p className="mb-2 text-sm text-gray-300">Reporting:</p>
+          <p className="truncate font-semibold text-white">{projectName}</p>
         </div>
 
         <div className="mb-6">
-          <p className="text-gray-300 text-sm mb-4">Why are you reporting this project?</p>
+          <p className="mb-4 text-sm text-gray-300">Why are you reporting this project?</p>
 
           <div className="space-y-3">
             {reportReasons.map((reason) => (
-              <label key={reason} className="flex items-center cursor-pointer">
+              <label key={reason} className="flex cursor-pointer items-center">
                 <input
                   type="radio"
                   name="reportReason"
                   value={reason}
                   checked={selectedReason === reason}
                   onChange={(e) => setSelectedReason(e.target.value)}
-                  className="mr-3 text-red-400 focus:ring-red-400"
+                  className="
+                    mr-3 text-red-400
+                    focus:ring-red-400
+                  "
                 />
                 <span className="text-gray-300">{reason}</span>
               </label>
@@ -83,12 +91,16 @@ export function ReportModal({ isOpen, onClose, projectName, onSubmit }: ReportMo
 
           {selectedReason === "Report issue" && (
             <div className="mt-4">
-              <label className="block text-sm text-gray-300 mb-2">Please describe the issue:</label>
+              <label className="mb-2 block text-sm text-gray-300">Please describe the issue:</label>
               <textarea
                 value={issueDescription}
                 onChange={(e) => setIssueDescription(e.target.value)}
                 placeholder="Describe the specific issue you've encountered..."
-                className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white placeholder-gray-400 focus:border-red-400 focus:outline-none"
+                className="
+                  w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
+                  text-white placeholder-gray-400
+                  focus:border-red-400 focus:outline-none
+                "
                 rows={3}
               />
             </div>
@@ -100,7 +112,11 @@ export function ReportModal({ isOpen, onClose, projectName, onSubmit }: ReportMo
                 value={customReason}
                 onChange={(e) => setCustomReason(e.target.value)}
                 placeholder="Please describe your reason..."
-                className="w-full bg-gray-800 border border-gray-600 rounded-lg py-2 px-3 text-white placeholder-gray-400 focus:border-red-400 focus:outline-none"
+                className="
+                  w-full rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
+                  text-white placeholder-gray-400
+                  focus:border-red-400 focus:outline-none
+                "
                 rows={3}
               />
             </div>
@@ -110,7 +126,11 @@ export function ReportModal({ isOpen, onClose, projectName, onSubmit }: ReportMo
         <div className="flex space-x-3">
           <button
             onClick={onClose}
-            className="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
+            className="
+              flex-1 rounded-lg bg-gray-700 py-3 font-medium text-white
+              transition-colors
+              hover:bg-gray-600
+            "
           >
             Cancel
           </button>
@@ -121,13 +141,18 @@ export function ReportModal({ isOpen, onClose, projectName, onSubmit }: ReportMo
               (selectedReason === "Other" && !customReason.trim()) ||
               (selectedReason === "Report issue" && !issueDescription.trim())
             }
-            className="flex-1 py-3 bg-red-500 hover:bg-red-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+            className="
+              flex-1 rounded-lg bg-red-500 py-3 font-medium text-white
+              transition-colors
+              hover:bg-red-600
+              disabled:cursor-not-allowed disabled:bg-gray-600
+            "
           >
             Submit Report
           </button>
         </div>
 
-        <p className="text-xs text-gray-400 mt-4 text-center">
+        <p className="mt-4 text-center text-xs text-gray-400">
           Reports are reviewed by our moderation team. False reports may result in account restrictions.
         </p>
       </div>

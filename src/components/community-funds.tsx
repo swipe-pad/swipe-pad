@@ -39,20 +39,20 @@ export function CommunityFunds({ onDonate }: CommunityFundsProps) {
 
   return (
     <div className="mb-8">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold flex items-center">
-          <Users className="w-5 h-5 text-[#FFD600] mr-2" /> Community Funds
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="flex items-center text-xl font-bold">
+          <Users className="mr-2 size-5 text-[#FFD600]" /> Community Funds
         </h2>
       </div>
 
       <div className="space-y-4">
         {communityFunds.map((fund) => (
-          <div key={fund.id} className="bg-gray-900 p-4 rounded-lg">
-            <div className="flex items-center mb-3">
+          <div key={fund.id} className="rounded-lg bg-gray-900 p-4">
+            <div className="mb-3 flex items-center">
               <img
                 src={fund.imageUrl || "/placeholder.svg"}
                 alt={fund.name}
-                className="w-12 h-12 object-cover rounded-md mr-3"
+                className="mr-3 size-12 rounded-md object-cover"
               />
               <div>
                 <h3 className="font-medium">{fund.name}</h3>
@@ -60,18 +60,18 @@ export function CommunityFunds({ onDonate }: CommunityFundsProps) {
               </div>
             </div>
 
-            <p className="text-sm text-gray-300 mb-3">{fund.description}</p>
+            <p className="mb-3 text-sm text-gray-300">{fund.description}</p>
 
             <div className="mb-3">
-              <div className="flex justify-between text-xs mb-1">
+              <div className="mb-1 flex justify-between text-xs">
                 <span>Progress</span>
                 <span>
                   ${fund.current.toLocaleString()} of ${fund.goal.toLocaleString()}
                 </span>
               </div>
-              <div className="w-full bg-gray-800 rounded-full h-2">
+              <div className="h-2 w-full rounded-full bg-gray-800">
                 <div
-                  className="bg-[#5454F3] h-2 rounded-full"
+                  className="h-2 rounded-full bg-[#5454F3]"
                   style={{ width: `${Math.min(100, (fund.current / fund.goal) * 100)}%` }}
                 ></div>
               </div>
@@ -88,7 +88,11 @@ export function CommunityFunds({ onDonate }: CommunityFundsProps) {
                     5,
                   )
                 }
-                className="flex-1 py-2 bg-[#677FEB] hover:bg-[#5A6FD3] text-white font-medium rounded-lg transition-colors text-sm"
+                className="
+                  flex-1 rounded-lg bg-[#677FEB] py-2 text-sm font-medium
+                  text-white transition-colors
+                  hover:bg-[#5A6FD3]
+                "
               >
                 Support with 5 cUSD
               </button>
@@ -102,7 +106,11 @@ export function CommunityFunds({ onDonate }: CommunityFundsProps) {
                     20,
                   )
                 }
-                className="flex-1 py-2 bg-[#677FEB] hover:bg-[#5A6FD3] text-white font-medium rounded-lg transition-colors text-sm"
+                className="
+                  flex-1 rounded-lg bg-[#677FEB] py-2 text-sm font-medium
+                  text-white transition-colors
+                  hover:bg-[#5A6FD3]
+                "
               >
                 Support with 20 cUSD
               </button>
