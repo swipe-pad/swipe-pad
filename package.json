@@ -7,7 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "bunx eslint . --config eslint.config.mjs",
-    "wagmi:generate": "PATH=\"$HOME/.foundry/bin:$PATH\" wagmi generate --config wagmi-cli.config.ts"
+    "wagmi:generate": "PATH=\"$HOME/.foundry/bin:$PATH\" wagmi generate --config wagmi-cli.config.ts",
+    "contracts:build": "cd contracts && forge build",
+    "contracts:test": "cd contracts && forge test",
+    "contracts:deploy:anvil": "cd contracts && forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast",
+    "contracts:deploy:celo": "cd contracts && forge script script/Deploy.s.sol --rpc-url $CELO_RPC --broadcast --verify",
+    "contracts:deploy:base": "cd contracts && forge script script/Deploy.s.sol --rpc-url $BASE_RPC --broadcast --verify"
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.2",

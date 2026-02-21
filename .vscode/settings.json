@@ -1,13 +1,35 @@
 {
+    "prettier.documentSelectors": [
+        "**/.editorconfig",
+        "**/.gitignore",
+        "**/*.svg",
+        "**/*.toml"
+    ],
     "files.associations": {
-        "*.css": "tailwindcss"
+        "*.css": "tailwindcss",
+        ".env.*.local": "env",
+        ".env.local": "env",
+        ".npmrc": "ini"
+    },
+    "search.exclude": {
+        "contracts/lib": true
     },
     "tailwindCSS.includeLanguages": {
         "typescript": "javascript",
         "typescriptreact": "javascript"
     },
+    "tailwindCSS.emmetCompletions": true,
     "editor.quickSuggestions": {
         "strings": true
+    },
+    "emmet.syntaxProfiles": {
+        "jsx": {
+            "attr_quotes": "single",
+            "attr_name": "className"
+        }
+    },
+    "emmet.includeLanguages": {
+        "typescriptreact": "jsx"
     },
     "tailwindCSS.experimental.classRegex": [
         [
@@ -22,10 +44,27 @@
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
     },
+    "css.lint.validProperties": [
+        "field-sizing"
+    ],
     "eslint.validate": [
         "javascript",
         "javascriptreact",
         "typescript",
         "typescriptreact"
-    ]
+    ],
+    "github.copilot.enable": {
+        "env": false
+    },
+    "supermaven.enable": {
+        ".env*": false
+    },
+    "cody.autocomplete.languages": {
+        ".env*": false
+    },
+    "cursor.cpp.disabledLanguages": [
+        "env"
+    ],
+    "typescript.tsdk": "./node_modules/typescript/lib",
+    "solidity.compileUsingRemoteVersion": "v0.8.20+commit.a1b79de6"
 }
