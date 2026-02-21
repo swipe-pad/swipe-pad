@@ -40,23 +40,31 @@ export function MiniPayWalletConnect({ onConnect }: MiniPayWalletConnectProps) {
   }
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
+    <div className="relative flex size-full items-center justify-center">
 
-      <div className="relative z-10 flex flex-col items-center justify-center px-8 py-12 max-w-md w-full">
-        <h1 className="text-5xl font-bold text-center mb-4" style={{ fontFamily: "Pixelify Sans, monospace" }}>
+      <div className="
+        relative z-10 flex w-full max-w-md flex-col items-center justify-center
+        px-8 py-12
+      ">
+        <h1 className="mb-4 text-center text-5xl font-bold" style={{ fontFamily: "Pixelify Sans, monospace" }}>
           SwipePad
         </h1>
 
-        <h2 className="text-2xl font-bold text-center mb-3 text-white">Welcome to SwipePad!</h2>
+        <h2 className="mb-3 text-center text-2xl font-bold text-white">Welcome to SwipePad!</h2>
 
-        <p className="text-center text-gray-300 mb-8 text-sm leading-relaxed">
+        <p className="mb-8 text-center text-sm/relaxed text-gray-300">
           Support regenerative projects with micro-donations through simple swipes on the Celo blockchain.
         </p>
 
         {!hideConnectBtn && (
           <button
             onClick={handleConnect}
-            className="w-full bg-[#FFD600] hover:bg-[#E6C200] text-black font-bold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mb-4"
+            className="
+              mb-4 flex w-full items-center justify-center gap-2 rounded-xl
+              bg-[#FFD600] px-6 py-4 font-bold text-black transition-all
+              duration-200
+              hover:bg-[#E6C200]
+            "
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -78,7 +86,7 @@ export function MiniPayWalletConnect({ onConnect }: MiniPayWalletConnectProps) {
           </button>
         )}
 
-        <p className="text-xs text-gray-400 text-center mt-4">
+        <p className="mt-4 text-center text-xs text-gray-400">
           By connecting, you agree to our Terms of Service and Privacy Policy. Your funds remain secure in your wallet
           at all times.
         </p>
