@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { Analytics } from "@vercel/analytics/next"
 import { Providers } from "@/components/providers"
 import "./globals.css"
 
@@ -16,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className="antialiased text-white h-screen w-screen overflow-hidden" suppressHydrationWarning>
+      <body className="h-screen w-screen overflow-hidden text-white antialiased" suppressHydrationWarning>
         <Providers>
           {children}
         </Providers>
