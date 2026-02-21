@@ -25,7 +25,7 @@ export function SwipeStack({ initialCampaigns }: SwipeStackProps) {
     return (
         <div className="flex h-full items-center justify-center p-8 text-center">
             <div>
-                <h3 className="text-xl font-semibold mb-2">No more profiles</h3>
+                <h3 className="mb-2 text-xl font-semibold">No more profiles</h3>
                 <p className="text-muted-foreground">Check back later for more!</p>
             </div>
         </div>
@@ -33,7 +33,7 @@ export function SwipeStack({ initialCampaigns }: SwipeStackProps) {
   }
 
   return (
-    <div className="relative w-full h-full max-h-[700px]">
+    <div className="relative size-full max-h-[700px]">
       {campaigns.map((campaign, index) => (
         <SwipeCard
           key={campaign.id}
