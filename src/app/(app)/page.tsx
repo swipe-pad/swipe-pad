@@ -1,46 +1,122 @@
 "use client"
 
+import { useEffect, useMemo, useState } from "react"
 import { useApp } from "@/context/AppContext"
-import { ToggleMenu } from "@/components/toggle-menu"
-import { CategoryMenu } from "@/components/category-menu"
 import { ProjectCard } from "@/components/project-card"
-import { AmountSelector } from "@/components/amount-selector"
-import { useProjects, useCategories } from "@/lib/useConvexData"
-import { useRouter } from "next/navigation"
+import { useProjects } from "@/lib/useConvexData"
 import { useMutation } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import type { Id } from "../../../convex/_generated/dataModel"
 
+type UserStatsState = {
+    totalDonations: number
+    categoriesSupported: Set<string>
+    streak: number
+    lastDonation: Date | null
+}
+
+type UserProfileState = {
+    name?: string
+    image?: string
+    farcaster?: string
+    lens?: string
+    zora?: string
+    twitter?: string
+    nounsHeld?: number
+    lilNounsHeld?: number
+    projectsReported?: number
+    poaps?: number
+    paragraphs?: number
+    ens?: string
+    discord?: string
+    totalSwipes: number
+    totalDonated: number
+}
+
+type SwipeSnapshot = {
+    prevProjectIndex: number
+    prevSwipeCount: number
+    prevCreditsRemaining: number
+    prevCart: Array<{ project: unknown; amount: number; currency: string }>
+    prevUserStats: UserStatsState
+    prevUserProfile: UserProfileState
+}
+
 export default function Home() {
-    const router = useRouter()
     const projects = useProjects()
-    const categories = useCategories()
     const {
         currentProjectIndex, setCurrentProjectIndex,
         selectedCategory, setSelectedCategory,
-        donationAmount, setDonationAmount,
-        donationCurrency, setDonationCurrency,
-        confirmSwipes, setConfirmSwipes,
+        donationAmount,
+        donationCurrency,
+        confirmSwipes,
         swipeCount, setSwipeCount,
-        setUserStats, setUserProfile,
+        userStats, setUserStats,
+        userProfile, setUserProfile,
         cart, setCart,
         betaUserId,
         betaStatus,
         creditsRemaining, setCreditsRemaining,
-        creditsMax,
     } = useApp()
+
+    const [swipeHistory, setSwipeHistory] = useState<SwipeSnapshot[]>([])
+    const canUndo = swipeHistory.length > 0
 
     const consumeCredits = useMutation(api.waitlist.consumeCredits)
     const recordSwipe = useMutation(api.waitlist.recordSwipe)
 
-    const filteredProjects = projects.filter((project) => project.category === selectedCategory)
+    const categoryTabs = ["All", ...Array.from(new Set(projects.map((project) => project.category)))]
+    const activeCategory = categoryTabs.includes(selectedCategory) ? selectedCategory : "All"
+    const filteredProjects = activeCategory === "All"
+        ? projects
+        : projects.filter((project) => project.category === activeCategory)
+
+    const safeProjectIndex = useMemo(() => {
+        if (filteredProjects.length === 0) return 0
+        return Math.min(currentProjectIndex, filteredProjects.length - 1)
+    }, [filteredProjects.length, currentProjectIndex])
+
+    useEffect(() => {
+        if (filteredProjects.length === 0 && currentProjectIndex !== 0) {
+            setCurrentProjectIndex(0)
+            return
+        }
+
+        if (filteredProjects.length > 0 && currentProjectIndex > filteredProjects.length - 1) {
+            setCurrentProjectIndex(filteredProjects.length - 1)
+        }
+    }, [filteredProjects.length, currentProjectIndex, setCurrentProjectIndex])
 
     const canSwipe = (betaStatus === "active" || betaStatus === "guest") && creditsRemaining > 0
+    const effectiveDonationAmount = donationAmount ?? "0.01¢"
+    const totalSwipes = userProfile.totalSwipes ?? 0
+    const level = Math.max(1, Math.floor(totalSwipes / 25) + 1)
+    const xpInLevel = totalSwipes % 500
+    const xpProgress = (xpInLevel / 500) * 100
 
+    const handleCategoryChange = (category: string) => {
+        setSelectedCategory(category)
+        setCurrentProjectIndex(0)
+    }
     const handleSwipeRight = async () => {
-        if (donationAmount === null) return
         if (!canSwipe || !betaUserId) return
-        const project = filteredProjects[currentProjectIndex]
+        const project = filteredProjects[safeProjectIndex]
+        if (!project) return
+        const snapshot: SwipeSnapshot = {
+            prevProjectIndex: safeProjectIndex,
+            prevSwipeCount: swipeCount,
+            prevCreditsRemaining: creditsRemaining,
+            prevCart: [...cart],
+            prevUserStats: {
+                ...userStats,
+                categoriesSupported: new Set(userStats.categoriesSupported),
+            },
+            prevUserProfile: {
+                ...userProfile,
+                totalSwipes: userProfile.totalSwipes,
+                totalDonated: userProfile.totalDonated,
+            },
+        }
 
         try {
             const result = await consumeCredits({
@@ -54,7 +130,7 @@ export default function Home() {
             return
         }
 
-        setUserStats((prev: any) => {
+        setUserStats((prev: UserStatsState) => {
             const categoriesSupported = new Set(prev.categoriesSupported)
             categoriesSupported.add(project.category)
             return {
@@ -65,8 +141,8 @@ export default function Home() {
             }
         })
 
-        const amountNum = typeof donationAmount === 'string' ? parseFloat(donationAmount.split(" ")[0]) : 0.01
-        setUserProfile((prev: any) => ({
+        const amountNum = parseFloat(effectiveDonationAmount.split(" ")[0])
+        setUserProfile((prev: UserProfileState) => ({
             ...prev,
             totalSwipes: prev.totalSwipes + 1,
             totalDonated: prev.totalDonated + amountNum,
@@ -90,126 +166,159 @@ export default function Home() {
             setSwipeCount(newCount)
         }
 
-        setCurrentProjectIndex(currentProjectIndex < filteredProjects.length - 1 ? currentProjectIndex + 1 : 0)
+        setCurrentProjectIndex(safeProjectIndex < filteredProjects.length - 1 ? safeProjectIndex + 1 : 0)
+        setSwipeHistory((prev: SwipeSnapshot[]) => [...prev, snapshot])
     }
 
     const handleSwipeLeft = () => {
-        setUserProfile((prev: any) => ({ ...prev, totalSwipes: prev.totalSwipes + 1 }))
+        const project = filteredProjects[safeProjectIndex]
+        if (!project) return
+
+        const snapshot: SwipeSnapshot = {
+            prevProjectIndex: safeProjectIndex,
+            prevSwipeCount: swipeCount,
+            prevCreditsRemaining: creditsRemaining,
+            prevCart: [...cart],
+            prevUserStats: {
+                ...userStats,
+                categoriesSupported: new Set(userStats.categoriesSupported),
+            },
+            prevUserProfile: {
+                ...userProfile,
+                totalSwipes: userProfile.totalSwipes,
+                totalDonated: userProfile.totalDonated,
+            },
+        }
+
+        setUserProfile((prev: UserProfileState) => ({ ...prev, totalSwipes: prev.totalSwipes + 1 }))
         if (betaUserId) {
             recordSwipe({
                 userId: betaUserId as Id<"waitlistUsers">,
-                projectId: filteredProjects[currentProjectIndex]?.projectId ?? "",
+                projectId: project.projectId,
                 direction: "left",
             }).catch((error) => console.error("Failed to record swipe:", error))
         }
-        setCurrentProjectIndex(currentProjectIndex < filteredProjects.length - 1 ? currentProjectIndex + 1 : 0)
+        setCurrentProjectIndex(safeProjectIndex < filteredProjects.length - 1 ? safeProjectIndex + 1 : 0)
+        setSwipeHistory((prev: SwipeSnapshot[]) => [...prev, snapshot])
+    }
+
+    const handleUndo = () => {
+        setSwipeHistory((prev: SwipeSnapshot[]) => {
+            if (prev.length === 0) return prev
+
+            const next = [...prev]
+            const last = next.pop()
+            if (!last) return prev
+
+            setCurrentProjectIndex(last.prevProjectIndex)
+            setSwipeCount(last.prevSwipeCount)
+            setCreditsRemaining(last.prevCreditsRemaining)
+            setCart(last.prevCart)
+            setUserStats(last.prevUserStats)
+            setUserProfile(last.prevUserProfile)
+
+            return next
+        })
     }
 
     return (
-        <div className="py-6">
-            <ToggleMenu viewMode="swipe" setViewMode={(mode) => mode === 'list' && router.push('/list')} />
+        <div className="
+          flex h-full min-h-0 flex-col overflow-hidden px-3 pt-1 pb-2
+        ">
+            <div className="mb-2">
+                <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
+                    {categoryTabs.map((category) => {
+                        const active = activeCategory === category
 
-            {donationAmount === null ? (
-                <AmountSelector onSelect={(amount, currency, swipes) => {
-                    if (!document.startViewTransition) {
-                        setDonationAmount(amount)
-                        setDonationCurrency(currency)
-                        setConfirmSwipes(swipes)
-                        setSwipeCount(0)
-                        return
-                    }
-                    document.startViewTransition(() => {
-                        setDonationAmount(amount)
-                        setDonationCurrency(currency)
-                        setConfirmSwipes(swipes)
-                        setSwipeCount(0)
-                    })
-                }} />
-            ) : (
-                <>
-                    <CategoryMenu
-                        selectedCategory={selectedCategory}
-                        setSelectedCategory={setSelectedCategory}
-                        setCurrentProjectIndex={() => setCurrentProjectIndex(0)}
-                    />
-
-                    <div className="mb-2 px-6">
-                        {!canSwipe ? (
-                            <div className="
-                              mb-3 rounded-lg border border-yellow-500/30
-                              bg-yellow-500/10 px-3 py-2 text-xs text-yellow-100
-                            ">
-                                You have no swipes left. Keep browsing or create an account to unlock more.
-                            </div>
-                        ) : null}
-                        <div className="flex items-center justify-between">
-                            <div className="
-                              rounded-lg border border-gray-700/50
-                              bg-gray-800/50 p-2 px-3 backdrop-blur-sm
-                            ">
-                                <span className="text-sm text-gray-300">Donating: </span>
-                                <span className="font-bold text-[#FFD600]">
-                                    {donationAmount} {donationCurrency}
-                                </span>
-                            </div>
+                        return (
                             <button
-                                onClick={() => {
-                                    if (document.startViewTransition) {
-                                        document.startViewTransition(() => setDonationAmount(null))
-                                    } else {
-                                        setDonationAmount(null)
+                                key={category}
+                                onClick={() => handleCategoryChange(category)}
+                                className={`
+                                  shrink-0 rounded-full border px-3.5 py-1.5
+                                  text-xs font-semibold transition-colors
+                                  sm:px-4 sm:py-2 sm:text-sm
+                                  ${active
+                                        ? `
+                                          border-[#f9de4b] bg-[#f9de4b]
+                                          text-black
+                                        `
+                                        : `
+                                          border-surface-border bg-[#171d2b]
+                                          text-gray-300
+                                          hover:bg-[#20293b]
+                                        `
                                     }
-                                }}
-                                className="
-                                  text-sm text-gray-400 underline
-                                  transition-colors
-                                  hover:text-white
-                                "
+                                `}
                             >
-                                Change
+                                {category === "All" ? "See All" : category}
                             </button>
-                        </div>
-                        <div className="
-                          mt-4 h-3 overflow-hidden rounded-full border
-                          border-gray-700/30 bg-gray-800/30
-                        ">
-                            <div
-                                className="
-                                  h-full bg-linear-to-r from-[#FFD600]
-                                  to-yellow-500
-                                  shadow-[0_0_10px_rgba(255,214,0,0.5)]
-                                  transition-all duration-500 ease-out
-                                "
-                                style={{ width: `${(swipeCount / confirmSwipes) * 100}%` }}
-                            ></div>
-                        </div>
-                        <p className="
-                          mt-1 text-right text-[10px] text-gray-500 italic
-                        ">
-                            {confirmSwipes - swipeCount} swipes to confirm
-                        </p>
-                        <p className="
-                          mt-1 text-right text-[10px] text-gray-500 italic
-                        ">
-                            {creditsRemaining}/{creditsMax} swipes left
-                        </p>
-                    </div>
+                        )
+                    })}
+                </div>
+            </div>
 
-                    <div className="mt-4 px-6">
-                        {filteredProjects.length > 0 && (
-                            <ProjectCard
-                                project={filteredProjects[currentProjectIndex]}
-                                onSwipeLeft={handleSwipeLeft}
-                                onSwipeRight={canSwipe ? handleSwipeRight : undefined}
-                                viewMode="swipe"
-                                donationAmount={donationAmount}
-                                donationCurrency={donationCurrency}
-                                onBoost={(amount) => console.log('boost', amount)}
-                            />
-                        )}
+            <div className="mb-2 flex items-end justify-between">
+                <div>
+                    <p className="
+                      text-[10px] font-medium tracking-wide text-gray-400
+                    ">YOUR LEVEL</p>
+                    <p className="
+                      font-display text-3xl leading-none tracking-wide
+                      text-white
+                      sm:text-4xl
+                    ">LVL {level}</p>
+                </div>
+
+                <div className="
+                  w-36 pb-1
+                  sm:w-40
+                ">
+                    <p className="
+                      mb-1 text-right text-[10px] text-gray-300
+                      sm:text-xs
+                    ">{xpInLevel} / 500 XP</p>
+                    <div className="
+                      h-1.5 overflow-hidden rounded-full bg-[#203150]
+                    ">
+                        <div className="
+                          h-full bg-[#395079] transition-all duration-300
+                        " style={{ width: `${xpProgress}%` }} />
                     </div>
-                </>
-            )}
+                </div>
+            </div>
+
+            <div className="
+              flex min-h-0 flex-1 items-center justify-center overflow-hidden
+              pb-2
+            ">
+                <div className="
+                  aspect-5/8 h-[min(56vh,560px)] w-auto max-w-full
+                  sm:h-[min(60vh,640px)]
+                  lg:h-[min(64vh,700px)]
+                ">
+                    {filteredProjects.length > 0 ? (
+                        <ProjectCard
+                            className="size-full"
+                            project={filteredProjects[safeProjectIndex]}
+                            onSwipeLeft={handleSwipeLeft}
+                            onSwipeRight={canSwipe ? handleSwipeRight : undefined}
+                            onUndo={canUndo ? handleUndo : undefined}
+                            viewMode="swipe"
+                            donationAmount={effectiveDonationAmount}
+                            donationCurrency={donationCurrency}
+                            onBoost={(amount) => console.log('boost', amount)}
+                        />
+                    ) : (
+                        <div className="
+                          surface-panel flex h-full items-center justify-center
+                          rounded-2xl text-sm text-muted-foreground
+                        ">
+                            No projects available for this category.
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     )
 }
