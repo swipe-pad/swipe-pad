@@ -3,15 +3,50 @@
 import React, { createContext, useContext, useState, useEffect } from "react"
 import type { DonationAmount, StableCoin, ConfirmSwipes } from "@/components/amount-selector"
 
+type UserStats = {
+    totalDonations: number
+    categoriesSupported: Set<string>
+    streak: number
+    lastDonation: Date | null
+}
+
+type UserProfile = {
+    name?: string
+    image?: string
+    farcaster?: string
+    lens?: string
+    zora?: string
+    twitter?: string
+    nounsHeld?: number
+    lilNounsHeld?: number
+    totalSwipes: number
+    projectsReported?: number
+    totalDonated: number
+    poaps?: number
+    paragraphs?: number
+    ens?: string
+    discord?: string
+    [key: string]: unknown
+}
+
+type UserBalance = Record<string, number>
+
+type CartItem = {
+    project: unknown
+    amount: number
+    currency: string
+    message?: string
+}
+
 interface AppContextType {
-    userProfile: any
-    setUserProfile: React.Dispatch<React.SetStateAction<any>>
-    userStats: any
-    setUserStats: React.Dispatch<React.SetStateAction<any>>
-    userBalance: any
-    setUserBalance: React.Dispatch<React.SetStateAction<any>>
-    cart: any[]
-    setCart: React.Dispatch<React.SetStateAction<any[]>>
+    userProfile: UserProfile
+    setUserProfile: React.Dispatch<React.SetStateAction<UserProfile>>
+    userStats: UserStats
+    setUserStats: React.Dispatch<React.SetStateAction<UserStats>>
+    userBalance: UserBalance
+    setUserBalance: React.Dispatch<React.SetStateAction<UserBalance>>
+    cart: CartItem[]
+    setCart: React.Dispatch<React.SetStateAction<CartItem[]>>
     donationAmount: DonationAmount | null
     setDonationAmount: React.Dispatch<React.SetStateAction<DonationAmount | null>>
     donationCurrency: StableCoin
@@ -49,19 +84,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [betaStatus, setBetaStatus] = useState<"guest" | "pending" | "approved" | "active" | "rejected" | null>(null)
     const [creditsRemaining, setCreditsRemaining] = useState(0)
     const [creditsMax, setCreditsMax] = useState(0)
-    const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(() => {
-        if (typeof window === "undefined") return false
-
-        try {
-            return window.localStorage.getItem("swipepad:onboarding-complete") === "1"
-        } catch {
-            return false
-        }
-    })
+    const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false)
+    const [hasLoadedOnboardingState, setHasLoadedOnboardingState] = useState(false)
     const [selectedCategory, setSelectedCategory] = useState("Regeneration")
     const [currentProjectIndex, setCurrentProjectIndex] = useState(0)
-    const [cart, setCart] = useState<any[]>([])
-    const [donationAmount, setDonationAmount] = useState<DonationAmount | null>(null)
+    const [cart, setCart] = useState<CartItem[]>([])
+    const [donationAmount, setDonationAmount] = useState<DonationAmount | null>("0.01¢")
     const [donationCurrency, setDonationCurrency] = useState<StableCoin>("cUSD")
     const [confirmSwipes, setConfirmSwipes] = useState<ConfirmSwipes>(20)
     const [swipeCount, setSwipeCount] = useState(0)
@@ -73,7 +101,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         lastDonation: null as Date | null,
     })
 
-    const [userProfile, setUserProfile] = useState({
+    const [userProfile, setUserProfile] = useState<UserProfile>({
         name: "MiniPay User",
         image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
         farcaster: "lenaprofile",
@@ -91,7 +119,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         discord: "lena#1234",
     })
 
-    const [userBalance, setUserBalance] = useState({
+    const [userBalance, setUserBalance] = useState<UserBalance>({
         cUSD: 125.75,
         cEUR: 50.2,
         cGBP: 75.5,
@@ -109,11 +137,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         try {
+            const stored = window.localStorage.getItem("swipepad:onboarding-complete")
+            if (stored === "1") {
+                setHasCompletedOnboarding(true)
+            }
+        } catch (error) {
+            console.error("Failed to read onboarding state:", error)
+        } finally {
+            setHasLoadedOnboardingState(true)
+        }
+    }, [])
+
+    useEffect(() => {
+        if (!hasLoadedOnboardingState) return
+
+        try {
             window.localStorage.setItem("swipepad:onboarding-complete", hasCompletedOnboarding ? "1" : "0")
         } catch (error) {
             console.error("Failed to persist onboarding state:", error)
         }
-    }, [hasCompletedOnboarding])
+    }, [hasCompletedOnboarding, hasLoadedOnboardingState])
 
     return (
         <AppContext.Provider
