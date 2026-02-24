@@ -117,6 +117,7 @@ export default defineSchema({
   /** Curated projects for beta feed */
   projects: defineTable({
     projectId: v.string(), // External ID (e.g., from Karma GAP)
+    routeId: v.string(), // Stable short route ID
     title: v.string(),
     description: v.string(),
     imageUrl: v.string(),
@@ -147,6 +148,7 @@ export default defineSchema({
   })
     .index("by_chain", ["chain", "active"])
     .index("by_projectId", ["projectId"])
+    .index("by_routeId", ["routeId"])
     .index("by_featured", ["featured", "active"])
     .index("by_source", ["source", "active"]),
 

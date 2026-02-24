@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { action, internalMutation } from "./_generated/server";
 import { requireAdmin } from "./admin";
 import { internal } from "./_generated/api";
+import { generateUniqueRouteId } from "./routeId";
 
 // ============================================
 // Karma GAP Sync Action
@@ -188,8 +189,11 @@ export const upsertGapProject = internalMutation({
       return existing._id;
     }
 
+    const routeId = await generateUniqueRouteId(ctx.db, args.projectId);
+
     return await ctx.db.insert("projects", {
       projectId: args.projectId,
+      routeId,
       title: args.title,
       description: args.description,
       imageUrl: args.imageUrl || "/placeholder.svg",
