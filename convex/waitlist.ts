@@ -156,7 +156,6 @@ export const ensureGuestUser = mutation({
   args: { wallet: v.string(), chain: v.string() },
   handler: async (ctx, args) => {
     const normalizedWallet = args.wallet.toLowerCase();
-    console.log(`Ensuring guest user for ${normalizedWallet} on ${args.chain}`);
     let user = await ctx.db
       .query("waitlistUsers")
       .withIndex("by_wallet", (q) => q.eq("wallet", normalizedWallet))
@@ -281,5 +280,127 @@ export const submitFeedback = mutation({
       ts: Date.now(),
     });
     return { success: true };
+  },
+});
+
+/** Admin dashboard overview (no auth guard yet) */
+export const getAdminDashboard = query({
+  args: {
+    recentProjectsLimit: v.optional(v.number()),
+    recentUsersLimit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const recentProjectsLimit = Math.min(Math.max(args.recentProjectsLimit ?? 100, 1), 500);
+    const recentUsersLimit = Math.min(Math.max(args.recentUsersLimit ?? 25, 1), 200);
+
+    const users = await ctx.db.query("waitlistUsers").collect();
+    const projects = await ctx.db.query("projects").collect();
+    const donations = await ctx.db.query("betaDonations").collect();
+    const credits = await ctx.db.query("credits").collect();
+    const swipes = await ctx.db.query("swipeEvents").order("desc").take(200);
+
+    const userStatusCounts = {
+      pending: 0,
+      approved: 0,
+      active: 0,
+      guest: 0,
+      rejected: 0,
+    } as Record<"pending" | "approved" | "active" | "guest" | "rejected", number>;
+
+    let thirdwebLikeAccounts = 0;
+    let guestUsers = 0;
+
+    for (const user of users) {
+      userStatusCounts[user.status] += 1;
+
+      const wallet = user.wallet ?? "";
+      const isGuestWallet = wallet.startsWith("guest-");
+
+      if (user.status === "guest" || isGuestWallet) {
+        guestUsers += 1;
+      } else if (wallet.startsWith("0x")) {
+        thirdwebLikeAccounts += 1;
+      }
+    }
+
+    const projectSourceCounts: Record<string, number> = {};
+    const projectChainCounts: Record<string, number> = {};
+    let activeProjects = 0;
+    let featuredProjects = 0;
+
+    for (const project of projects) {
+      if (project.active) activeProjects += 1;
+      if (project.featured) featuredProjects += 1;
+
+      projectSourceCounts[project.source] = (projectSourceCounts[project.source] ?? 0) + 1;
+      projectChainCounts[project.chain] = (projectChainCounts[project.chain] ?? 0) + 1;
+    }
+
+    const donationStatusCounts: Record<string, number> = {};
+    let totalDonationsAmount = 0;
+
+    for (const donation of donations) {
+      donationStatusCounts[donation.status] = (donationStatusCounts[donation.status] ?? 0) + 1;
+      totalDonationsAmount += donation.totalAmount;
+    }
+
+    const totalCreditsRemaining = credits.reduce((acc, item) => acc + item.remaining, 0);
+    const totalCreditsMax = credits.reduce((acc, item) => acc + item.max, 0);
+
+    const recentUsers = users
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, recentUsersLimit)
+      .map((user) => ({
+        id: user._id,
+        wallet: user.wallet ?? null,
+        status: user.status,
+        createdAt: user.createdAt,
+      }));
+
+    const recentProjects = projects
+      .sort((a, b) => (b.updatedAt ?? b.createdAt) - (a.updatedAt ?? a.createdAt))
+      .slice(0, recentProjectsLimit)
+      .map((project) => ({
+        id: project._id,
+        projectId: project.projectId,
+        title: project.title,
+        source: project.source,
+        chain: project.chain,
+        active: project.active,
+        featured: project.featured,
+        updatedAt: project.updatedAt ?? project.createdAt,
+      }));
+
+    return {
+      users: {
+        total: users.length,
+        guestUsers,
+        thirdwebLikeAccounts,
+        byStatus: userStatusCounts,
+      },
+      projects: {
+        total: projects.length,
+        active: activeProjects,
+        featured: featuredProjects,
+        bySource: projectSourceCounts,
+        byChain: projectChainCounts,
+      },
+      donations: {
+        total: donations.length,
+        totalAmount: totalDonationsAmount,
+        byStatus: donationStatusCounts,
+      },
+      credits: {
+        totalRows: credits.length,
+        remaining: totalCreditsRemaining,
+        max: totalCreditsMax,
+      },
+      swipes: {
+        recentCount: swipes.length,
+      },
+      recentUsers,
+      recentProjects,
+      generatedAt: Date.now(),
+    };
   },
 });
