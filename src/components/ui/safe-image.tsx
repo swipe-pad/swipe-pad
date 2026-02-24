@@ -26,8 +26,9 @@ export function SafeImage({
   onError,
 }: SafeImageProps) {
   const isRemote = /^https?:\/\//.test(src)
+  const isProxiedLocalImage = src.startsWith("/api/img?")
 
-  if (isRemote) {
+  if (isRemote || isProxiedLocalImage) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
