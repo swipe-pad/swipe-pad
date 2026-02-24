@@ -7,10 +7,10 @@ import { MessageCircle, Flag, Zap, ExternalLink, RotateCcw, X, ThumbsUp } from "
 import { BoostModal } from "@/components/boost-modal"
 import { ShareModal } from "@/components/share-modal"
 import { ReportModal } from "@/components/report-modal"
+import { SafeImage } from "@/components/ui/safe-image"
 import type { Project } from "@/lib/useConvexData"
 import type { DonationAmount, StableCoin } from "@/components/amount-selector"
 import { stripMarkdown } from "@/lib/markdown"
-import Image from "next/image"
 
 interface ProjectCardProps {
   project: Project
@@ -392,7 +392,6 @@ export function ProjectCard({
   }
 
   const imageSrc = getImageSrc() || "/placeholder.svg"
-  const isRemoteImage = imageSrc.startsWith("http://") || imageSrc.startsWith("https://")
 
   const cardContent = (
     <div
@@ -451,32 +450,18 @@ export function ProjectCard({
           </div>
         )}
 
-        {isRemoteImage ? (
-          <img
-            src={imageSrc}
-            alt={project.name}
-            className={`
-              absolute inset-0 size-full object-cover transition-opacity duration-300
-              ${imageLoading ? `opacity-0` : `opacity-100`}
-            `}
-            onError={handleImageError}
-            onLoad={handleImageLoad}
-            loading="lazy"
-          />
-        ) : (
-          <Image
-            src={imageSrc}
-            alt={project.name}
-            fill
-            className={`
-              object-cover transition-opacity duration-300
-              ${imageLoading ? `opacity-0` : `opacity-100`}
-            `}
-            onError={handleImageError}
-            onLoad={handleImageLoad}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        )}
+        <SafeImage
+          src={imageSrc}
+          alt={project.name}
+          fill
+          className={`
+            object-cover transition-opacity duration-300
+            ${imageLoading ? `opacity-0` : `opacity-100`}
+          `}
+          onError={handleImageError}
+          onLoad={handleImageLoad}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
 
         {/* Category Badge */}
         <div className="absolute left-3 top-3">
