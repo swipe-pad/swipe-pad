@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useProjects } from "@/lib/useConvexData"
 
 export type DonationAmount = "0.01¢" | "0.10¢" | "0.50¢" | "1 Stable"
 export type StableCoin = "cUSD" | "USDC" | "USDT"
@@ -16,7 +15,6 @@ export function AmountSelector({ onSelect, availableProjects }: AmountSelectorPr
   const [selectedAmount, setSelectedAmount] = useState<DonationAmount>("0.01¢")
   const [selectedCurrency, setSelectedCurrency] = useState<StableCoin>("cUSD")
   const [selectedSwipes, setSelectedSwipes] = useState<ConfirmSwipes>(20)
-  const projects = useProjects()
 
   const amounts: DonationAmount[] = ["0.01¢", "0.10¢", "0.50¢", "1 Stable"]
   const currencies: StableCoin[] = ["cUSD", "USDC", "USDT"]
@@ -26,7 +24,7 @@ export function AmountSelector({ onSelect, availableProjects }: AmountSelectorPr
     onSelect(selectedAmount, selectedCurrency, selectedSwipes)
   }
 
-  const totalCards = availableProjects ?? projects.length
+  const totalCards = availableProjects ?? 0
 
   return (
     <div className="px-6 py-4">

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { X, Share2, Copy, MessageSquare, Twitter } from "lucide-react"
 import type { Project } from "@/lib/useConvexData"
+import { openExternalUrl } from "@/lib/external-links"
 
 // Add Telegram icon component
 function TelegramIcon({ className }: { className?: string }) {
@@ -72,7 +73,7 @@ export function ShareModal({ project, isOpen, onClose }: ShareModalProps) {
       }
 
       if (shareLink) {
-        window.open(shareLink, "_blank", "noopener,noreferrer")
+        openExternalUrl(shareLink)
       }
     } catch (error) {
       console.error("Error sharing:", error)

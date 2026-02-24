@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 
 export default function ProfilePage() {
     const router = useRouter()
-    const { userStats } = useApp()
+    const userStats = useApp((state) => state.userStats)
 
     return (
         <div className="p-6">

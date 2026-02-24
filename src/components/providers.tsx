@@ -8,22 +8,37 @@ import { config } from "@/lib/wagmi-config"
 import { useState } from "react"
 
 import { AppProvider } from "@/context/AppContext"
+import { ProjectsProvider } from "@/lib/useConvexData"
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
 
 export function Providers({ children }: { children: React.ReactNode }) {
-    const [queryClient] = useState(() => new QueryClient())
+    const [queryClient] = useState(() => new QueryClient({
+        defaultOptions: {
+            queries: {
+                staleTime: 30_000,
+                gcTime: 5 * 60_000,
+                refetchOnWindowFocus: false,
+                retry: 1,
+            },
+            mutations: {
+                retry: 1,
+            },
+        },
+    }))
 
     return (
         <ConvexProvider client={convex}>
             <ThirdwebProvider>
-                <AppProvider>
-                    <WagmiProvider config={config}>
-                        <QueryClientProvider client={queryClient}>
-                            {children}
-                        </QueryClientProvider>
-                    </WagmiProvider>
-                </AppProvider>
+                <ProjectsProvider>
+                    <AppProvider>
+                        <WagmiProvider config={config}>
+                            <QueryClientProvider client={queryClient}>
+                                {children}
+                            </QueryClientProvider>
+                        </WagmiProvider>
+                    </AppProvider>
+                </ProjectsProvider>
             </ThirdwebProvider>
         </ConvexProvider>
     )

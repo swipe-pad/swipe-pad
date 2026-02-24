@@ -1,5 +1,6 @@
 "use client";
 
+import { createContext, createElement, useContext, useMemo, type ReactNode } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
@@ -50,10 +51,45 @@ export function adaptConvexProject(p: any): Project {
   };
 }
 
+type ProjectsContextValue = {
+  projects: Project[];
+  isLoading: boolean;
+};
+
+const ProjectsContext = createContext<ProjectsContextValue | null>(null);
+
+export function ProjectsProvider({ children }: { children: ReactNode }) {
+  const rawProjects = useQuery(api.projects.getAllProjects);
+
+  const projects = useMemo(
+    () => rawProjects?.map(adaptConvexProject) ?? [],
+    [rawProjects]
+  );
+
+  const value = useMemo(
+    () => ({ projects, isLoading: rawProjects === undefined }),
+    [projects, rawProjects]
+  );
+
+  return createElement(ProjectsContext.Provider, { value }, children);
+}
+
 /** Hook to get all projects from Convex */
 export function useProjects() {
+  return useProjectsWithStatus().projects;
+}
+
+/** Hook to get all projects from Convex with loading state */
+export function useProjectsWithStatus() {
+  const context = useContext(ProjectsContext);
+  if (context) return context;
+
   const projects = useQuery(api.projects.getAllProjects);
-  return projects?.map(adaptConvexProject) ?? [];
+
+  return {
+    projects: projects?.map(adaptConvexProject) ?? [],
+    isLoading: projects === undefined,
+  };
 }
 
 /** Hook to get categories from Convex */
