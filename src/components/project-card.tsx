@@ -40,6 +40,16 @@ function getCategoryBadgeClasses(category: string) {
   return "border-amber-300/60 bg-amber-500 text-slate-900"
 }
 
+function getTopLevelCategory(category: string) {
+  const key = category.toLowerCase()
+
+  if (key.includes("dapp")) return "Dapps"
+  if (key.includes("eco") || key.includes("climate") || key.includes("regen") || key.includes("nature")) {
+    return "Eco Projects"
+  }
+  return "Builders"
+}
+
 // Custom X (Twitter) Icon Component
 function XIcon({ className }: { className?: string }) {
   return (
@@ -392,6 +402,7 @@ export function ProjectCard({
   }
 
   const imageSrc = getImageSrc() || "/placeholder.svg"
+  const topLevelCategory = getTopLevelCategory(project.category)
 
   const cardContent = (
     <div
@@ -487,11 +498,11 @@ export function ProjectCard({
         <div className="absolute top-3 left-3">
           <span
             className={`
-              rounded-full border px-2 py-1 text-[11px] font-semibold
-              ${getCategoryBadgeClasses(project.category)}
+              rounded-full border px-2 py-1 text-[11px] font-bold uppercase tracking-wide
+              ${getCategoryBadgeClasses(topLevelCategory)}
             `}
           >
-            {project.category}
+            {topLevelCategory}
           </span>
         </div>
 
@@ -604,13 +615,19 @@ export function ProjectCard({
             <button
               onClick={(e) => handleButtonClick(e, () => setShowBoostModal(true))}
               className="
-                ml-3 flex shrink-0 items-center space-x-1 rounded-full
-                bg-brand-indigo px-3 py-1 text-xs font-semibold text-white
-                transition-colors
+                relative ml-3 flex shrink-0 items-center space-x-1 overflow-hidden
+                rounded-full bg-[#4E45D6] px-3 py-1 text-xs font-semibold text-white
+                shadow-[0_6px_18px_rgba(78,69,214,0.38)] transition-all duration-300
                 hover:brightness-110
               "
             >
-              <Zap className="size-4" />
+              <span
+                className="
+                  pointer-events-none absolute inset-y-0 -left-1/2 w-1/2
+                  skew-x-[-20deg] bg-white/30 blur-[1px] animate-[boost-sheen_3.8s_ease-in-out_infinite]
+                "
+              />
+              <Zap className="size-4 text-[#F9DE4B] drop-shadow-[0_0_8px_rgba(249,222,75,0.65)]" />
               <span>Boost</span>
             </button>
           )}
@@ -668,12 +685,12 @@ export function ProjectCard({
             <button
               onClick={(e) => handleButtonClick(e, () => setShowBoostModal(true))}
               className="
-                flex items-center space-x-1 rounded-lg bg-blue-500 px-2 py-1
+                flex items-center space-x-1 rounded-lg bg-[#4E45D6] px-2 py-1
                 text-xs font-medium text-white transition-colors
-                hover:bg-blue-600
+                hover:bg-[#433ac0]
               "
             >
-              <Zap className="size-4" />
+              <Zap className="size-4 text-[#F9DE4B] drop-shadow-[0_0_6px_rgba(249,222,75,0.55)]" />
               <span>Boost</span>
             </button>
           )}
