@@ -2,6 +2,7 @@
 
 import { useApp } from "@/context/AppContext"
 import { usePathname } from "next/navigation"
+import { useShallow } from "zustand/react/shallow"
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard"
 import { AppHeader } from "@/components/layout/AppHeader"
 import { BottomNav } from "@/components/layout/BottomNav"
@@ -14,10 +15,18 @@ import { useAppShellConfig } from "@/hooks/use-app-shell-config"
 export default function AppLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
     const {
-        hasCompletedOnboarding, setHasCompletedOnboarding,
+        hasCompletedOnboarding,
+        setHasCompletedOnboarding,
+        hasLoadedOnboardingState,
         cart,
         donationAmount,
-    } = useApp()
+    } = useApp(useShallow((state) => ({
+        hasCompletedOnboarding: state.hasCompletedOnboarding,
+        setHasCompletedOnboarding: state.setHasCompletedOnboarding,
+        hasLoadedOnboardingState: state.hasLoadedOnboardingState,
+        cart: state.cart,
+        donationAmount: state.donationAmount,
+    })))
     const shellConfig = useAppShellConfig(pathname)
     const overlays = useAppOverlays()
 
@@ -29,6 +38,28 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         return <div className="
           relative flex h-screen w-full flex-col overflow-hidden
         ">{children}</div>
+    }
+
+    const renderInitialLoader = () => {
+        return (
+            <div className="flex h-full w-full items-center justify-center">
+                <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 backdrop-blur-sm">
+                    <span className="size-2 rounded-full bg-[#FFD600] animate-pulse" />
+                    <span className="text-xs tracking-[0.16em] text-white/70">LOADING</span>
+                </div>
+            </div>
+        )
+    }
+
+    if (!hasLoadedOnboardingState) {
+        return (
+            <main className="
+              relative flex min-h-screen flex-col items-center justify-center
+              overflow-hidden text-white
+            ">
+                {renderPageContainer(renderInitialLoader())}
+            </main>
+        )
     }
 
     if (!hasCompletedOnboarding) {

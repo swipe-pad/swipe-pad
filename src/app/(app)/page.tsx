@@ -1,12 +1,14 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { useShallow } from "zustand/react/shallow"
 import { useApp } from "@/context/AppContext"
 import { ProjectCard } from "@/components/project-card"
-import { useProjects } from "@/lib/useConvexData"
+import { useProjectsWithStatus } from "@/lib/useConvexData"
 import { useMutation } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import type { Id } from "../../../convex/_generated/dataModel"
+import type { Project } from "@/lib/useConvexData"
 
 type UserStatsState = {
     totalDonations: number
@@ -42,8 +44,23 @@ type SwipeSnapshot = {
     prevUserProfile: UserProfileState
 }
 
+const LOADING_PROJECT: Project = {
+    _id: "loading",
+    id: "loading",
+    projectId: "loading",
+    title: "Loading",
+    name: "Loading",
+    description: "",
+    category: "Builders",
+    imageUrl: "/placeholder.svg",
+    recipientWallet: "",
+    chain: "celo",
+    source: "manual",
+}
+
 const TOP_CATEGORIES = ["See All", "Builders", "Eco Projects", "Dapps"] as const
 type TopCategory = (typeof TOP_CATEGORIES)[number]
+const LAST_FIRST_PROJECT_KEY = "swipepad:last-first-project-id"
 
 function getTopLevelCategory(category: string): TopCategory {
     const key = category.toLowerCase()
@@ -55,21 +72,48 @@ function getTopLevelCategory(category: string): TopCategory {
 }
 
 export default function Home() {
-    const projects = useProjects()
+    const { projects, isLoading: isProjectsLoading } = useProjectsWithStatus()
     const {
-        currentProjectIndex, setCurrentProjectIndex,
-        selectedCategory, setSelectedCategory,
+        currentProjectIndex,
+        setCurrentProjectIndex,
+        selectedCategory,
+        setSelectedCategory,
         donationAmount,
         donationCurrency,
         confirmSwipes,
-        swipeCount, setSwipeCount,
-        userStats, setUserStats,
-        userProfile, setUserProfile,
-        cart, setCart,
+        swipeCount,
+        setSwipeCount,
+        userStats,
+        setUserStats,
+        userProfile,
+        setUserProfile,
+        cart,
+        setCart,
         betaUserId,
         betaStatus,
-        creditsRemaining, setCreditsRemaining,
-    } = useApp()
+        creditsRemaining,
+        setCreditsRemaining,
+    } = useApp(useShallow((state) => ({
+        currentProjectIndex: state.currentProjectIndex,
+        setCurrentProjectIndex: state.setCurrentProjectIndex,
+        selectedCategory: state.selectedCategory,
+        setSelectedCategory: state.setSelectedCategory,
+        donationAmount: state.donationAmount,
+        donationCurrency: state.donationCurrency,
+        confirmSwipes: state.confirmSwipes,
+        swipeCount: state.swipeCount,
+        setSwipeCount: state.setSwipeCount,
+        userStats: state.userStats,
+        setUserStats: state.setUserStats,
+        userProfile: state.userProfile,
+        setUserProfile: state.setUserProfile,
+        cart: state.cart,
+        setCart: state.setCart,
+        betaUserId: state.betaUserId,
+        betaStatus: state.betaStatus,
+        creditsRemaining: state.creditsRemaining,
+        setCreditsRemaining: state.setCreditsRemaining,
+    })))
 
     const [swipeHistory, setSwipeHistory] = useState<SwipeSnapshot[]>([])
     const canUndo = swipeHistory.length > 0
@@ -77,13 +121,46 @@ export default function Home() {
     const consumeCredits = useMutation(api.waitlist.consumeCredits)
     const recordSwipe = useMutation(api.waitlist.recordSwipe)
 
+    const shuffledProjects = useMemo(() => {
+        if (projects.length <= 1) return projects
+
+        const next = [...projects]
+        for (let i = next.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1))
+            const temp = next[i]
+            next[i] = next[j]
+            next[j] = temp
+        }
+
+        if (typeof window !== "undefined") {
+            const lastFirstProjectId = window.localStorage.getItem(LAST_FIRST_PROJECT_KEY)
+
+            if (lastFirstProjectId && next[0]?.projectId === lastFirstProjectId && next.length > 1) {
+                const swapIndex = 1 + Math.floor(Math.random() * (next.length - 1))
+                const temp = next[0]
+                next[0] = next[swapIndex]
+                next[swapIndex] = temp
+            }
+        }
+
+        return next
+    }, [projects])
+
+    useEffect(() => {
+        if (typeof window === "undefined") return
+        if (shuffledProjects.length === 0) return
+
+        window.localStorage.setItem(LAST_FIRST_PROJECT_KEY, shuffledProjects[0].projectId)
+    }, [shuffledProjects])
+
     const categoryTabs = TOP_CATEGORIES
     const activeCategory = categoryTabs.includes(selectedCategory as TopCategory)
         ? (selectedCategory as TopCategory)
         : "See All"
     const filteredProjects = activeCategory === "See All"
-        ? projects
-        : projects.filter((project) => getTopLevelCategory(project.category) === activeCategory)
+        ? shuffledProjects
+        : shuffledProjects.filter((project) => getTopLevelCategory(project.category) === activeCategory)
+    const isInitialProjectsLoading = isProjectsLoading && shuffledProjects.length === 0
 
     const safeProjectIndex = useMemo(() => {
         if (filteredProjects.length === 0) return 0
@@ -311,12 +388,13 @@ export default function Home() {
                   sm:h-[min(100%,820px)]
                   lg:h-[min(100%,920px)]
                 ">
-                    {filteredProjects.length > 0 ? (
+                    {isInitialProjectsLoading || filteredProjects.length > 0 ? (
                         <ProjectCard
                             className="size-full"
-                            project={filteredProjects[safeProjectIndex]}
-                            onSwipeLeft={handleSwipeLeft}
-                            onSwipeRight={canSwipe ? handleSwipeRight : undefined}
+                            project={isInitialProjectsLoading ? LOADING_PROJECT : filteredProjects[safeProjectIndex]}
+                            isLoading={isInitialProjectsLoading}
+                            onSwipeLeft={isInitialProjectsLoading ? undefined : handleSwipeLeft}
+                            onSwipeRight={isInitialProjectsLoading || !canSwipe ? undefined : handleSwipeRight}
                             onUndo={canUndo ? handleUndo : undefined}
                             viewMode="swipe"
                             donationAmount={effectiveDonationAmount}

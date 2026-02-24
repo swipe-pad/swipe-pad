@@ -3,6 +3,7 @@
 import { useBetaCredits, creditsToSwipes } from '@/hooks/useBetaCredits'
 import { cn } from '@/lib/utils'
 import { useApp } from '@/context/AppContext'
+import { useShallow } from 'zustand/react/shallow'
 
 interface BetaBannerProps {
   chain?: 'celo' | 'base'
@@ -14,7 +15,11 @@ interface BetaBannerProps {
  * Displays in the app header/layout during beta period
  */
 export function BetaBanner({ chain = 'celo', className }: BetaBannerProps) {
-  const { betaStatus, creditsRemaining, creditsMax } = useApp()
+  const { betaStatus, creditsRemaining, creditsMax } = useApp(useShallow((state) => ({
+    betaStatus: state.betaStatus,
+    creditsRemaining: state.creditsRemaining,
+    creditsMax: state.creditsMax,
+  })))
   const { remaining, max, isLoading } = useBetaCredits(chain)
 
   const useConvexCredits = betaStatus === "guest" || betaStatus === "active"
