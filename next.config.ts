@@ -54,6 +54,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "imgur.com",
       },
+      {
+        protocol: "https",
+        hostname: "tba-mobile.mypinata.cloud",
+      },
     ],
   },
   reactCompiler: !isDev,
