@@ -1,14 +1,15 @@
 "use client";
 
-import { Home, Layers, Settings, Wallet } from "lucide-react";
+import { Layers, Search, Trophy, User } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { name: "Swipe", icon: Layers, href: "/" },
-  { name: "Wallet", icon: Wallet, href: "/wallet" },
-  { name: "Settings", icon: Settings, href: "/settings" },
+  { name: "Discover", icon: Search, href: "/list" },
+  { name: "Rank", icon: Trophy, href: "/leaderboard" },
+  { name: "Profile", icon: User, href: "/profile" },
 ];
 
 export function BottomNav() {
@@ -17,12 +18,12 @@ export function BottomNav() {
 
   return (
     <div className="
-      pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center p-4
-      pb-8
+      pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center p-2
+      pb-3
     ">
       <nav className="
         pointer-events-auto flex items-center gap-2 rounded-full border
-        border-white/5 bg-secondary/90 p-2 shadow-2xl shadow-black/50
+        border-white/5 bg-secondary/90 p-1.5 shadow-2xl shadow-black/50
         backdrop-blur-md
       ">
         {tabs.map((tab) => {
