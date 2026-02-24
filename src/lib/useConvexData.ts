@@ -9,6 +9,7 @@ import { api } from "../../convex/_generated/api";
 export interface Project {
   _id: string;
   projectId: string;
+  routeId: string;
   title: string;
   description: string;
   category: string;
@@ -42,10 +43,12 @@ export interface Project {
 }
 
 // Adapter to transform Convex project to legacy Project interface
-export function adaptConvexProject(p: any): Project {
+type ConvexProjectShape = Omit<Project, "id" | "name" | "walletAddress">;
+
+export function adaptConvexProject(p: ConvexProjectShape): Project {
   return {
     ...p,
-    id: p.projectId, // Always set from projectId
+    id: p.routeId,
     name: p.title,
     walletAddress: p.recipientWallet,
   };
@@ -82,13 +85,13 @@ export function useProjects() {
 /** Hook to get all projects from Convex with loading state */
 export function useProjectsWithStatus() {
   const context = useContext(ProjectsContext);
+  const projectsQuery = useQuery(api.projects.getAllProjects);
+
   if (context) return context;
 
-  const projects = useQuery(api.projects.getAllProjects);
-
   return {
-    projects: projects?.map(adaptConvexProject) ?? [],
-    isLoading: projects === undefined,
+    projects: projectsQuery?.map(adaptConvexProject) ?? [],
+    isLoading: projectsQuery === undefined,
   };
 }
 
