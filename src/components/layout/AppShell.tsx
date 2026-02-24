@@ -11,8 +11,8 @@ interface AppShellProps {
 export function AppShell({ children, header, footer }: AppShellProps) {
   const headerRef = useRef<HTMLDivElement>(null)
   const footerRef = useRef<HTMLDivElement>(null)
-  const [headerHeight, setHeaderHeight] = useState(0)
-  const [footerHeight, setFooterHeight] = useState(0)
+  const [headerHeight, setHeaderHeight] = useState(header ? 56 : 0)
+  const [footerHeight, setFooterHeight] = useState(footer ? 64 : 0)
 
   useEffect(() => {
     const updateLayoutOffsets = () => {

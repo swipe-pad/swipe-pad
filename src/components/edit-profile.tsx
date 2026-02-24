@@ -50,7 +50,7 @@ export function EditProfile({ isOpen, onClose, onSave, currentProfile }: EditPro
   const { disconnect: disconnectThirdweb } = useThirdwebDisconnect()
   const activeWallet = useActiveWallet()
   const { disconnect: disconnectWagmi } = useWagmiDisconnect()
-  const { setWalletConnected } = useApp()
+  const setWalletConnected = useApp((state) => state.setWalletConnected)
 
   const handleLogout = () => {
     if (activeWallet) {

@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useShallow } from "zustand/react/shallow"
 
 import { useApp } from "@/context/AppContext"
 import { useProjects } from "@/lib/useConvexData"
@@ -24,7 +25,17 @@ export function useAppOverlays() {
     setDonationCurrency,
     setConfirmSwipes,
     setSwipeCount,
-  } = useApp()
+  } = useApp(useShallow((state) => ({
+    cart: state.cart,
+    setCart: state.setCart,
+    userStats: state.userStats,
+    userProfile: state.userProfile,
+    setUserProfile: state.setUserProfile,
+    setDonationAmount: state.setDonationAmount,
+    setDonationCurrency: state.setDonationCurrency,
+    setConfirmSwipes: state.setConfirmSwipes,
+    setSwipeCount: state.setSwipeCount,
+  })))
 
   const [showCart, setShowCart] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)

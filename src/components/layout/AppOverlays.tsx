@@ -1,13 +1,16 @@
 "use client"
 
-import { Cart } from "@/components/cart"
-import { SuccessScreen } from "@/components/success-screen"
-import { BadgeNotification } from "@/components/badge-notification"
-import { ProfileQuickView } from "@/components/profile-quick-view"
-import { EditProfile } from "@/components/edit-profile"
-import { ProjectRegistrationForm } from "@/components/project-registration-form"
-import { DonationSetupDialog } from "@/components/layout/DonationSetupDialog"
+import dynamic from "next/dynamic"
+
 import type { ConfirmSwipes, DonationAmount, StableCoin } from "@/components/amount-selector"
+
+const Cart = dynamic(() => import("@/components/cart").then((mod) => mod.Cart))
+const SuccessScreen = dynamic(() => import("@/components/success-screen").then((mod) => mod.SuccessScreen))
+const BadgeNotification = dynamic(() => import("@/components/badge-notification").then((mod) => mod.BadgeNotification))
+const ProfileQuickView = dynamic(() => import("@/components/profile-quick-view").then((mod) => mod.ProfileQuickView))
+const EditProfile = dynamic(() => import("@/components/edit-profile").then((mod) => mod.EditProfile))
+const ProjectRegistrationForm = dynamic(() => import("@/components/project-registration-form").then((mod) => mod.ProjectRegistrationForm))
+const DonationSetupDialog = dynamic(() => import("@/components/layout/DonationSetupDialog").then((mod) => mod.DonationSetupDialog))
 
 interface AppOverlaysProps {
   showCart: boolean
@@ -81,20 +84,24 @@ export function AppOverlays({
 
       {showBadgeNotification ? <BadgeNotification badge={currentBadge} onClose={onCloseBadgeNotification} /> : null}
 
-      <ProfileQuickView
-        isOpen={showProfileQuickView}
-        onClose={onCloseProfileQuickView}
-        userStats={userStats}
-        recentDonations={recentDonations as never[]}
-        savedProjects={savedProjects as never[]}
-      />
+      {showProfileQuickView ? (
+        <ProfileQuickView
+          isOpen={showProfileQuickView}
+          onClose={onCloseProfileQuickView}
+          userStats={userStats}
+          recentDonations={recentDonations as never[]}
+          savedProjects={savedProjects as never[]}
+        />
+      ) : null}
 
-      <EditProfile
-        isOpen={showEditProfile}
-        onClose={onCloseEditProfile}
-        onSave={onSaveProfile}
-        currentProfile={userProfile as never}
-      />
+      {showEditProfile ? (
+        <EditProfile
+          isOpen={showEditProfile}
+          onClose={onCloseEditProfile}
+          onSave={onSaveProfile}
+          currentProfile={userProfile as never}
+        />
+      ) : null}
 
       {enableProjectRegistration ? (
         <ProjectRegistrationForm
@@ -104,12 +111,14 @@ export function AppOverlays({
         />
       ) : null}
 
-      <DonationSetupDialog
-        isOpen={showDonationSetup}
-        onClose={onCloseDonationSetup}
-        onSelect={onSelectDonationSetup}
-        availableProjects={availableProjects}
-      />
+      {showDonationSetup ? (
+        <DonationSetupDialog
+          isOpen={showDonationSetup}
+          onClose={onCloseDonationSetup}
+          onSelect={onSelectDonationSetup}
+          availableProjects={availableProjects}
+        />
+      ) : null}
     </>
   )
 }

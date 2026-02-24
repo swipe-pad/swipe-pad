@@ -1,12 +1,16 @@
 "use client"
 
 import { useMemo } from "react"
+import { useShallow } from "zustand/react/shallow"
 
 import { LeaderboardView } from "@/components/leaderboard/LeaderboardView"
 import { useApp } from "@/context/AppContext"
 
 export default function LeaderboardPage() {
-  const { userProfile, userStats } = useApp()
+  const { userProfile, userStats } = useApp(useShallow((state) => ({
+    userProfile: state.userProfile,
+    userStats: state.userStats,
+  })))
 
   const currentUserPoints = Math.max(120, userStats.totalDonations * 12 + userStats.streak * 9)
   const currentUserLevel = Math.max(1, Math.floor(currentUserPoints / 80))

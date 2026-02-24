@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { X, ExternalLink } from "lucide-react"
+import { SafeExternalLink } from "@/components/ui/safe-external-link"
 
 interface ProjectRegistrationFormProps {
   isOpen: boolean
@@ -227,17 +228,15 @@ export function ProjectRegistrationForm({ isOpen, onClose, onSubmit }: ProjectRe
             <div className="
               rounded-lg border border-gray-600 bg-gray-800 px-3 py-2
             ">
-              <a
+              <SafeExternalLink
                 href="https://self.xyz"
-                target="_blank"
-                rel="noopener noreferrer"
                 className="
                   flex items-center text-[#FFD600]
                   hover:text-[#E6C200]
                 "
               >
                 Self Protocol <ExternalLink className="ml-1 size-4" />
-              </a>
+              </SafeExternalLink>
             </div>
           </div>
 

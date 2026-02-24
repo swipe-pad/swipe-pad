@@ -42,7 +42,7 @@ export function ProfileQuickView({
   const { disconnect: disconnectThirdweb } = useThirdwebDisconnect()
   const activeWallet = useActiveWallet()
   const { disconnect: disconnectWagmi } = useWagmiDisconnect()
-  const { setWalletConnected } = useApp()
+  const setWalletConnected = useApp((state) => state.setWalletConnected)
 
   const handleLogout = () => {
     if (activeWallet) {

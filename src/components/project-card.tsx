@@ -7,15 +7,18 @@ import { MessageCircle, Flag, Zap, ExternalLink, RotateCcw, X, ThumbsUp } from "
 import { BoostModal } from "@/components/boost-modal"
 import { ShareModal } from "@/components/share-modal"
 import { ReportModal } from "@/components/report-modal"
+import { ExternalLinkDialog } from "@/components/external-link-dialog"
 import { SafeImage } from "@/components/ui/safe-image"
 import type { Project } from "@/lib/useConvexData"
 import type { DonationAmount, StableCoin } from "@/components/amount-selector"
 import { stripMarkdown } from "@/lib/markdown"
+import { normalizeExternalUrl } from "@/lib/external-links"
 
 interface ProjectCardProps {
   project: Project
   className?: string
   viewMode?: "swipe" | "category"
+  isLoading?: boolean
   onSwipeLeft?: () => void
   onSwipeRight?: () => void
   onUndo?: () => void
@@ -119,6 +122,7 @@ export function ProjectCard({
   project,
   className,
   viewMode = "swipe",
+  isLoading = false,
   onSwipeLeft,
   onSwipeRight,
   onUndo,
@@ -126,25 +130,32 @@ export function ProjectCard({
   onBoost,
 }: ProjectCardProps) {
   type SwipeDirection = "left" | "right"
+  const DRAG_THRESHOLD = 50
 
   const ENABLE_REPORTS = false
   const [showBoostModal, setShowBoostModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
+  const [externalLinkPreview, setExternalLinkPreview] = useState<{ url: string; label: string } | null>(null)
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
 
   // Touch/swipe handling
   const cardRef = useRef<HTMLDivElement>(null)
-  const [startX, setStartX] = useState(0)
-  const [currentX, setCurrentX] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const [isMouseDown, setIsMouseDown] = useState(false)
+  const dragStateRef = useRef({
+    startX: 0,
+    currentX: 0,
+    isDragging: false,
+    isMouseDown: false,
+  })
+  const dragOffsetRef = useRef(0)
+  const dragFrameRef = useRef<number | null>(null)
+  const [visualDragOffset, setVisualDragOffset] = useState(0)
+  const [isPointerDragging, setIsPointerDragging] = useState(false)
   const [isSwipingOut, setIsSwipingOut] = useState(false)
   const [pressedArrow, setPressedArrow] = useState<SwipeDirection | null>(null)
-  const [dragThreshold] = useState(50)
   const keyboardOffset = pressedArrow === "right" ? 48 : pressedArrow === "left" ? -48 : 0
-  const dragOffset = isDragging || isMouseDown ? currentX - startX : keyboardOffset
+  const dragOffset = isPointerDragging ? visualDragOffset : keyboardOffset
   const swipeProgress = Math.min(Math.abs(dragOffset) / 120, 1)
 
   const resetCardPosition = useCallback(() => {
@@ -153,8 +164,44 @@ export function ProjectCard({
     cardRef.current.style.transform = ""
   }, [])
 
+  const flushDragFrame = useCallback(() => {
+    dragFrameRef.current = null
+
+    const offset = dragOffsetRef.current
+    setVisualDragOffset(offset)
+
+    if (cardRef.current && dragStateRef.current.isDragging) {
+      cardRef.current.style.transition = "none"
+      cardRef.current.style.transform = `translateX(${offset}px) rotate(${offset * 0.1}deg)`
+    }
+  }, [])
+
+  const scheduleDragFrame = useCallback(() => {
+    if (dragFrameRef.current !== null) return
+    dragFrameRef.current = window.requestAnimationFrame(flushDragFrame)
+  }, [flushDragFrame])
+
+  const clearDragFrame = useCallback(() => {
+    if (dragFrameRef.current !== null) {
+      window.cancelAnimationFrame(dragFrameRef.current)
+      dragFrameRef.current = null
+    }
+  }, [])
+
+  const resetDragState = useCallback(() => {
+    dragStateRef.current = {
+      startX: 0,
+      currentX: 0,
+      isDragging: false,
+      isMouseDown: false,
+    }
+    dragOffsetRef.current = 0
+    setVisualDragOffset(0)
+    setIsPointerDragging(false)
+  }, [])
+
   const triggerSwipe = useCallback((direction: SwipeDirection) => {
-    if (isSwipingOut || viewMode !== "swipe") return
+    if (isLoading || isSwipingOut || viewMode !== "swipe") return
     const callback = direction === "right" ? onSwipeRight : onSwipeLeft
     if (!callback) return
 
@@ -174,16 +221,19 @@ export function ProjectCard({
         cardRef.current.style.transform = ""
       }
 
-      setStartX(0)
-      setCurrentX(0)
-      setIsDragging(false)
-      setIsMouseDown(false)
+      resetDragState()
       setIsSwipingOut(false)
     }, 210)
-  }, [isSwipingOut, onSwipeLeft, onSwipeRight, viewMode])
+  }, [isLoading, isSwipingOut, onSwipeLeft, onSwipeRight, resetDragState, viewMode])
 
   useEffect(() => {
-    if (viewMode !== "swipe") return
+    return () => {
+      clearDragFrame()
+    }
+  }, [clearDragFrame])
+
+  useEffect(() => {
+    if (viewMode !== "swipe" || isLoading) return
 
     const isEditableTarget = (target: EventTarget | null) => {
       if (!(target instanceof HTMLElement)) return false
@@ -224,6 +274,7 @@ export function ProjectCard({
 
     const handleBlur = () => {
       setPressedArrow(null)
+      resetDragState()
       resetCardPosition()
     }
 
@@ -236,9 +287,21 @@ export function ProjectCard({
       window.removeEventListener("keyup", handleKeyUp)
       window.removeEventListener("blur", handleBlur)
     }
-  }, [viewMode, isSwipingOut, onSwipeLeft, onSwipeRight, pressedArrow, resetCardPosition, triggerSwipe])
+  }, [
+    clearDragFrame,
+    isLoading,
+    isSwipingOut,
+    onSwipeLeft,
+    onSwipeRight,
+    pressedArrow,
+    resetCardPosition,
+    resetDragState,
+    triggerSwipe,
+    viewMode,
+  ])
 
   const handleProjectLike = (e?: React.MouseEvent) => {
+    if (isLoading) return
     if (e) {
       e.preventDefault()
       e.stopPropagation()
@@ -261,23 +324,12 @@ export function ProjectCard({
     }
   }
 
-  const normalizeExternalUrl = (url: string): string | null => {
-    if (!url || url === "NA") return null
-    try {
-      const parsed = new URL(url, "https://")
-      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null
-      return parsed.href
-    } catch {
-      return null
-    }
-  }
-
-  const handleExternalLink = (e: React.MouseEvent, url: string) => {
+  const handleExternalLink = (e: React.MouseEvent, url: string, label: string) => {
     e.preventDefault()
     e.stopPropagation()
     const safeUrl = normalizeExternalUrl(url)
     if (!safeUrl) return
-    window.open(safeUrl, "_blank", "noopener,noreferrer")
+    setExternalLinkPreview({ url: safeUrl, label })
   }
 
   const handleReport = (reason: string, customReason?: string) => {
@@ -293,103 +345,105 @@ export function ProjectCard({
 
   // Touch event handlers
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (viewMode !== "swipe" || isSwipingOut) return
+    if (isLoading || viewMode !== "swipe" || isSwipingOut) return
     const touch = e.touches[0]
-    setStartX(touch.clientX)
-    setCurrentX(touch.clientX)
-    setIsDragging(false)
+    dragStateRef.current.startX = touch.clientX
+    dragStateRef.current.currentX = touch.clientX
+    dragStateRef.current.isDragging = false
+    dragOffsetRef.current = 0
+    setIsPointerDragging(false)
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (viewMode !== "swipe" || isSwipingOut) return
+    if (isLoading || viewMode !== "swipe" || isSwipingOut) return
     const touch = e.touches[0]
-    setCurrentX(touch.clientX)
-    const diff = touch.clientX - startX
+    dragStateRef.current.currentX = touch.clientX
+    const diff = touch.clientX - dragStateRef.current.startX
 
-    if (Math.abs(diff) > 10) {
-      setIsDragging(true)
+    if (!dragStateRef.current.isDragging && Math.abs(diff) > 10) {
+      dragStateRef.current.isDragging = true
+      setIsPointerDragging(true)
     }
 
-    if (cardRef.current && isDragging) {
-      cardRef.current.style.transition = "none"
-      cardRef.current.style.transform = `translateX(${diff}px) rotate(${diff * 0.1}deg)`
+    if (dragStateRef.current.isDragging) {
+      dragOffsetRef.current = diff
+      scheduleDragFrame()
     }
   }
 
   const handleTouchEnd = () => {
-    if (!isDragging || viewMode !== "swipe") {
+    if (!dragStateRef.current.isDragging || viewMode !== "swipe") {
       if (cardRef.current) {
         cardRef.current.style.transform = ""
       }
-      setIsDragging(false)
+      resetDragState()
       return
     }
 
-    const diff = currentX - startX
+    const diff = dragStateRef.current.currentX - dragStateRef.current.startX
 
+    clearDragFrame()
     resetCardPosition()
 
-    if (Math.abs(diff) > dragThreshold) {
+    if (Math.abs(diff) > DRAG_THRESHOLD) {
       triggerSwipe(diff > 0 ? "right" : "left")
     }
 
-    setStartX(0)
-    setCurrentX(0)
-    setIsDragging(false)
+    resetDragState()
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (viewMode !== "swipe" || isSwipingOut) return
+    if (isLoading || viewMode !== "swipe" || isSwipingOut) return
     e.preventDefault()
-    setStartX(e.clientX)
-    setCurrentX(e.clientX)
-    setIsMouseDown(true)
-    setIsDragging(false)
+    dragStateRef.current.startX = e.clientX
+    dragStateRef.current.currentX = e.clientX
+    dragStateRef.current.isMouseDown = true
+    dragStateRef.current.isDragging = false
+    dragOffsetRef.current = 0
+    setIsPointerDragging(false)
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (viewMode !== "swipe" || !isMouseDown || isSwipingOut) return
-    setCurrentX(e.clientX)
-    const diff = e.clientX - startX
+    if (viewMode !== "swipe" || !dragStateRef.current.isMouseDown || isSwipingOut) return
+    dragStateRef.current.currentX = e.clientX
+    const diff = e.clientX - dragStateRef.current.startX
 
-    if (Math.abs(diff) > 10) {
-      setIsDragging(true)
+    if (!dragStateRef.current.isDragging && Math.abs(diff) > 10) {
+      dragStateRef.current.isDragging = true
+      setIsPointerDragging(true)
     }
 
-    if (cardRef.current && isDragging) {
-      cardRef.current.style.transition = "none"
-      cardRef.current.style.transform = `translateX(${diff}px) rotate(${diff * 0.1}deg)`
+    if (dragStateRef.current.isDragging) {
+      dragOffsetRef.current = diff
+      scheduleDragFrame()
     }
   }
 
   const handleMouseUp = () => {
-    if (!isMouseDown) return
+    if (!dragStateRef.current.isMouseDown) return
 
-    if (!isDragging || viewMode !== "swipe") {
+    if (!dragStateRef.current.isDragging || viewMode !== "swipe") {
       if (cardRef.current) {
         cardRef.current.style.transform = ""
       }
-      setIsMouseDown(false)
-      setIsDragging(false)
+      resetDragState()
       return
     }
 
-    const diff = currentX - startX
+    const diff = dragStateRef.current.currentX - dragStateRef.current.startX
 
+    clearDragFrame()
     resetCardPosition()
 
-    if (Math.abs(diff) > dragThreshold) {
+    if (Math.abs(diff) > DRAG_THRESHOLD) {
       triggerSwipe(diff > 0 ? "right" : "left")
     }
 
-    setStartX(0)
-    setCurrentX(0)
-    setIsMouseDown(false)
-    setIsDragging(false)
+    resetDragState()
   }
 
   const handleMouseLeave = () => {
-    if (isMouseDown) {
+    if (dragStateRef.current.isMouseDown) {
       handleMouseUp()
     }
   }
@@ -471,7 +525,7 @@ export function ProjectCard({
         relative bg-gray-700
         ${viewMode === "swipe" ? "h-[68%]" : `h-48`}
       `}>
-        {imageLoading && (
+        {!isLoading && imageLoading && (
           <div className="
             absolute inset-0 flex items-center justify-center bg-gray-700
           ">
@@ -481,33 +535,41 @@ export function ProjectCard({
           </div>
         )}
 
-        <SafeImage
-          src={imageSrc}
-          alt={project.name}
-          fill
-          className={`
-            object-cover transition-opacity duration-300
-            ${imageLoading ? `opacity-0` : `opacity-100`}
-          `}
-          onError={handleImageError}
-          onLoad={handleImageLoad}
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
+        {isLoading ? (
+          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-[#202c47] via-[#1a253f] to-[#141d34]" />
+        ) : (
+          <SafeImage
+            src={imageSrc}
+            alt={project.name}
+            fill
+            className={`
+              object-cover transition-opacity duration-300
+              ${imageLoading ? `opacity-0` : `opacity-100`}
+            `}
+            onError={handleImageError}
+            onLoad={handleImageLoad}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        )}
 
         {/* Category Badge */}
-        <div className="absolute top-3 left-3">
-          <span
-            className={`
-              rounded-full border px-2 py-1 text-[11px] font-bold uppercase tracking-wide
-              ${getCategoryBadgeClasses(topLevelCategory)}
-            `}
-          >
-            {topLevelCategory}
-          </span>
-        </div>
+        {isLoading ? (
+          <div className="absolute top-3 left-3 h-6 w-24 animate-pulse rounded-full bg-white/20" />
+        ) : (
+          <div className="absolute top-3 left-3">
+            <span
+              className={`
+                rounded-full border px-2 py-1 text-[11px] font-bold uppercase tracking-wide
+                ${getCategoryBadgeClasses(topLevelCategory)}
+              `}
+            >
+              {topLevelCategory}
+            </span>
+          </div>
+        )}
 
         {/* Boost Badge */}
-        {(project.boostAmount ?? 0) > 0 && (
+        {!isLoading && (project.boostAmount ?? 0) > 0 && (
           <div className="absolute top-3 right-3">
             <div className="
               flex items-center space-x-1 rounded-full bg-yellow-400 px-2 py-1
@@ -534,10 +596,20 @@ export function ProjectCard({
       ` : `p-4`}>
         <div className="mb-3 flex items-start justify-between">
           <div className="flex-1">
-            <h3 className="mb-1 line-clamp-1 text-lg font-bold text-white">{project.name}</h3>
-            <p className="mb-3 line-clamp-2 text-sm text-gray-300">
-              {stripMarkdown(project.description) || "No description available"}
-            </p>
+            {isLoading ? (
+              <>
+                <div className="mb-2 h-6 w-2/3 animate-pulse rounded bg-white/20" />
+                <div className="mb-1 h-4 w-full animate-pulse rounded bg-white/10" />
+                <div className="mb-3 h-4 w-5/6 animate-pulse rounded bg-white/10" />
+              </>
+            ) : (
+              <>
+                <h3 className="mb-1 line-clamp-1 text-lg font-bold text-white">{project.name}</h3>
+                <p className="mb-3 line-clamp-2 text-sm text-gray-300">
+                  {stripMarkdown(project.description) || "No description available"}
+                </p>
+              </>
+            )}
           </div>
         </div>
 
@@ -550,8 +622,8 @@ export function ProjectCard({
             flex flex-wrap items-center gap-y-2
             ${viewMode === "swipe" ? `gap-x-3` : `space-x-3`}
           `}>
-            {project.github && (
-              <button onClick={(e) => handleExternalLink(e, project.github!)} className="
+            {!isLoading && project.github && (
+              <button onClick={(e) => handleExternalLink(e, project.github!, "GitHub")} className="
                 flex items-center space-x-1 text-gray-400 transition-colors
                 hover:text-white
               " title="GitHub">
@@ -560,8 +632,8 @@ export function ProjectCard({
               </button>
             )}
 
-            {project.linkedin && (
-              <button onClick={(e) => handleExternalLink(e, project.linkedin!)} className="
+            {!isLoading && project.linkedin && (
+              <button onClick={(e) => handleExternalLink(e, project.linkedin!, "LinkedIn")} className="
                 flex items-center space-x-1 text-gray-400 transition-colors
                 hover:text-white
               " title="LinkedIn">
@@ -570,8 +642,8 @@ export function ProjectCard({
               </button>
             )}
 
-            {project.farcaster && (
-              <button onClick={(e) => handleExternalLink(e, project.farcaster!)} className="
+            {!isLoading && project.farcaster && (
+              <button onClick={(e) => handleExternalLink(e, project.farcaster!, "Farcaster")} className="
                 flex items-center space-x-1 text-gray-400 transition-colors
                 hover:text-white
               " title="Farcaster">
@@ -580,8 +652,8 @@ export function ProjectCard({
               </button>
             )}
 
-            {project.website && project.website !== "NA" && (
-              <button onClick={(e) => handleExternalLink(e, project.website!)} className="
+            {!isLoading && project.website && project.website !== "NA" && (
+              <button onClick={(e) => handleExternalLink(e, project.website!, "Website")} className="
                 flex items-center space-x-1 text-gray-400 transition-colors
                 hover:text-white
               " title="Website">
@@ -590,8 +662,8 @@ export function ProjectCard({
               </button>
             )}
 
-            {project.twitter && project.twitter !== "NA" && (
-              <button onClick={(e) => handleExternalLink(e, project.twitter!)} className="
+            {!isLoading && project.twitter && project.twitter !== "NA" && (
+              <button onClick={(e) => handleExternalLink(e, project.twitter!, "Twitter/X")} className="
                 flex items-center space-x-1 text-gray-400 transition-colors
                 hover:text-white
               " title="Twitter">
@@ -600,8 +672,8 @@ export function ProjectCard({
               </button>
             )}
 
-            {project.discord && project.discord !== "NA" && (
-              <button onClick={(e) => handleExternalLink(e, project.discord!)} className="
+            {!isLoading && project.discord && project.discord !== "NA" && (
+              <button onClick={(e) => handleExternalLink(e, project.discord!, "Discord")} className="
                 flex items-center space-x-1 text-gray-400 transition-colors
                 hover:text-white
               " title="Discord">
@@ -613,12 +685,16 @@ export function ProjectCard({
 
           {viewMode === "swipe" && (
             <button
-              onClick={(e) => handleButtonClick(e, () => setShowBoostModal(true))}
+              onClick={(e) => handleButtonClick(e, () => {
+                if (isLoading) return
+                setShowBoostModal(true)
+              })}
+              disabled={isLoading}
               className="
                 relative ml-3 flex shrink-0 items-center space-x-1 overflow-hidden
                 rounded-full bg-[#4E45D6] px-3 py-1 text-xs font-semibold text-white
                 shadow-[0_6px_18px_rgba(78,69,214,0.38)] transition-all duration-300
-                hover:brightness-110
+                hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-55
               "
             >
               <span
@@ -700,12 +776,16 @@ export function ProjectCard({
         {viewMode === "swipe" && (
           <div className="mt-2 flex items-center gap-2">
             <button
-              onClick={(e) => handleButtonClick(e, () => onSwipeLeft && onSwipeLeft())}
+              onClick={(e) => handleButtonClick(e, () => {
+                if (isLoading) return
+                onSwipeLeft && onSwipeLeft()
+              })}
+              disabled={isLoading}
               className="
                 flex h-12 flex-1 items-center justify-center rounded-full border
                 border-zinc-600/50 bg-zinc-800 text-sm font-medium text-white
                 transition-colors
-                hover:bg-zinc-700
+                hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-65
               "
             >
               <X className="mr-2 size-4" />
@@ -714,7 +794,7 @@ export function ProjectCard({
 
             <button
               onClick={(e) => handleButtonClick(e, () => onUndo && onUndo())}
-              disabled={!onUndo}
+              disabled={isLoading || !onUndo}
               className={`
                 flex size-12 items-center justify-center rounded-full border
                 border-zinc-600/50 transition-colors
@@ -735,16 +815,18 @@ export function ProjectCard({
             <button
               onClick={(e) =>
                 handleButtonClick(e, () => {
+                  if (isLoading) return
                   handleProjectLike()
                   if (onSwipeRight) {
                     onSwipeRight()
                   }
                 })
               }
+              disabled={isLoading}
               className="
                 flex h-12 flex-1 items-center justify-center rounded-full
                 bg-[#F9DE4B] text-sm font-semibold text-black transition-colors
-                hover:bg-[#f2cb22]
+                hover:bg-[#f2cb22] disabled:cursor-not-allowed disabled:opacity-65
               "
             >
               <ThumbsUp className="mr-2 size-4" />
@@ -774,12 +856,14 @@ export function ProjectCard({
       </div>
 
       {/* Modals */}
-      <BoostModal
-        isOpen={showBoostModal}
-        onClose={() => setShowBoostModal(false)}
-        projectName={project.name}
-        onBoost={handleBoost}
-      />
+      {!isLoading ? (
+        <BoostModal
+          isOpen={showBoostModal}
+          onClose={() => setShowBoostModal(false)}
+          projectName={project.name}
+          onBoost={handleBoost}
+        />
+      ) : null}
 
       {showShareModal && (
         <ShareModal project={project} isOpen={showShareModal} onClose={() => setShowShareModal(false)} />
@@ -793,6 +877,15 @@ export function ProjectCard({
           onSubmit={handleReport}
         />
       )}
+
+      {externalLinkPreview ? (
+        <ExternalLinkDialog
+          isOpen={Boolean(externalLinkPreview)}
+          onClose={() => setExternalLinkPreview(null)}
+          url={externalLinkPreview.url}
+          label={externalLinkPreview.label}
+        />
+      ) : null}
     </div>
   )
 

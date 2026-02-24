@@ -6,12 +6,22 @@ import { CategorySection } from "@/components/category-section"
 import { useProjects, useCategories } from "@/lib/useConvexData"
 import { useRouter } from "next/navigation"
 import { useMutation } from "convex/react"
+import { useShallow } from "zustand/react/shallow"
 import { api } from "../../../../convex/_generated/api"
 import type { Id } from "../../../../convex/_generated/dataModel"
 
 export default function ListPage() {
     const router = useRouter()
-    const { cart, setCart, setUserStats, betaUserId, betaStatus, creditsRemaining, creditsMax, setCreditsRemaining } = useApp()
+    const { cart, setCart, setUserStats, betaUserId, betaStatus, creditsRemaining, creditsMax, setCreditsRemaining } = useApp(useShallow((state) => ({
+        cart: state.cart,
+        setCart: state.setCart,
+        setUserStats: state.setUserStats,
+        betaUserId: state.betaUserId,
+        betaStatus: state.betaStatus,
+        creditsRemaining: state.creditsRemaining,
+        creditsMax: state.creditsMax,
+        setCreditsRemaining: state.setCreditsRemaining,
+    })))
     const projects = useProjects()
     const categories = useCategories()
     const consumeCredits = useMutation(api.waitlist.consumeCredits)

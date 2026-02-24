@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { useMutation } from "convex/react"
 import { useActiveAccount } from "thirdweb/react"
 import { useAccount as useWagmiAccount } from "wagmi"
+import { useShallow } from "zustand/react/shallow"
 
 import { useApp } from "@/context/AppContext"
 import { api } from "../../convex/_generated/api"
@@ -42,7 +43,15 @@ export function useAppBootstrap() {
     setBetaStatus,
     setCreditsRemaining,
     setCreditsMax,
-  } = useApp()
+  } = useApp(useShallow((state) => ({
+    walletAddress: state.walletAddress,
+    setWalletConnected: state.setWalletConnected,
+    setWalletAddress: state.setWalletAddress,
+    setBetaUserId: state.setBetaUserId,
+    setBetaStatus: state.setBetaStatus,
+    setCreditsRemaining: state.setCreditsRemaining,
+    setCreditsMax: state.setCreditsMax,
+  })))
 
   useEffect(() => {
     const guestWallet = getOrCreateGuestWalletId()
