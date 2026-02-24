@@ -1,35 +1,26 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useConnect, useAccount, useDisconnect } from "wagmi"
+import { useEffect, useMemo } from "react"
+import { useConnect, useAccount } from "wagmi"
 import { injected } from "wagmi/connectors"
 import { isMiniPay } from "@/lib/minipay-utils"
-import { StarryBackground } from "./starry-background"
 
 interface MiniPayWalletConnectProps {
   onConnect: () => void
 }
 
 export function MiniPayWalletConnect({ onConnect }: MiniPayWalletConnectProps) {
-  const [hideConnectBtn, setHideConnectBtn] = useState(false)
+  const hideConnectBtn = useMemo(() => isMiniPay(), [])
   const { connect } = useConnect()
   const { isConnected, address } = useAccount()
-  const { disconnect } = useDisconnect()
 
   useEffect(() => {
-    console.log("[v0] MiniPay detection:", isMiniPay())
-    console.log("[v0] Window.ethereum:", !!window.ethereum)
-
-    if (isMiniPay()) {
-      setHideConnectBtn(true)
+    if (hideConnectBtn) {
       connect({ connector: injected() })
     }
-  }, [connect])
+  }, [connect, hideConnectBtn])
 
   useEffect(() => {
-    console.log("[v0] Wallet connected:", isConnected)
-    console.log("[v0] Address:", address)
-
     if (isConnected && address) {
       onConnect()
     }
@@ -46,7 +37,7 @@ export function MiniPayWalletConnect({ onConnect }: MiniPayWalletConnectProps) {
         relative z-10 flex w-full max-w-md flex-col items-center justify-center
         px-8 py-12
       ">
-        <h1 className="mb-4 text-center text-5xl font-bold" style={{ fontFamily: "Pixelify Sans, monospace" }}>
+        <h1 className="font-display mb-4 text-center text-5xl font-bold tracking-widest">
           SwipePad
         </h1>
 
