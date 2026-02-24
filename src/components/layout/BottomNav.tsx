@@ -18,12 +18,11 @@ export function BottomNav() {
 
   return (
     <div className="
-      pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center p-2
-      pb-3
+      pointer-events-none z-50 flex w-full justify-center px-1 pt-1 pb-4
     ">
       <nav className="
-        pointer-events-auto flex items-center gap-2 rounded-full border
-        border-white/5 bg-secondary/90 p-1.5 shadow-2xl shadow-black/50
+        pointer-events-auto flex items-center gap-1.5 rounded-full border
+        border-white/5 bg-secondary/90 p-1 shadow-2xl shadow-black/50
         backdrop-blur-md
       ">
         {tabs.map((tab) => {
@@ -34,7 +33,7 @@ export function BottomNav() {
               onClick={() => router.push(tab.href)}
               className={cn(
                 `
-                  relative flex size-12 flex-col items-center justify-center
+                  relative flex size-10 flex-col items-center justify-center
                   rounded-full transition-all duration-300
                 `,
                 isActive ? "text-primary-foreground" : `
@@ -51,7 +50,7 @@ export function BottomNav() {
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
-              <tab.icon className="size-5" strokeWidth={isActive ? 2.5 : 2} />
+              <tab.icon className="size-4" strokeWidth={isActive ? 2.5 : 2} />
             </button>
           );
         })}

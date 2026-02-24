@@ -107,9 +107,9 @@ body {
 
 body {
   background:
-    radial-gradient(circle at 12% 20%, hsl(228 79% 56% / 0.2) 0%, transparent 32%),
-    radial-gradient(circle at 90% 8%, hsl(49 100% 50% / 0.12) 0%, transparent 26%),
-    linear-gradient(150deg, hsl(230 44% 7%) 0%, hsl(228 35% 12%) 48%, hsl(221 41% 10%) 100%);
+    radial-gradient(circle at 12% 20%, hsl(228 79% 56% / 0.14) 0%, transparent 30%),
+    radial-gradient(circle at 90% 8%, hsl(49 100% 50% / 0.08) 0%, transparent 22%),
+    linear-gradient(150deg, hsl(230 46% 5%) 0%, hsl(228 36% 8%) 48%, hsl(221 42% 6%) 100%);
   color: var(--foreground);
   font-family: var(--font-body), "Segoe UI", sans-serif;
   min-height: 100vh;
@@ -241,4 +241,22 @@ canvas {
 
 .animate-float {
   animation: onboarding-float 4s ease-in-out infinite;
+}
+
+@keyframes boost-sheen {
+  0% {
+    transform: translateX(-160%) skewX(-20deg);
+    opacity: 0;
+  }
+  14% {
+    opacity: 0.32;
+  }
+  34% {
+    transform: translateX(320%) skewX(-20deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(320%) skewX(-20deg);
+    opacity: 0;
+  }
 }

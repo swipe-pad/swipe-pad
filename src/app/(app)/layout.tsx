@@ -27,7 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     const renderPageContainer = (children: React.ReactNode) => {
         return <div className="
-          relative z-10 flex h-screen w-full flex-col overflow-hidden
+          relative flex h-screen w-full flex-col overflow-hidden
         ">{children}</div>
     }
 
@@ -66,7 +66,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         }
                         footer={shellConfig.showBottomNav ? <BottomNav /> : null}
                     >
-                        <div className={`view-content app-content-wrapper h-full ${pathname === "/" ? "overflow-hidden" : "custom-scrollbar overflow-y-auto"}`}>
+                        <div className={`view-content app-content-wrapper h-full ${pathname === "/" ? "overflow-visible" : "custom-scrollbar overflow-y-auto"}`}>
                             {children}
                         </div>
                     </AppShell>
