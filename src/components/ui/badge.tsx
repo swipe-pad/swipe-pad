@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 const badgeVariants = cva(
   `
     inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs
-    font-semibold transition-colors
+    font-semibold tracking-wide uppercase transition-colors
     focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none
   `,
   {
@@ -15,19 +15,19 @@ const badgeVariants = cva(
         default:
           `
             border-transparent bg-primary text-primary-foreground
-            hover:bg-primary/80
+            hover:bg-primary/90
           `,
         secondary:
           `
             border-transparent bg-secondary text-secondary-foreground
-            hover:bg-secondary/80
+            hover:bg-secondary/90
           `,
         destructive:
           `
             border-transparent bg-destructive text-destructive-foreground
             hover:bg-destructive/80
           `,
-        outline: "text-foreground",
+        outline: "border-surface-border bg-surface-1 text-foreground",
       },
     },
     defaultVariants: {

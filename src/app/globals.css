@@ -1,100 +1,141 @@
-@import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
-@theme {
+:root {
+  --background: hsl(220 23% 99%);
+  --foreground: hsl(223 34% 14%);
+  --card: hsl(0 0% 100% / 0.9);
+  --card-foreground: hsl(223 34% 14%);
+  --popover: hsl(0 0% 100% / 0.96);
+  --popover-foreground: hsl(223 34% 14%);
+  --primary: hsl(49 100% 50%);
+  --primary-foreground: hsl(216 32% 9%);
+  --secondary: hsl(222 32% 94%);
+  --secondary-foreground: hsl(223 35% 17%);
+  --muted: hsl(222 32% 94%);
+  --muted-foreground: hsl(220 13% 42%);
+  --accent: hsl(231 77% 67%);
+  --accent-foreground: hsl(0 0% 100%);
+  --destructive: hsl(0 72% 52%);
+  --destructive-foreground: hsl(210 40% 98%);
+  --border: hsl(224 20% 88%);
+  --input: hsl(224 20% 88%);
+  --ring: hsl(49 100% 50%);
+  --radius: 0.85rem;
+
+  --brand-yellow: hsl(49 100% 50%);
+  --brand-indigo: hsl(229 77% 67%);
+  --surface-1: hsl(225 25% 16% / 0.78);
+  --surface-2: hsl(225 24% 22% / 0.74);
+  --surface-3: hsl(225 19% 30% / 0.58);
+  --surface-border: hsl(223 24% 100% / 0.11);
+  --success: hsl(144 64% 46%);
+  --warning: hsl(40 96% 56%);
+}
+
+.dark {
+  --background: hsl(226 45% 6%);
+  --foreground: hsl(218 33% 96%);
+  --card: hsl(228 31% 12% / 0.82);
+  --card-foreground: hsl(218 33% 96%);
+  --popover: hsl(228 36% 10% / 0.95);
+  --popover-foreground: hsl(218 33% 96%);
+  --primary: hsl(49 100% 50%);
+  --primary-foreground: hsl(216 32% 9%);
+  --secondary: hsl(227 26% 18%);
+  --secondary-foreground: hsl(218 33% 96%);
+  --muted: hsl(227 23% 20%);
+  --muted-foreground: hsl(218 13% 74%);
+  --accent: hsl(229 77% 67%);
+  --accent-foreground: hsl(0 0% 100%);
+  --destructive: hsl(0 65% 42%);
+  --destructive-foreground: hsl(210 40% 98%);
+  --border: hsl(225 20% 24%);
+  --input: hsl(225 20% 24%);
+  --ring: hsl(49 100% 50%);
+
+  --surface-1: hsl(225 25% 16% / 0.78);
+  --surface-2: hsl(225 24% 22% / 0.74);
+  --surface-3: hsl(225 19% 30% / 0.58);
+  --surface-border: hsl(223 24% 100% / 0.11);
+}
+
+@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-brand-yellow: var(--brand-yellow);
+  --color-brand-indigo: var(--brand-indigo);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-border: var(--surface-border);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
 
-  --radius-xl: 0.75rem;
+  --radius-sm: calc(var(--radius) - 0.25rem);
+  --radius-md: calc(var(--radius) - 0.125rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.25rem);
+
+  --font-sans: var(--font-body);
 }
 
-@layer base {
-  :root {
-    --background: hsl(0 0% 100%);
-    --foreground: hsl(222.2 84% 4.9%);
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(222.2 84% 4.9%);
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(222.2 84% 4.9%);
-    --primary: #FFD600;
-    --primary-foreground: #000000;
-    --secondary: hsl(210 40% 96%);
-    --secondary-foreground: hsl(222.2 84% 11.2%);
-    --muted: hsl(210 40% 96%);
-    --muted-foreground: hsl(215.4 16.3% 46.9%);
-    --accent: hsl(210 40% 96%);
-    --accent-foreground: hsl(222.2 47.4% 11.2%);
-    --destructive: hsl(0 84.2% 60.2%);
-    --destructive-foreground: hsl(210 40% 98%);
-    --border: hsl(214.3 31.8% 91.4%);
-    --input: hsl(214.3 31.8% 91.4%);
-    --ring: hsl(222.2 84% 4.9%);
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: hsl(222.2 84% 4.9%);
-    --foreground: hsl(210 40% 98%);
-    --card: hsl(222.2 84% 4.9%);
-    --card-foreground: hsl(210 40% 98%);
-    --popover: hsl(222.2 84% 4.9%);
-    --popover-foreground: hsl(210 40% 98%);
-    --primary: #FFD600;
-    --primary-foreground: #000000;
-    --secondary: hsl(217.2 32.6% 17.5%);
-    --secondary-foreground: hsl(210 40% 98%);
-    --muted: hsl(217.2 32.6% 17.5%);
-    --muted-foreground: hsl(215 20.2% 65.1%);
-    --accent: hsl(217.2 32.6% 17.5%);
-    --accent-foreground: hsl(210 40% 98%);
-    --destructive: hsl(0 62.8% 30.6%);
-    --destructive-foreground: hsl(210 40% 98%);
-    --border: hsl(217.2 32.6% 17.5%);
-    --input: hsl(217.2 32.6% 17.5%);
-    --ring: hsl(212.7 26.8% 83.9%);
-  }
+* {
+  border-color: var(--border);
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-    min-height: 100vh;
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  }
+html,
+body {
+  height: 100%;
 }
 
-/* Custom scrollbar styles */
+body {
+  background:
+    radial-gradient(circle at 12% 20%, hsl(228 79% 56% / 0.2) 0%, transparent 32%),
+    radial-gradient(circle at 90% 8%, hsl(49 100% 50% / 0.12) 0%, transparent 26%),
+    linear-gradient(150deg, hsl(230 44% 7%) 0%, hsl(228 35% 12%) 48%, hsl(221 41% 10%) 100%);
+  color: var(--foreground);
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  min-height: 100vh;
+}
+
+.font-display {
+  font-family: var(--font-display), monospace;
+}
+
+.surface-panel {
+  background: var(--surface-1);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(14px);
+}
+
+.surface-panel-strong {
+  background: var(--surface-2);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(20px);
+}
+
+.focus-ring {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(49 100% 50% / 0.55);
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -109,42 +150,19 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #374151;
+  background: hsl(225 20% 24% / 0.8);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #6b7280;
+  background: hsl(226 16% 46%);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: hsl(227 18% 60%);
 }
 
-/* Line clamp utilities */
-.line-clamp-1 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-}
-
-.line-clamp-2 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.line-clamp-3 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-}
-
-/* View Transitions */
 @view-transition {
   navigation: auto;
 }
@@ -156,12 +174,14 @@
 }
 
 ::view-transition-old(content) {
-  animation: 0.3s cubic-bezier(0.4, 0, 1, 1) both fade-out,
+  animation:
+    0.3s cubic-bezier(0.4, 0, 1, 1) both fade-out,
     300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-out;
 }
 
 ::view-transition-new(content) {
-  animation: 0.3s cubic-bezier(0, 0, 0.2, 1) 0.1s both fade-in,
+  animation:
+    0.3s cubic-bezier(0, 0, 0.2, 1) 0.1s both fade-in,
     300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-in;
 }
 
@@ -201,12 +221,10 @@
   view-transition-name: content;
 }
 
-/* Background transparency fixes */
 .app-content-wrapper {
   background: transparent !important;
 }
 
-/* Starry Background visibility */
 canvas {
   pointer-events: none;
 }
@@ -214,7 +232,7 @@ canvas {
 @keyframes onboarding-float {
   0%,
   100% {
-    transform: translateY(0px);
+    transform: translateY(0);
   }
   50% {
     transform: translateY(-8px);
