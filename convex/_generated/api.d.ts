@@ -11,6 +11,7 @@
 import type * as admin from "../admin.js";
 import type * as donations from "../donations.js";
 import type * as projects from "../projects.js";
+import type * as routeId from "../routeId.js";
 import type * as syncAll from "../syncAll.js";
 import type * as syncHypercerts from "../syncHypercerts.js";
 import type * as syncKarmaGap from "../syncKarmaGap.js";
@@ -28,6 +29,7 @@ declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   donations: typeof donations;
   projects: typeof projects;
+  routeId: typeof routeId;
   syncAll: typeof syncAll;
   syncHypercerts: typeof syncHypercerts;
   syncKarmaGap: typeof syncKarmaGap;

@@ -4,6 +4,7 @@ import { useState } from "react"
 import { X, Share2, Copy, MessageSquare, Twitter } from "lucide-react"
 import type { Project } from "@/lib/useConvexData"
 import { openExternalUrl } from "@/lib/external-links"
+import { getCategoryFallbackImage } from "@/lib/utils"
 
 // Add Telegram icon component
 function TelegramIcon({ className }: { className?: string }) {
@@ -16,18 +17,21 @@ function TelegramIcon({ className }: { className?: string }) {
 
 interface ShareModalProps {
   project: Project
+  projectPathId?: string
   isOpen: boolean
   onClose: () => void
 }
 
-export function ShareModal({ project, isOpen, onClose }: ShareModalProps) {
+export function ShareModal({ project, projectPathId, isOpen, onClose }: ShareModalProps) {
   const [copied, setCopied] = useState(false)
   const [shareStatus, setShareStatus] = useState<string | null>(null)
 
   // Generate share content
+  const projectKey = projectPathId || project.routeId
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://swipepad.app"
   const shareTitle = `Support ${project.name} on SwipePad`
   const shareText = `Check out ${project.name} on SwipePad and help support their work!`
-  const shareUrl = `https://swipepad.app/project/${project.id}`
+  const shareUrl = `${origin}/project/${encodeURIComponent(projectKey)}`
 
   // Handle copy to clipboard
   const handleCopyLink = () => {
@@ -119,7 +123,7 @@ export function ShareModal({ project, isOpen, onClose }: ShareModalProps) {
         <div className="mb-6">
           <div className="mb-4 flex items-center space-x-3">
             <img
-              src={project.imageUrl || "/placeholder.svg"}
+              src={project.imageUrl || getCategoryFallbackImage(project.category)}
               alt={project.name}
               className="size-12 rounded-md object-cover"
             />

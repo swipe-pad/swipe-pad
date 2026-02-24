@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { action, internalMutation } from "./_generated/server";
 import { requireAdmin } from "./admin";
 import { internal } from "./_generated/api";
+import { generateUniqueRouteId } from "./routeId";
 
 // ============================================
 // Talent Protocol Sync Action
@@ -342,8 +343,11 @@ export const upsertBuilder = internalMutation({
       return existing._id;
     }
 
+    const routeId = await generateUniqueRouteId(ctx.db, args.projectId);
+
     return await ctx.db.insert("projects", {
       projectId: args.projectId,
+      routeId,
       title: args.displayName,
       description: args.bio || "Builder on Talent Protocol",
       imageUrl: args.imageUrl || "/placeholder.svg",

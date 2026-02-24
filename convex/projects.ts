@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireAdmin } from "./admin";
+import { generateUniqueRouteId } from "./routeId";
 
 // ============================================
 // Queries
@@ -68,6 +69,17 @@ export const getProject = query({
   },
 });
 
+/** Get project by short routeId */
+export const getProjectByRouteId = query({
+  args: { routeId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("projects")
+      .withIndex("by_routeId", (q) => q.eq("routeId", args.routeId))
+      .first();
+  },
+});
+
 /** Get projects by data source */
 export const getProjectsBySource = query({
   args: { source: v.string() },
@@ -124,8 +136,11 @@ export const upsertProject = mutation({
       return existing._id;
     }
 
+    const routeId = await generateUniqueRouteId(ctx.db, args.projectId);
+
     return await ctx.db.insert("projects", {
       projectId: args.projectId,
+      routeId,
       title: args.title,
       description: args.description,
       imageUrl: args.imageUrl,
@@ -138,6 +153,36 @@ export const upsertProject = mutation({
       active: true,
       createdAt: Date.now(),
     });
+  },
+});
+
+/** Backfill missing route IDs for existing projects */
+export const backfillRouteIds = mutation({
+  args: {
+    adminKey: v.string(),
+    callerWallet: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    requireAdmin(args.adminKey, args.callerWallet);
+
+    const max = Math.max(1, Math.min(args.limit ?? 500, 5000));
+    const projects = await ctx.db.query("projects").collect();
+    const missing = projects.filter((project) => !project.routeId).slice(0, max);
+
+    for (const project of missing) {
+      const routeId = await generateUniqueRouteId(ctx.db, project.projectId);
+      await ctx.db.patch(project._id, {
+        routeId,
+        updatedAt: Date.now(),
+      });
+    }
+
+    return {
+      scanned: projects.length,
+      updated: missing.length,
+      remaining: Math.max(0, projects.filter((project) => !project.routeId).length - missing.length),
+    };
   },
 });
 
