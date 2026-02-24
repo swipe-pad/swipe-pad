@@ -1,13 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useConnect, useAccount as useWagmiAccount } from "wagmi"
 import { injected } from "wagmi/connectors"
 import { ConnectButton, useActiveAccount } from "thirdweb/react"
 import { inAppWallet, createWallet } from "thirdweb/wallets"
 import { isMiniPay, isFarcaster } from "@/lib/minipay-utils"
 import { client } from "@/lib/thirdweb-client"
-import { StarryBackground } from "./starry-background"
 import { celo } from "thirdweb/chains"
 
 // Configure wallets with in-app wallet for easy onboarding
@@ -27,7 +26,7 @@ interface WalletConnectProps {
 }
 
 export function WalletConnect({ onConnect }: WalletConnectProps) {
-  const [isInjectedEnv, setIsInjectedEnv] = useState(false)
+  const isInjectedEnv = useMemo(() => isMiniPay() || isFarcaster(), [])
   const [isConnecting, setIsConnecting] = useState(false)
 
   // Wagmi hooks (for MiniPay / Farcaster)
@@ -36,13 +35,6 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
 
   // Thirdweb hooks (for standard web)
   const thirdwebAccount = useActiveAccount()
-
-  useEffect(() => {
-    // Check if we are in MiniPay or Farcaster environment
-    if (isMiniPay() || isFarcaster()) {
-      setIsInjectedEnv(true)
-    }
-  }, [])
 
   useEffect(() => {
     if (isWagmiConnected || thirdwebAccount) {
@@ -68,13 +60,11 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
       relative flex h-full flex-col items-center justify-center overflow-hidden
       px-6 py-12
     ">
-      <StarryBackground />
-
       <div className="
         relative z-10 flex flex-1 flex-col items-center justify-center
       ">
         <div className="mb-8 flex w-full justify-center">
-          <h1 className="text-center text-4xl font-bold" style={{ fontFamily: "Pixelify Sans, monospace" }}>
+          <h1 className="font-display text-center text-4xl font-bold tracking-widest">
             SwipePad
           </h1>
         </div>
@@ -171,4 +161,3 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
     </div>
   )
 }
-
