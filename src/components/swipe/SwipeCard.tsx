@@ -8,6 +8,7 @@ import { useSwipeAnimation } from "./use-swipe-animation";
 import { useSwipeGestures } from "./use-swipe-gestures";
 import { type SwipeDirection } from "@/types";
 import { SafeImage } from "@/components/ui/safe-image";
+import { buildImageProxyUrl, isRemoteImageUrl } from "@/lib/image-delivery";
 
 interface SwipeCardProps {
   campaign: Campaign;
@@ -32,6 +33,10 @@ export function SwipeCard({ campaign, onSwipe, index }: SwipeCardProps) {
 
   if (index > 2) return null; // Only render top 3 cards
 
+  const imageSrc = isRemoteImageUrl(campaign.imageUrl)
+    ? buildImageProxyUrl(campaign.imageUrl, { width: 1080, quality: 75 })
+    : campaign.imageUrl;
+
   return (
     <motion.div
       style={{
@@ -55,11 +60,12 @@ export function SwipeCard({ campaign, onSwipe, index }: SwipeCardProps) {
         <div className="relative h-3/5 w-full bg-card">
           {/* Fallback image if validation fails or placeholders */}
           <SafeImage
-            src={campaign.imageUrl}
+            src={imageSrc}
             alt={campaign.title}
             fill
             className="pointer-events-none object-cover"
             draggable={false}
+            loading="eager"
           />
           <div className="absolute top-4 left-4">
             <Badge variant="secondary" className="

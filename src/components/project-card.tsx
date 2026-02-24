@@ -9,6 +9,7 @@ import { ShareModal } from "@/components/share-modal"
 import { ReportModal } from "@/components/report-modal"
 import { ExternalLinkDialog } from "@/components/external-link-dialog"
 import { SafeImage } from "@/components/ui/safe-image"
+import { buildImageProxyUrl, isRemoteImageUrl } from "@/lib/image-delivery"
 import type { Project } from "@/lib/useConvexData"
 import type { DonationAmount, StableCoin } from "@/components/amount-selector"
 import { stripMarkdown } from "@/lib/markdown"
@@ -16,9 +17,11 @@ import { normalizeExternalUrl } from "@/lib/external-links"
 
 interface ProjectCardProps {
   project: Project
+  projectPathId?: string
   className?: string
   viewMode?: "swipe" | "category"
   isLoading?: boolean
+  showImageLoader?: boolean
   onSwipeLeft?: () => void
   onSwipeRight?: () => void
   onUndo?: () => void
@@ -120,9 +123,11 @@ function FarcasterIcon({ className }: { className?: string }) {
 
 export function ProjectCard({
   project,
+  projectPathId,
   className,
   viewMode = "swipe",
   isLoading = false,
+  showImageLoader = true,
   onSwipeLeft,
   onSwipeRight,
   onUndo,
@@ -137,8 +142,8 @@ export function ProjectCard({
   const [showShareModal, setShowShareModal] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
   const [externalLinkPreview, setExternalLinkPreview] = useState<{ url: string; label: string } | null>(null)
-  const [imageError, setImageError] = useState(false)
-  const [imageLoading, setImageLoading] = useState(true)
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set())
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set())
 
   // Touch/swipe handling
   const cardRef = useRef<HTMLDivElement>(null)
@@ -310,12 +315,22 @@ export function ProjectCard({
   }
 
   const handleImageError = () => {
-    setImageError(true)
-    setImageLoading(false)
+    const key = project.imageUrl
+    setFailedImages((prev) => {
+      if (prev.has(key)) return prev
+      const next = new Set(prev)
+      next.add(key)
+      return next
+    })
   }
 
   const handleImageLoad = () => {
-    setImageLoading(false)
+    setLoadedImages((prev) => {
+      if (prev.has(imageSrc)) return prev
+      const next = new Set(prev)
+      next.add(imageSrc)
+      return next
+    })
   }
 
   const handleBoost = (amount: number) => {
@@ -448,14 +463,33 @@ export function ProjectCard({
     }
   }
 
-  const getImageSrc = () => {
-    if (imageError || !project.imageUrl || project.imageUrl === "NA" || project.imageUrl === "/placeholder.svg") {
-      return "/placeholder.svg"
+  const getCategoryFallbackImage = (categoryName: string) => {
+    switch (categoryName) {
+      case "Builders":
+        return "/assets/builders-placeholder.png"
+      case "Eco Projects":
+        return "/assets/eco-projects-placeholder.png"
+      default:
+        // Everything else uses the "dApps" generic placeholder
+        return "/assets/dapps-placeholder.png"
     }
-    return project.imageUrl
   }
 
-  const imageSrc = getImageSrc() || "/placeholder.svg"
+  const getImageSrc = () => {
+    if (failedImages.has(project.imageUrl) || !project.imageUrl || project.imageUrl === "NA" || project.imageUrl.includes("/placeholder.svg")) {
+      return getCategoryFallbackImage(getTopLevelCategory(project.category))
+    }
+
+    if (!isRemoteImageUrl(project.imageUrl)) return project.imageUrl
+
+    return buildImageProxyUrl(project.imageUrl, {
+      width: 1080,
+      quality: 75,
+    })
+  }
+
+  const imageSrc = getImageSrc()
+  const imageLoading = !isLoading && !loadedImages.has(imageSrc)
   const topLevelCategory = getTopLevelCategory(project.category)
 
   const cardContent = (
@@ -525,7 +559,7 @@ export function ProjectCard({
         relative bg-gray-700
         ${viewMode === "swipe" ? "h-[68%]" : `h-48`}
       `}>
-        {!isLoading && imageLoading && (
+        {!isLoading && showImageLoader && imageLoading && (
           <div className="
             absolute inset-0 flex items-center justify-center bg-gray-700
           ">
@@ -544,10 +578,11 @@ export function ProjectCard({
             fill
             className={`
               object-cover transition-opacity duration-300
-              ${imageLoading ? `opacity-0` : `opacity-100`}
+              ${showImageLoader && imageLoading ? `opacity-0` : `opacity-100`}
             `}
             onError={handleImageError}
             onLoad={handleImageLoad}
+            loading={viewMode === "swipe" ? "eager" : "lazy"}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         )}
@@ -866,7 +901,12 @@ export function ProjectCard({
       ) : null}
 
       {showShareModal && (
-        <ShareModal project={project} isOpen={showShareModal} onClose={() => setShowShareModal(false)} />
+        <ShareModal
+          project={project}
+          projectPathId={projectPathId}
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+        />
       )}
 
       {ENABLE_REPORTS && showReportModal && (
