@@ -23,13 +23,13 @@ export function CategoryMenu({ selectedCategory, setSelectedCategory, setCurrent
     return null
   }
 
-  const visibleCategories = categories
+  const visibleCategories = ["All", ...categories]
 
   return (
-    <div className="relative mb-3 w-full">
+    <div className="relative mb-2 w-full">
       <div
         ref={scrollRef}
-        className="scrollbar-hide flex space-x-3 overflow-x-auto px-6 pb-2"
+        className="scrollbar-hide flex gap-3 overflow-x-auto px-1 pb-2"
         style={{
           WebkitOverflowScrolling: "touch",
           scrollbarWidth: "none",
@@ -44,24 +44,23 @@ export function CategoryMenu({ selectedCategory, setSelectedCategory, setCurrent
                 shrink-0 rounded-full px-4 py-2 text-sm font-medium
                 whitespace-nowrap transition-colors
               `,
-              selectedCategory === category ? "bg-[#FFD600] text-black" : `
-                bg-gray-700 text-gray-300
-                hover:bg-gray-600
-              `,
+              selectedCategory === category
+                ? "bg-[#F9DE4B] text-black shadow-lg shadow-yellow-900/20"
+                : "bg-[#2a334a] text-gray-300 hover:bg-[#34405a]",
             )}
             onClick={() => handleCategoryClick(category)}
           >
-            {category}
+            {category === "All" ? "See All" : category}
           </button>
         ))}
       </div>
 
-      <div className="mx-6 mt-1 h-1 w-full rounded-full bg-gray-800">
+      <div className="mt-1 h-1 w-full rounded-full bg-[#1f2a44]">
         <div
-          className="h-1 rounded-full bg-[#FFD600] transition-all duration-300"
+          className="h-1 rounded-full bg-[#F9DE4B] transition-all duration-300"
           style={{
             width: `${Math.min(100, (100 / visibleCategories.length) * 2)}%`,
-            marginLeft: `${(selectedCategory ? categories.indexOf(selectedCategory) : 0) * (100 / visibleCategories.length)}%`,
+            marginLeft: `${(selectedCategory ? visibleCategories.indexOf(selectedCategory) : 0) * (100 / visibleCategories.length)}%`,
           }}
         ></div>
       </div>

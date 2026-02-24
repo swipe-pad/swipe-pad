@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
-import { Heart, MessageCircle, Flag, Zap, ExternalLink, X, ThumbsUp } from "lucide-react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { MessageCircle, Flag, Zap, ExternalLink, RotateCcw, X, ThumbsUp } from "lucide-react"
 import { BoostModal } from "@/components/boost-modal"
 import { ShareModal } from "@/components/share-modal"
 import { ReportModal } from "@/components/report-modal"
@@ -14,14 +14,30 @@ import Image from "next/image"
 
 interface ProjectCardProps {
   project: Project
+  className?: string
   viewMode?: "swipe" | "category"
   onSwipeLeft?: () => void
   onSwipeRight?: () => void
+  onUndo?: () => void
   onDonate?: (amount?: number) => void
   onShare?: () => void
   onBoost?: (amount: number) => void
   donationAmount?: DonationAmount
   donationCurrency?: StableCoin
+}
+
+function getCategoryBadgeClasses(category: string) {
+  const key = category.toLowerCase()
+
+  if (key.includes("builder")) return "border-blue-300/60 bg-blue-500 text-white"
+  if (key.includes("eco") || key.includes("climate") || key.includes("regen")) {
+    return "border-emerald-300/60 bg-emerald-500 text-white"
+  }
+  if (key.includes("dapp")) return "border-violet-300/60 bg-violet-500 text-white"
+  if (key.includes("defi")) return "border-cyan-300/60 bg-cyan-500 text-slate-900"
+  if (key.includes("social")) return "border-pink-300/60 bg-pink-500 text-white"
+
+  return "border-amber-300/60 bg-amber-500 text-slate-900"
 }
 
 // Custom X (Twitter) Icon Component
@@ -91,18 +107,17 @@ function FarcasterIcon({ className }: { className?: string }) {
 
 export function ProjectCard({
   project,
+  className,
   viewMode = "swipe",
   onSwipeLeft,
   onSwipeRight,
+  onUndo,
   onDonate,
-  onShare,
   onBoost,
-  donationAmount,
-  donationCurrency,
 }: ProjectCardProps) {
+  type SwipeDirection = "left" | "right"
+
   const ENABLE_REPORTS = false
-  const [isLiked, setIsLiked] = useState(project.userHasLiked || false)
-  const [likeCount, setLikeCount] = useState(project.likes || 0)
   const [showBoostModal, setShowBoostModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
@@ -115,17 +130,103 @@ export function ProjectCard({
   const [currentX, setCurrentX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [isMouseDown, setIsMouseDown] = useState(false)
+  const [isSwipingOut, setIsSwipingOut] = useState(false)
+  const [pressedArrow, setPressedArrow] = useState<SwipeDirection | null>(null)
   const [dragThreshold] = useState(50)
+  const keyboardOffset = pressedArrow === "right" ? 48 : pressedArrow === "left" ? -48 : 0
+  const dragOffset = isDragging || isMouseDown ? currentX - startX : keyboardOffset
+  const swipeProgress = Math.min(Math.abs(dragOffset) / 120, 1)
 
-  // Separate handlers for heart and like button
-  const handleHeartLike = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault()
-      e.stopPropagation()
+  const resetCardPosition = useCallback(() => {
+    if (!cardRef.current) return
+    cardRef.current.style.transition = "transform 180ms ease-out"
+    cardRef.current.style.transform = ""
+  }, [])
+
+  const triggerSwipe = useCallback((direction: SwipeDirection) => {
+    if (isSwipingOut || viewMode !== "swipe") return
+    const callback = direction === "right" ? onSwipeRight : onSwipeLeft
+    if (!callback) return
+
+    setIsSwipingOut(true)
+    setPressedArrow(null)
+
+    if (cardRef.current) {
+      cardRef.current.style.transition = "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)"
+      cardRef.current.style.transform = `translateX(${direction === "right" ? 260 : -260}px) rotate(${direction === "right" ? 14 : -14}deg)`
     }
-    setIsLiked(!isLiked)
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1)
-  }
+
+    window.setTimeout(() => {
+      callback()
+
+      if (cardRef.current) {
+        cardRef.current.style.transition = "none"
+        cardRef.current.style.transform = ""
+      }
+
+      setStartX(0)
+      setCurrentX(0)
+      setIsDragging(false)
+      setIsMouseDown(false)
+      setIsSwipingOut(false)
+    }, 210)
+  }, [isSwipingOut, onSwipeLeft, onSwipeRight, viewMode])
+
+  useEffect(() => {
+    if (viewMode !== "swipe") return
+
+    const isEditableTarget = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false
+      return (
+        target.isContentEditable ||
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.tagName === "SELECT"
+      )
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return
+      if (event.repeat || isEditableTarget(event.target) || isSwipingOut || pressedArrow) return
+
+      const direction: SwipeDirection = event.key === "ArrowRight" ? "right" : "left"
+      const callback = direction === "right" ? onSwipeRight : onSwipeLeft
+      if (!callback) return
+
+      event.preventDefault()
+      setPressedArrow(direction)
+
+      if (cardRef.current) {
+        cardRef.current.style.transition = "transform 120ms ease-out"
+        cardRef.current.style.transform = `translateX(${direction === "right" ? 48 : -48}px) rotate(${direction === "right" ? 4 : -4}deg)`
+      }
+    }
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return
+      const direction: SwipeDirection = event.key === "ArrowRight" ? "right" : "left"
+      if (pressedArrow !== direction) return
+
+      event.preventDefault()
+      triggerSwipe(direction)
+    }
+
+    const handleBlur = () => {
+      setPressedArrow(null)
+      resetCardPosition()
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("keyup", handleKeyUp)
+    window.addEventListener("blur", handleBlur)
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("keyup", handleKeyUp)
+      window.removeEventListener("blur", handleBlur)
+    }
+  }, [viewMode, isSwipingOut, onSwipeLeft, onSwipeRight, pressedArrow, resetCardPosition, triggerSwipe])
 
   const handleProjectLike = (e?: React.MouseEvent) => {
     if (e) {
@@ -182,7 +283,7 @@ export function ProjectCard({
 
   // Touch event handlers
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (viewMode !== "swipe") return
+    if (viewMode !== "swipe" || isSwipingOut) return
     const touch = e.touches[0]
     setStartX(touch.clientX)
     setCurrentX(touch.clientX)
@@ -190,7 +291,7 @@ export function ProjectCard({
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (viewMode !== "swipe") return
+    if (viewMode !== "swipe" || isSwipingOut) return
     const touch = e.touches[0]
     setCurrentX(touch.clientX)
     const diff = touch.clientX - startX
@@ -200,6 +301,7 @@ export function ProjectCard({
     }
 
     if (cardRef.current && isDragging) {
+      cardRef.current.style.transition = "none"
       cardRef.current.style.transform = `translateX(${diff}px) rotate(${diff * 0.1}deg)`
     }
   }
@@ -215,16 +317,10 @@ export function ProjectCard({
 
     const diff = currentX - startX
 
-    if (cardRef.current) {
-      cardRef.current.style.transform = ""
-    }
+    resetCardPosition()
 
     if (Math.abs(diff) > dragThreshold) {
-      if (diff > 0 && onSwipeRight) {
-        onSwipeRight()
-      } else if (diff < 0 && onSwipeLeft) {
-        onSwipeLeft()
-      }
+      triggerSwipe(diff > 0 ? "right" : "left")
     }
 
     setStartX(0)
@@ -233,7 +329,7 @@ export function ProjectCard({
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (viewMode !== "swipe") return
+    if (viewMode !== "swipe" || isSwipingOut) return
     e.preventDefault()
     setStartX(e.clientX)
     setCurrentX(e.clientX)
@@ -242,7 +338,7 @@ export function ProjectCard({
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (viewMode !== "swipe" || !isMouseDown) return
+    if (viewMode !== "swipe" || !isMouseDown || isSwipingOut) return
     setCurrentX(e.clientX)
     const diff = e.clientX - startX
 
@@ -251,6 +347,7 @@ export function ProjectCard({
     }
 
     if (cardRef.current && isDragging) {
+      cardRef.current.style.transition = "none"
       cardRef.current.style.transform = `translateX(${diff}px) rotate(${diff * 0.1}deg)`
     }
   }
@@ -269,16 +366,10 @@ export function ProjectCard({
 
     const diff = currentX - startX
 
-    if (cardRef.current) {
-      cardRef.current.style.transform = ""
-    }
+    resetCardPosition()
 
     if (Math.abs(diff) > dragThreshold) {
-      if (diff > 0 && onSwipeRight) {
-        onSwipeRight()
-      } else if (diff < 0 && onSwipeLeft) {
-        onSwipeLeft()
-      }
+      triggerSwipe(diff > 0 ? "right" : "left")
     }
 
     setStartX(0)
@@ -303,7 +394,14 @@ export function ProjectCard({
   const cardContent = (
     <div
       ref={cardRef}
-      className="overflow-hidden rounded-2xl bg-gray-800 shadow-lg select-none"
+      className={`
+        relative overflow-hidden select-none
+        ${viewMode === "swipe"
+          ? "h-full rounded-[28px] border border-surface-border bg-[#101a2f] shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
+          : "rounded-2xl bg-gray-800 shadow-lg"
+        }
+        ${className ?? ""}
+      `}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -312,8 +410,34 @@ export function ProjectCard({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
     >
+      {viewMode === "swipe" && (
+        <>
+          <div
+            className="pointer-events-none absolute inset-0 z-10 bg-green-500/15 transition-opacity"
+            style={{ opacity: dragOffset > 0 ? swipeProgress : 0 }}
+          />
+          <div
+            className="pointer-events-none absolute inset-0 z-10 bg-red-500/15 transition-opacity"
+            style={{ opacity: dragOffset < 0 ? swipeProgress : 0 }}
+          />
+
+          <div
+            className="pointer-events-none absolute left-5 top-6 z-20 rounded-xl border-2 border-green-300 bg-green-500/85 px-3 py-1 text-xs font-black tracking-wide text-white"
+            style={{ opacity: dragOffset > 0 ? swipeProgress : 0 }}
+          >
+            LIKE
+          </div>
+          <div
+            className="pointer-events-none absolute right-5 top-6 z-20 rounded-xl border-2 border-red-300 bg-red-500/85 px-3 py-1 text-xs font-black tracking-wide text-white"
+            style={{ opacity: dragOffset < 0 ? swipeProgress : 0 }}
+          >
+            SKIP
+          </div>
+        </>
+      )}
+
       {/* Project Image */}
-      <div className="relative h-48 bg-gray-700">
+      <div className={`relative bg-gray-700 ${viewMode === "swipe" ? "h-[68%]" : "h-48"}`}>
         {imageLoading && (
           <div className="
             absolute inset-0 flex items-center justify-center bg-gray-700
@@ -338,10 +462,16 @@ export function ProjectCard({
         />
 
         {/* Category Badge */}
-        <div className="absolute top-3 left-3">
-          <span className="
-            bg-opacity-70 rounded-full bg-black px-2 py-1 text-xs text-white
-          ">{project.category}</span>
+        <div className="absolute left-3 top-3">
+          <span
+            className={`
+              rounded-full border px-2 py-1 text-[11px]
+              font-semibold
+              ${getCategoryBadgeClasses(project.category)}
+            `}
+          >
+            {project.category}
+          </span>
         </div>
 
         {/* Boost Badge */}
@@ -356,10 +486,14 @@ export function ProjectCard({
             </div>
           </div>
         )}
+
+        {viewMode === "swipe" && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[44%] bg-gradient-to-t from-[#050a16]/95 via-[#0b1327]/82 to-transparent" />
+        )}
       </div>
 
       {/* Project Info */}
-      <div className="p-4">
+      <div className={viewMode === "swipe" ? "absolute inset-x-0 bottom-0 z-20 rounded-t-3xl border-t border-surface-border bg-[#0b1327]/84 p-4 backdrop-blur-xl" : "p-4"}>
         <div className="mb-3 flex items-start justify-between">
           <div className="flex-1">
             <h3 className="mb-1 line-clamp-1 text-lg font-bold text-white">{project.name}</h3>
@@ -369,134 +503,93 @@ export function ProjectCard({
           </div>
         </div>
 
-        {/* Social Links - Show based on availability */}
-        <div className="mb-4 flex flex-wrap items-center space-x-3 gap-y-2">
-          {project.github && (
-            <button
-              onClick={(e) => handleExternalLink(e, project.github!)}
-              className="
-                flex items-center space-x-1 text-gray-400 transition-colors
-                hover:text-white
-              "
-              title="GitHub"
-            >
-              <GitHubIcon className="size-4" />
-              <span className="text-xs">GitHub</span>
-            </button>
-          )}
+        {/* Social Links + Boost */}
+        <div className={`mb-4 flex items-center ${viewMode === "swipe" ? "justify-between" : "justify-start"}`}>
+          <div className={`flex flex-wrap items-center gap-y-2 ${viewMode === "swipe" ? "gap-x-3" : "space-x-3"}`}>
+            {project.github && (
+              <button onClick={(e) => handleExternalLink(e, project.github!)} className="flex items-center space-x-1 text-gray-400 transition-colors hover:text-white" title="GitHub">
+                <GitHubIcon className="size-4" />
+                {viewMode === "category" && <span className="text-xs">GitHub</span>}
+              </button>
+            )}
 
-          {project.linkedin && (
-            <button
-              onClick={(e) => handleExternalLink(e, project.linkedin!)}
-              className="
-                flex items-center space-x-1 text-gray-400 transition-colors
-                hover:text-white
-              "
-              title="LinkedIn"
-            >
-              <LinkedInIcon className="size-4" />
-              <span className="text-xs">LinkedIn</span>
-            </button>
-          )}
+            {project.linkedin && (
+              <button onClick={(e) => handleExternalLink(e, project.linkedin!)} className="flex items-center space-x-1 text-gray-400 transition-colors hover:text-white" title="LinkedIn">
+                <LinkedInIcon className="size-4" />
+                {viewMode === "category" && <span className="text-xs">LinkedIn</span>}
+              </button>
+            )}
 
-          {project.farcaster && (
-            <button
-              onClick={(e) => handleExternalLink(e, project.farcaster!)}
-              className="
-                flex items-center space-x-1 text-gray-400 transition-colors
-                hover:text-white
-              "
-              title="Farcaster"
-            >
-              <FarcasterIcon className="size-4" />
-              <span className="text-xs">Farcaster</span>
-            </button>
-          )}
+            {project.farcaster && (
+              <button onClick={(e) => handleExternalLink(e, project.farcaster!)} className="flex items-center space-x-1 text-gray-400 transition-colors hover:text-white" title="Farcaster">
+                <FarcasterIcon className="size-4" />
+                {viewMode === "category" && <span className="text-xs">Farcaster</span>}
+              </button>
+            )}
 
-          {project.website && project.website !== "NA" && (
-            <button
-              onClick={(e) => handleExternalLink(e, project.website!)}
-              className="
-                flex items-center space-x-1 text-gray-400 transition-colors
-                hover:text-white
-              "
-              title="Website"
-            >
-              <WebsiteIcon className="size-4" />
-              <span className="text-xs">Website</span>
-            </button>
-          )}
+            {project.website && project.website !== "NA" && (
+              <button onClick={(e) => handleExternalLink(e, project.website!)} className="flex items-center space-x-1 text-gray-400 transition-colors hover:text-white" title="Website">
+                <WebsiteIcon className="size-4" />
+                {viewMode === "category" && <span className="text-xs">Website</span>}
+              </button>
+            )}
 
-          {project.twitter && project.twitter !== "NA" && (
-            <button
-              onClick={(e) => handleExternalLink(e, project.twitter!)}
-              className="
-                flex items-center space-x-1 text-gray-400 transition-colors
-                hover:text-white
-              "
-              title="Twitter"
-            >
-              <XIcon className="size-4" />
-              <span className="text-xs">Twitter</span>
-            </button>
-          )}
+            {project.twitter && project.twitter !== "NA" && (
+              <button onClick={(e) => handleExternalLink(e, project.twitter!)} className="flex items-center space-x-1 text-gray-400 transition-colors hover:text-white" title="Twitter">
+                <XIcon className="size-4" />
+                {viewMode === "category" && <span className="text-xs">Twitter</span>}
+              </button>
+            )}
 
-          {project.discord && project.discord !== "NA" && (
+            {project.discord && project.discord !== "NA" && (
+              <button onClick={(e) => handleExternalLink(e, project.discord!)} className="flex items-center space-x-1 text-gray-400 transition-colors hover:text-white" title="Discord">
+                <DiscordIcon className="size-4" />
+                {viewMode === "category" && <span className="text-xs">Discord</span>}
+              </button>
+            )}
+          </div>
+
+          {viewMode === "swipe" && (
             <button
-              onClick={(e) => handleExternalLink(e, project.discord!)}
-              className="
-                flex items-center space-x-1 text-gray-400 transition-colors
-                hover:text-white
-              "
-              title="Discord"
+              onClick={(e) => handleButtonClick(e, () => setShowBoostModal(true))}
+              className="ml-3 flex shrink-0 items-center space-x-1 rounded-full bg-brand-indigo px-3 py-1 text-xs font-semibold text-white transition-colors hover:brightness-110"
             >
-              <DiscordIcon className="size-4" />
-              <span className="text-xs">Discord</span>
+              <Zap className="size-4" />
+              <span>Boost</span>
             </button>
           )}
         </div>
 
         {/* Interaction Buttons */}
-        <div className="flex items-center justify-between">
+        <div className={`items-center justify-between ${viewMode === "swipe" ? "mb-3 flex" : "flex"}`}>
           <div className="flex items-center space-x-4">
-            {/* Like Button */}
-            <button
-              onClick={handleHeartLike}
-              className="
-                flex items-center space-x-1 text-gray-400 transition-colors
-                hover:text-red-400
-              "
-            >
-              <Heart className={`
-                size-5
-                ${isLiked ? "fill-red-400 text-red-400" : ""}
-              `} />
-              <span className="text-xs">{likeCount}</span>
-            </button>
-
             {/* Comment Button */}
-            <button
-              onClick={(e) => handleButtonClick(e, () => console.log("Comment clicked"))}
-              className="
-                flex items-center space-x-1 text-gray-400 transition-colors
-                hover:text-blue-400
-              "
-            >
-              <MessageCircle className="size-5" />
-              <span className="text-xs">{project.comments}</span>
-            </button>
+            {viewMode === "category" && (
+              <button
+                onClick={(e) => handleButtonClick(e, () => console.log("Comment clicked"))}
+                className="
+                  flex items-center space-x-1 text-gray-400 transition-colors
+                  hover:text-blue-400
+                "
+              >
+                <MessageCircle className="size-5" />
+                <span className="text-xs">{project.comments}</span>
+              </button>
+            )}
 
             {/* Share Button */}
-            <button
-              onClick={(e) => handleButtonClick(e, () => setShowShareModal(true))}
-              className="
-                flex items-center space-x-1 text-gray-400 transition-colors
-                hover:text-green-400
-              "
-            >
-              <ExternalLink className="size-4" />
-              <span className="text-xs">Share</span>
-            </button>
+            {viewMode === "category" && (
+              <button
+                onClick={(e) => handleButtonClick(e, () => setShowShareModal(true))}
+                className="
+                  flex items-center space-x-1 text-gray-400 transition-colors
+                  hover:text-green-400
+                "
+              >
+                <ExternalLink className="size-4" />
+                <span className="text-xs">Share</span>
+              </button>
+            )}
 
             {/* Report Button */}
             {ENABLE_REPORTS ? (
@@ -512,46 +605,51 @@ export function ProjectCard({
             ) : null}
           </div>
 
-          {/* Boost Button */}
-          <button
-            onClick={(e) => handleButtonClick(e, () => setShowBoostModal(true))}
-            className="
-              flex items-center space-x-1 rounded-lg bg-blue-500 px-2 py-1
-              text-xs font-medium text-white transition-colors
-              hover:bg-blue-600
-            "
-          >
-            <Zap className="size-4" />
-            <span>Boost</span>
-          </button>
+          {viewMode === "category" && (
+            <button
+              onClick={(e) => handleButtonClick(e, () => setShowBoostModal(true))}
+              className="flex items-center space-x-1 rounded-lg bg-blue-500 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-blue-600"
+            >
+              <Zap className="size-4" />
+              <span>Boost</span>
+            </button>
+          )}
         </div>
 
         {/* Swipe Mode Actions */}
         {viewMode === "swipe" && (
-          <div className="mt-4 flex space-x-3">
+          <div className="mt-2 flex items-center gap-2">
             <button
               onClick={(e) => handleButtonClick(e, () => onSwipeLeft && onSwipeLeft())}
-              className="
-                flex flex-1 items-center justify-center rounded-lg bg-gray-600
-                py-2 text-sm font-medium text-white transition-colors
-                hover:bg-gray-500
-              "
+              className="flex h-12 flex-1 items-center justify-center rounded-full border border-zinc-600/50 bg-zinc-800 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
             >
               <X className="mr-2 size-4" />
               Skip
             </button>
+
+            <button
+              onClick={(e) => handleButtonClick(e, () => onUndo && onUndo())}
+              disabled={!onUndo}
+              className={`flex size-12 items-center justify-center rounded-full border border-zinc-600/50 transition-colors ${
+                onUndo
+                  ? "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                  : "cursor-not-allowed bg-zinc-900/70 text-zinc-600"
+              }`}
+              aria-label="Undo last swipe"
+            >
+              <RotateCcw className="size-5" />
+            </button>
+
             <button
               onClick={(e) =>
                 handleButtonClick(e, () => {
                   handleProjectLike()
-                  onSwipeRight && onSwipeRight()
+                  if (onSwipeRight) {
+                    onSwipeRight()
+                  }
                 })
               }
-              className="
-                flex flex-1 items-center justify-center rounded-lg bg-[#FFD600]
-                py-2 text-sm font-medium text-black transition-colors
-                hover:bg-yellow-500
-              "
+              className="flex h-12 flex-1 items-center justify-center rounded-full bg-[#F9DE4B] text-sm font-semibold text-black transition-colors hover:bg-[#f2cb22]"
             >
               <ThumbsUp className="mr-2 size-4" />
               Like
