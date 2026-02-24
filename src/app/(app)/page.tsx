@@ -42,6 +42,18 @@ type SwipeSnapshot = {
     prevUserProfile: UserProfileState
 }
 
+const TOP_CATEGORIES = ["See All", "Builders", "Eco Projects", "Dapps"] as const
+type TopCategory = (typeof TOP_CATEGORIES)[number]
+
+function getTopLevelCategory(category: string): TopCategory {
+    const key = category.toLowerCase()
+    if (key.includes("dapp")) return "Dapps"
+    if (key.includes("eco") || key.includes("climate") || key.includes("regen") || key.includes("nature")) {
+        return "Eco Projects"
+    }
+    return "Builders"
+}
+
 export default function Home() {
     const projects = useProjects()
     const {
@@ -65,11 +77,13 @@ export default function Home() {
     const consumeCredits = useMutation(api.waitlist.consumeCredits)
     const recordSwipe = useMutation(api.waitlist.recordSwipe)
 
-    const categoryTabs = ["All", ...Array.from(new Set(projects.map((project) => project.category)))]
-    const activeCategory = categoryTabs.includes(selectedCategory) ? selectedCategory : "All"
-    const filteredProjects = activeCategory === "All"
+    const categoryTabs = TOP_CATEGORIES
+    const activeCategory = categoryTabs.includes(selectedCategory as TopCategory)
+        ? (selectedCategory as TopCategory)
+        : "See All"
+    const filteredProjects = activeCategory === "See All"
         ? projects
-        : projects.filter((project) => project.category === activeCategory)
+        : projects.filter((project) => getTopLevelCategory(project.category) === activeCategory)
 
     const safeProjectIndex = useMemo(() => {
         if (filteredProjects.length === 0) return 0
@@ -223,7 +237,7 @@ export default function Home() {
 
     return (
         <div className="
-          flex h-full min-h-0 flex-col overflow-hidden px-3 pt-1 pb-2
+          flex h-full min-h-0 flex-col overflow-hidden px-3 pt-1 pb-3
         ">
             <div className="mb-2">
                 <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
@@ -251,7 +265,7 @@ export default function Home() {
                                     }
                                 `}
                             >
-                                {category === "All" ? "See All" : category}
+                                {category}
                             </button>
                         )
                     })}
@@ -264,9 +278,9 @@ export default function Home() {
                       text-[10px] font-medium tracking-wide text-gray-400
                     ">YOUR LEVEL</p>
                     <p className="
-                      font-display text-3xl leading-none tracking-wide
+                      font-display text-2xl leading-none tracking-wide
                       text-white
-                      sm:text-4xl
+                      sm:text-3xl
                     ">LVL {level}</p>
                 </div>
 
@@ -290,12 +304,12 @@ export default function Home() {
 
             <div className="
               flex min-h-0 flex-1 items-center justify-center overflow-hidden
-              pb-2
+              py-1
             ">
                 <div className="
-                  aspect-5/8 h-[min(56vh,560px)] w-auto max-w-full
-                  sm:h-[min(60vh,640px)]
-                  lg:h-[min(64vh,700px)]
+                  aspect-5/8 h-[min(100%,740px)] w-auto max-w-full
+                  sm:h-[min(100%,820px)]
+                  lg:h-[min(100%,920px)]
                 ">
                     {filteredProjects.length > 0 ? (
                         <ProjectCard
