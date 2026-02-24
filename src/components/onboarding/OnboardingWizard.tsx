@@ -171,9 +171,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                         className={`
                           mb-2 text-xl font-bold text-white
                           sm:text-2xl
-                          ${currentStep === 0 ? `tracking-widest` : ""}
+                          ${currentStep === 0 ? `font-display tracking-widest` : ""}
                         `}
-                        style={currentStep === 0 ? { fontFamily: "Pixelify Sans, monospace" } : undefined}
                     >
                         {steps[currentStep].title}
                     </h2>
