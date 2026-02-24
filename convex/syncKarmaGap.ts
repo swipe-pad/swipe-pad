@@ -16,78 +16,104 @@ import { internal } from "./_generated/api";
  */
 export const syncFromKarmaGap = action({
   args: {
-    adminKey: v.string(),
+    adminKey: v.optional(v.string()),
     callerWallet: v.optional(v.string()),
     communitySlug: v.optional(v.string()),
+    perPage: v.optional(v.number()),
+    maxPages: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     requireAdmin(args.adminKey, args.callerWallet);
     const communitySlug = args.communitySlug ?? "celo";
+    const perPage = Math.min(Math.max(args.perPage ?? 50, 1), 100);
+    const maxPages = Math.min(Math.max(args.maxPages ?? 5, 1), 20);
 
     // GAP Indexer API endpoint
     const baseUrl = "https://gapapi.karmahq.xyz";
 
-    // Fetch grants for the community (containing project info)
-    const response = await fetch(
-      `${baseUrl}/communities/${communitySlug}/grants?limit=100`
-    );
+    // Fetch paginated projects from GAP v2 API
+    const allProjects: any[] = [];
 
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch grants from GAP: ${response.statusText}`
+    for (let page = 1; page <= maxPages; page++) {
+      const response = await fetch(
+        `${baseUrl}/v2/communities/${communitySlug}/projects?limit=${perPage}&page=${page}`
       );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch projects from GAP: ${response.status} ${response.statusText}`);
+      }
+
+      const payload = await response.json();
+      const pageProjects = payload.payload ?? [];
+      const pagination = payload.pagination;
+
+      if (!Array.isArray(pageProjects) || pageProjects.length === 0) {
+        break;
+      }
+
+      allProjects.push(...pageProjects);
+
+      if (!pagination?.hasNextPage) {
+        break;
+      }
     }
 
-    const data = await response.json();
-    const grants = data.data ?? data;
-
-    console.log(`Fetched ${grants.length} grants from Karma GAP`);
-
-    // Process each grant
+    // Process projects and dedupe by UID
     let syncedCount = 0;
-    
-    // We only process recent 50 grants to avoid rate limits/timeouts in this dev iteration
-    const recentGrants = grants.slice(0, 50);
+    let skippedDuplicateUid = 0;
+    const seenProjectUids = new Set<string>();
 
-    for (const grant of recentGrants) {
-      // Logic: Grant -> refUID -> Project Metadata
-      const projectUid = grant.refUID;
-      if (!projectUid || projectUid === "0x0000000000000000000000000000000000000000000000000000000000000000") continue;
+    for (const project of allProjects) {
+      const projectUid = project.uid;
+      if (!projectUid) continue;
+
+      if (seenProjectUids.has(projectUid)) {
+        skippedDuplicateUid++;
+        continue;
+      }
+      seenProjectUids.add(projectUid);
 
       try {
-        const projectResponse = await fetch(`${baseUrl}/projects/${projectUid}`);
-        if (!projectResponse.ok) continue;
+        const details = project.details || {};
+        if (!details.title) continue;
 
-        const projectData = await projectResponse.json();
-        // projectData structure: { uid: ..., data: { title: ..., description: ... } } (from our curl debug)
-        // OR sometimes details.data. check structure carefully. 
-        // Based on curl: { ... details: { data: { title: ... } } }
-        
-        // Let's safe navigation
-        const pDetails = projectData.details?.data || projectData.data;
-        if (!pDetails || !pDetails.title) continue;
+        const links = Array.isArray(project.links) ? project.links : [];
+        const byType = (type: string) => links.find((l: any) => l?.type === type && l?.url)?.url;
+        const normalizeUrl = (url?: string) => {
+          if (!url) return undefined;
+          if (url.startsWith("http://") || url.startsWith("https://")) return url;
+          if (url.startsWith("@")) return url.slice(1);
+          return url;
+        };
 
-        const title = pDetails.title;
+        const recipientWallet =
+          project.chainPayoutAddress?.address ||
+          "";
+
+        const chain = project.chainPayoutAddress?.chain === "base" ? "base" : "celo";
 
         // Upsert project in Convex
         await ctx.runMutation(internal.syncKarmaGap.upsertGapProject, {
           projectId: `gap-${projectUid}`,
-          title: title,
-          description: pDetails.description ?? "",
-          imageUrl: pDetails.imageURL ?? pDetails.logoUrl ?? "",
+          title: details.title,
+          description: details.description ?? "",
+          imageUrl: details.imageURL ?? details.logoUrl ?? "",
           category: "Regeneration", 
-          recipientWallet: grant.recipient ?? "",
-          chain: "celo",
+          recipientWallet,
+          chain,
           source: "karma",
           gapProjectUid: projectUid,
           gapCommunityId: communitySlug,
-          grantId: grant.uid,
-          totalMilestones: grant.milestones?.length ?? 0,
-          completedMilestones: grant.milestones?.filter((m: any) => m.completed).length ?? 0,
-          website: pDetails.links?.find((l: any) => l.type === "website")?.url || pDetails.website, 
-          twitter: pDetails.links?.find((l: any) => l.type === "twitter")?.url || pDetails.twitter,
-          github: pDetails.links?.find((l: any) => l.type === "github")?.url,
-          farcaster: pDetails.links?.find((l: any) => l.type === "farcaster")?.url,
+          grantId: undefined,
+          totalMilestones: project.numMilestones ?? 0,
+          completedMilestones:
+            typeof project.percentCompleted === "number" && project.percentCompleted > 0
+              ? Math.round((project.numMilestones ?? 0) * (project.percentCompleted / 100))
+              : 0,
+          website: normalizeUrl(byType("website")) || normalizeUrl(details.website),
+          twitter: normalizeUrl(byType("twitter")) || normalizeUrl(details.twitter),
+          github: normalizeUrl(byType("github")),
+          farcaster: normalizeUrl(byType("farcaster")),
         });
 
         syncedCount++;
@@ -96,7 +122,15 @@ export const syncFromKarmaGap = action({
       }
     }
 
-    return { syncedCount, communitySlug };
+    return {
+      syncedCount,
+      communitySlug,
+      projectsFetched: allProjects.length,
+      uniqueProjectUids: seenProjectUids.size,
+      skippedDuplicateUid,
+      perPage,
+      maxPages,
+    };
   },
 });
 

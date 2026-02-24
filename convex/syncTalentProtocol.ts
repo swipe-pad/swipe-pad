@@ -125,6 +125,8 @@ export const syncBuilderByWallet: ReturnType<typeof action> = action({
 export const syncTopBuilders = action({
   args: {
     limit: v.optional(v.number()),
+    page: v.optional(v.number()),
+    minScore: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const apiKey = process.env.TALENT_PROTOCOL_API_KEY;
@@ -133,46 +135,71 @@ export const syncTopBuilders = action({
       throw new Error("TALENT_PROTOCOL_API_KEY environment variable not set");
     }
     
-    const limit = args.limit ?? 50;
+    const limit = Math.min(Math.max(args.limit ?? 100, 1), 500);
+    const startPage = Math.max(args.page ?? 1, 1);
+    const minScore = Math.max(args.minScore ?? 0, 0);
+    const perPage = 25; // Talent API max page size
     const baseUrl = "https://api.talentprotocol.com";
-    
-    // Fetch profiles sorted by builder score
-    const searchUrl = `${baseUrl}/search/advanced/profiles?sort_by=builder_score&limit=${limit}`;
-    
-    const response = await fetch(searchUrl, {
-      headers: {
-        "X-API-KEY": apiKey,
-        "Accept": "application/json",
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch top builders: ${response.statusText}`);
+
+    let currentPage = startPage;
+    let fetchedProfiles: any[] = [];
+
+    while (fetchedProfiles.length < limit) {
+      const params = new URLSearchParams();
+      params.append("sort[score][order]", "desc");
+      params.append("sort[score][scorer]", "Builder Score");
+      params.append("page", String(currentPage));
+      params.append("per_page", String(perPage));
+
+      const searchUrl = `${baseUrl}/search/advanced/profiles?${params.toString()}`;
+      const response = await fetch(searchUrl, {
+        headers: {
+          "X-API-KEY": apiKey,
+          "Accept": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch top builders: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const pageProfiles = data.profiles ?? [];
+
+      if (pageProfiles.length === 0) break;
+
+      fetchedProfiles = fetchedProfiles.concat(pageProfiles);
+
+      if (pageProfiles.length < perPage) break;
+      currentPage += 1;
     }
-    
-    const data = await response.json();
-    const profiles = data.profiles ?? [];
-    
-    console.log(`Fetched ${profiles.length} profiles from Talent Protocol`);
+
+    const profiles = fetchedProfiles.slice(0, limit);
+
+    console.log(`Fetched ${profiles.length} profiles from Talent Protocol across pages`);
     
     let syncedCount = 0;
+    let skipped = 0;
     
     for (const profile of profiles) {
       // Skip profiles without essential data
       if (!profile.id || !profile.display_name && !profile.name) continue;
-      if (!profile.image_url) continue; // Skip profiles without images
       
       // Get builder score
-      const builderScoreObj = profile.scores?.find(
+      const builderScoreObj = profile.builder_score ?? profile.scores?.find(
         (s: any) => s.slug === "builder_score_2025" || s.slug === "builder_score"
       );
       const builderScore = builderScoreObj?.points ?? 0;
       
       // Skip low-score builders
-      if (builderScore < 20) continue;
+      if (builderScore < minScore) {
+        skipped++;
+        continue;
+      }
       
-      // Fetch social accounts for this profile
+      // Fetch accounts once: socials + wallet address
       let socials: any = { github: undefined, twitter: undefined, farcaster: undefined };
+      let walletAddress = "";
       try {
         const accountsResponse = await fetch(`${baseUrl}/accounts?id=${profile.id}`, {
           headers: { "X-API-KEY": apiKey }
@@ -189,24 +216,17 @@ export const syncTopBuilders = action({
           
           const fc = accounts.find((a: any) => a.source === "farcaster");
           if (fc) socials.farcaster = `https://warpcast.com/${fc.username}`;
+
+          const walletAccount = accounts.find((a: any) => {
+            const identity = (a?.identity ?? "").toLowerCase();
+            return identity.startsWith("0x") || a.source === "wallet";
+          });
+          if (walletAccount?.identity) {
+            walletAddress = walletAccount.identity.toLowerCase();
+          }
         }
       } catch (e) {
-        console.error("Failed to fetch socials for", profile.id, e);
-      }
-      
-      // Get wallet if available (from connected accounts)
-      let walletAddress = "";
-      try {
-        const accountsResponse = await fetch(`${baseUrl}/accounts?id=${profile.id}`, {
-          headers: { "X-API-KEY": apiKey }
-        });
-        if (accountsResponse.ok) {
-          const accountsData = await accountsResponse.json();
-          const wallet = accountsData.accounts?.find((a: any) => a.source === "wallet");
-          if (wallet) walletAddress = wallet.identity?.toLowerCase() ?? "";
-        }
-      } catch (e) {
-        // Wallet fetch failed, use empty string
+        console.error("Failed to fetch accounts for", profile.id, e);
       }
       
       await ctx.runMutation(internal.syncTalentProtocol.upsertBuilder, {
@@ -231,7 +251,15 @@ export const syncTopBuilders = action({
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     
-    return { syncedCount, totalFetched: profiles.length };
+    return {
+      syncedCount,
+      skipped,
+      totalFetched: profiles.length,
+      pageStart: startPage,
+      pageEnd: currentPage,
+      perPage,
+      minScore,
+    };
   },
 });
 

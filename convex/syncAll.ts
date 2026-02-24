@@ -29,6 +29,8 @@ export const syncAllSources: ReturnType<typeof action> = action({
           api.syncKarmaGap.syncFromKarmaGap,
           {
             communitySlug: "celo",
+            perPage: 50,
+            maxPages: 5,
             adminKey: args.adminKey,
             callerWallet: args.callerWallet,
           }
@@ -56,13 +58,17 @@ export const syncAllSources: ReturnType<typeof action> = action({
       }
     }
 
-    // Talent Protocol requires specific wallet addresses
-    // Should be called separately with wallets to sync
+    // Talent Protocol top builders sync
     if (sources.includes("talent")) {
-      results.talent = {
-        success: false,
-        message: "Use syncTalentProtocol.syncBuilderByWallet with specific wallets",
-      };
+      try {
+        const talentResult = await ctx.runAction(api.syncTalentProtocol.syncTopBuilders, {
+          limit: 100,
+          minScore: 0,
+        });
+        results.talent = { success: true, ...talentResult };
+      } catch (error) {
+        results.talent = { success: false, error: String(error) };
+      }
     }
 
     return results;
