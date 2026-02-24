@@ -1,13 +1,13 @@
 "use client";
 
-import { motion, PanInfo } from "framer-motion";
+import { motion } from "framer-motion";
 import { Campaign } from "@/types";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSwipeAnimation } from "./use-swipe-animation";
 import { useSwipeGestures } from "./use-swipe-gestures";
 import { type SwipeDirection } from "@/types";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 
 interface SwipeCardProps {
   campaign: Campaign;
@@ -16,7 +16,7 @@ interface SwipeCardProps {
 }
 
 export function SwipeCard({ campaign, onSwipe, index }: SwipeCardProps) {
-  const { x, y, rotate, opacity, handleSwipeComplete } = useSwipeAnimation(index);
+  const { x, y, rotate, handleSwipeComplete } = useSwipeAnimation(index);
 
   const handleSwipe = (direction: SwipeDirection) => {
     handleSwipeComplete(direction);
@@ -54,7 +54,7 @@ export function SwipeCard({ campaign, onSwipe, index }: SwipeCardProps) {
       <Card className="size-full overflow-hidden border-none bg-card shadow-xl">
         <div className="relative h-3/5 w-full bg-card">
           {/* Fallback image if validation fails or placeholders */}
-          <Image
+          <SafeImage
             src={campaign.imageUrl}
             alt={campaign.title}
             fill
