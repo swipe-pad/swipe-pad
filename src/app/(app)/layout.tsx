@@ -40,24 +40,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         ">{children}</div>
     }
 
-    const renderInitialLoader = () => {
-        return (
-            <div className="flex h-full w-full items-center justify-center">
-                <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 backdrop-blur-sm">
-                    <span className="size-2 rounded-full bg-[#FFD600] animate-pulse" />
-                    <span className="text-xs tracking-[0.16em] text-white/70">LOADING</span>
-                </div>
-            </div>
-        )
-    }
-
     if (!hasLoadedOnboardingState) {
         return (
             <main className="
               relative flex min-h-screen flex-col items-center justify-center
               overflow-hidden text-white
             ">
-                {renderPageContainer(renderInitialLoader())}
+                {renderPageContainer(<div className="size-full" />)}
             </main>
         )
     }
@@ -97,7 +86,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         }
                         footer={shellConfig.showBottomNav ? <BottomNav /> : null}
                     >
-                        <div className={`view-content app-content-wrapper h-full ${pathname === "/" ? "overflow-visible" : "custom-scrollbar overflow-y-auto"}`}>
+                        <div className={`view-content app-content-wrapper h-full ${pathname === "/" || pathname.startsWith("/project/") ? "overflow-visible" : "custom-scrollbar overflow-y-auto"}`}>
                             {children}
                         </div>
                     </AppShell>

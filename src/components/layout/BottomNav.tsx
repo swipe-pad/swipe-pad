@@ -16,8 +16,20 @@ export function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
 
+  const isTabActive = (href: string) => {
+    if (href === "/") {
+      return pathname === "/" || pathname.startsWith("/project/");
+    }
+
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
   return (
-    <div className="
+    <motion.div
+      initial={{ y: 22, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
+      className="
       pointer-events-none z-50 flex w-full justify-center px-1 pt-1 pb-4
     ">
       <nav className="
@@ -26,7 +38,7 @@ export function BottomNav() {
         backdrop-blur-md
       ">
         {tabs.map((tab) => {
-          const isActive = pathname === tab.href;
+          const isActive = isTabActive(tab.href);
           return (
             <button
               key={tab.name}
@@ -41,7 +53,7 @@ export function BottomNav() {
                   hover:text-white
                 `
               )}
-            >
+      >
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
@@ -55,6 +67,6 @@ export function BottomNav() {
           );
         })}
       </nav>
-    </div>
+    </motion.div>
   );
 }
