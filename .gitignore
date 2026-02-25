@@ -1,23 +1,12 @@
-.DS_Store
-.env*
-.next
-.vercel
+.*
 *.tsbuildinfo
 next-env.d.ts
 node_modules
 
+!.agent/rules
+!.agent/workflows
 !.env.example
+!.vscode
 
-# things not ready for publishing
-.agent/*
-.agents
-.cursor
-.direnv
-.gemini
-.github
-.kilocode
-.opencode
 drafts
-
-!.agent/rules/
-!.agent/workflows/
+ops

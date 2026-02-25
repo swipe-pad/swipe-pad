@@ -55,6 +55,7 @@ const eslintConfig = defineConfig([
     ".old/**",
     "convex/**",
     "v0-readonly/**",
+    "ops/**",
   ]),
 ]);
 
