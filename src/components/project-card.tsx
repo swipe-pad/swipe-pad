@@ -499,8 +499,8 @@ export function ProjectCard({
         relative overflow-hidden select-none
         ${viewMode === "swipe"
           ? `
-            h-full rounded-[28px] border border-surface-border bg-[#101a2f]
-            shadow-[0_24px_80px_rgba(0,0,0,0.55)]
+            z-100 h-full rounded-[28px] border border-surface-border
+            bg-[#101a2f] shadow-[0_24px_80px_rgba(0,0,0,0.55)]
           `
           : "rounded-2xl bg-gray-800 shadow-lg"
         }
@@ -518,24 +518,21 @@ export function ProjectCard({
         <>
           <div
             className="
-              pointer-events-none absolute inset-0 z-10 bg-green-500/15
-              transition-opacity
+              pointer-events-none absolute inset-0 z-10 bg-green-500/10
             "
             style={{ opacity: dragOffset > 0 ? swipeProgress : 0 }}
           />
           <div
-            className="
-              pointer-events-none absolute inset-0 z-10 bg-red-500/15
-              transition-opacity
-            "
+            className="pointer-events-none absolute inset-0 z-10 bg-red-500/10"
             style={{ opacity: dragOffset < 0 ? swipeProgress : 0 }}
           />
 
           <div
             className="
-              pointer-events-none absolute top-6 left-5 z-20 rounded-xl border-2
-              border-green-300 bg-green-500/85 px-3 py-1 text-xs font-black
-              tracking-wide text-white
+              pointer-events-none absolute top-8 left-8 z-50 -rotate-12
+              transform rounded-lg border-4 border-white bg-green-500/90 px-4
+              py-2 text-2xl font-black tracking-wide text-white shadow-xl
+              transition-opacity
             "
             style={{ opacity: dragOffset > 0 ? swipeProgress : 0 }}
           >
@@ -543,9 +540,10 @@ export function ProjectCard({
           </div>
           <div
             className="
-              pointer-events-none absolute top-6 right-5 z-20 rounded-xl
-              border-2 border-red-300 bg-red-500/85 px-3 py-1 text-xs font-black
-              tracking-wide text-white
+              pointer-events-none absolute top-8 right-8 z-50 rotate-12
+              transform rounded-lg border-4 border-white bg-red-500/90 px-4 py-2
+              text-2xl font-black tracking-wide text-white shadow-xl
+              transition-opacity
             "
             style={{ opacity: dragOffset < 0 ? swipeProgress : 0 }}
           >
@@ -570,7 +568,10 @@ export function ProjectCard({
         )}
 
         {isLoading ? (
-          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-[#202c47] via-[#1a253f] to-[#141d34]" />
+          <div className="
+            absolute inset-0 animate-pulse bg-linear-to-br from-[#202c47]
+            via-[#1a253f] to-[#141d34]
+          " />
         ) : (
           <SafeImage
             src={imageSrc}
@@ -589,12 +590,16 @@ export function ProjectCard({
 
         {/* Category Badge */}
         {isLoading ? (
-          <div className="absolute top-3 left-3 h-6 w-24 animate-pulse rounded-full bg-white/20" />
+          <div className="
+            absolute top-3 left-3 h-6 w-24 animate-pulse rounded-full
+            bg-white/20
+          " />
         ) : (
           <div className="absolute top-3 left-3">
             <span
               className={`
-                rounded-full border px-2 py-1 text-[11px] font-bold uppercase tracking-wide
+                rounded-full border px-2 py-1 text-[11px] font-bold
+                tracking-wide uppercase
                 ${getCategoryBadgeClasses(topLevelCategory)}
               `}
             >
@@ -607,10 +612,10 @@ export function ProjectCard({
         {!isLoading && (project.boostAmount ?? 0) > 0 && (
           <div className="absolute top-3 right-3">
             <div className="
-              flex items-center space-x-1 rounded-full bg-yellow-400 px-2 py-1
-              text-xs text-black
+              flex items-center space-x-1 rounded-full bg-primary px-2 py-1
+              text-xs font-bold text-primary-foreground
             ">
-              <Zap className="size-3" />
+              <Zap className="size-3 fill-current" />
               <span>Boosted</span>
             </div>
           </div>
@@ -633,9 +638,15 @@ export function ProjectCard({
           <div className="flex-1">
             {isLoading ? (
               <>
-                <div className="mb-2 h-6 w-2/3 animate-pulse rounded bg-white/20" />
-                <div className="mb-1 h-4 w-full animate-pulse rounded bg-white/10" />
-                <div className="mb-3 h-4 w-5/6 animate-pulse rounded bg-white/10" />
+                <div className="
+                  mb-2 h-6 w-2/3 animate-pulse rounded-sm bg-white/20
+                " />
+                <div className="
+                  mb-1 h-4 w-full animate-pulse rounded-sm bg-white/10
+                " />
+                <div className="
+                  mb-3 h-4 w-5/6 animate-pulse rounded-sm bg-white/10
+                " />
               </>
             ) : (
               <>
@@ -726,19 +737,27 @@ export function ProjectCard({
               })}
               disabled={isLoading}
               className="
-                relative ml-3 flex shrink-0 items-center space-x-1 overflow-hidden
-                rounded-full bg-[#4E45D6] px-3 py-1 text-xs font-semibold text-white
-                shadow-[0_6px_18px_rgba(78,69,214,0.38)] transition-all duration-300
-                hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-55
+                relative ml-3 flex shrink-0 items-center space-x-1
+                overflow-hidden rounded-full bg-[#4E45D6] px-3 py-1 text-xs
+                font-semibold text-white
+                shadow-[0_6px_18px_rgba(78,69,214,0.38)] transition-all
+                duration-300
+                hover:brightness-110
+                disabled:cursor-not-allowed disabled:opacity-55
               "
             >
               <span
                 className="
                   pointer-events-none absolute inset-y-0 -left-1/2 w-1/2
-                  skew-x-[-20deg] bg-white/30 blur-[1px] animate-[boost-sheen_3.8s_ease-in-out_infinite]
+                  skew-x-[-20deg]
+                  animate-[boost-sheen_3.8s_ease-in-out_infinite] bg-white/30
+                  blur-[1px]
                 "
               />
-              <Zap className="size-4 text-[#F9DE4B] drop-shadow-[0_0_8px_rgba(249,222,75,0.65)]" />
+              <Zap className="
+                size-4 fill-current text-primary
+                drop-shadow-[0_0_8px_var(--color-primary)]
+              " />
               <span>Boost</span>
             </button>
           )}
@@ -801,7 +820,10 @@ export function ProjectCard({
                 hover:bg-[#433ac0]
               "
             >
-              <Zap className="size-4 text-[#F9DE4B] drop-shadow-[0_0_6px_rgba(249,222,75,0.55)]" />
+              <Zap className="
+                size-4 text-[#F9DE4B]
+                drop-shadow-[0_0_6px_rgba(249,222,75,0.55)]
+              " />
               <span>Boost</span>
             </button>
           )}
@@ -820,7 +842,8 @@ export function ProjectCard({
                 flex h-12 flex-1 items-center justify-center rounded-full border
                 border-zinc-600/50 bg-zinc-800 text-sm font-medium text-white
                 transition-colors
-                hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-65
+                hover:bg-zinc-700
+                disabled:cursor-not-allowed disabled:opacity-65
               "
             >
               <X className="mr-2 size-4" />
@@ -861,7 +884,8 @@ export function ProjectCard({
               className="
                 flex h-12 flex-1 items-center justify-center rounded-full
                 bg-[#F9DE4B] text-sm font-semibold text-black transition-colors
-                hover:bg-[#f2cb22] disabled:cursor-not-allowed disabled:opacity-65
+                hover:bg-[#f2cb22]
+                disabled:cursor-not-allowed disabled:opacity-65
               "
             >
               <ThumbsUp className="mr-2 size-4" />

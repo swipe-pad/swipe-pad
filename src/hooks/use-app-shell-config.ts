@@ -13,7 +13,7 @@ export function useAppShellConfig(pathname: string): AppShellConfig {
   return useMemo(() => {
     const inAppRoute =
       pathname === "/" ||
-      pathname.startsWith("/project/") ||
+      pathname.startsWith("/p/") ||
       pathname.startsWith("/list") ||
       pathname.startsWith("/profile") ||
       pathname.startsWith("/leaderboard") ||

@@ -18,7 +18,7 @@ export function BottomNav() {
 
   const isTabActive = (href: string) => {
     if (href === "/") {
-      return pathname === "/" || pathname.startsWith("/project/");
+      return pathname === "/" || pathname.startsWith("/p/");
     }
 
     return pathname === href || pathname.startsWith(`${href}/`);

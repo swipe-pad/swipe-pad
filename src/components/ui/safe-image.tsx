@@ -1,5 +1,3 @@
-import Image from "next/image"
-
 import { cn } from "@/lib/utils"
 
 type SafeImageProps = {
@@ -25,32 +23,17 @@ export function SafeImage({
   onLoad,
   onError,
 }: SafeImageProps) {
-  const isRemote = /^https?:\/\//.test(src)
-  const isProxiedLocalImage = src.startsWith("/api/img?")
-
-  if (isRemote || isProxiedLocalImage) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={src}
-        alt={alt}
-        className={cn(fill ? "absolute inset-0 size-full" : undefined, className)}
-        draggable={draggable}
-        loading={loading ?? "lazy"}
-        onLoad={onLoad}
-        onError={onError}
-      />
-    )
-  }
-
+  // Use standard img tag uniformly to avoid Next.js Image component layout shifts and wrapper diffs 
+  // during JS-driven swipe animations, which cause UX flicker.
   return (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       src={src}
       alt={alt}
-      fill={fill}
-      className={className}
-      sizes={sizes}
+      className={cn(fill ? "absolute inset-0 size-full" : undefined, className)}
       draggable={draggable}
+      loading={loading ?? "lazy"}
+      sizes={sizes}
       onLoad={onLoad}
       onError={onError}
     />

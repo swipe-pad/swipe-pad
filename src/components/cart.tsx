@@ -49,12 +49,12 @@ export function Cart({ items, onClose, onCheckout }: CartProps) {
 
   return (
     <div className="
-      fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4
-    ">
+      fixed inset-0 z-110 flex items-center justify-center bg-black/70 p-4
+    " onClick={onClose}>
       <div className="
-        flex max-h-[80vh] w-full max-w-md flex-col rounded-xl bg-[#1F2732] p-6
-        shadow-xl
-      ">
+        surface-panel-strong flex max-h-[80vh] w-full max-w-md flex-col
+        rounded-2xl border border-surface-border p-6 shadow-2xl
+      " onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-start justify-between">
           <h3 className="text-xl font-bold">Your Donations</h3>
           <button onClick={onClose} className="

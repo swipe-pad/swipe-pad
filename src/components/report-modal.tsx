@@ -46,9 +46,12 @@ export function ReportModal({ isOpen, onClose, projectName, onSubmit }: ReportMo
 
   return (
     <div className="
-      fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4
-    ">
-      <div className="w-full max-w-md rounded-xl bg-[#1F2732] p-6 shadow-xl">
+      fixed inset-0 z-110 flex items-center justify-center bg-black/70 p-4
+    " onClick={onClose}>
+      <div className="
+        surface-panel-strong w-full max-w-md rounded-2xl border
+        border-surface-border p-6 shadow-2xl
+      " onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center space-x-2">
             <Flag className="size-5 text-red-400" />

@@ -86,7 +86,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         }
                         footer={shellConfig.showBottomNav ? <BottomNav /> : null}
                     >
-                        <div className={`view-content app-content-wrapper h-full ${pathname === "/" || pathname.startsWith("/project/") ? "overflow-visible" : "custom-scrollbar overflow-y-auto"}`}>
+                        <div className={`view-content app-content-wrapper h-full ${pathname === "/" || pathname.startsWith("/p/") ? "overflow-visible" : "custom-scrollbar overflow-y-auto"}`}>
                             {children}
                         </div>
                     </AppShell>

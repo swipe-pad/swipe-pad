@@ -17,9 +17,17 @@ const displayFont = Press_Start_2P({
 })
 
 export const metadata: Metadata = {
-  title: "Swipe Pad",
-  description: "Swipe to support regenerative projects on Celo",
-  generator: "v0.app",
+  title: "SwipePad | Support Regenerative Projects",
+  description: "Swipe to discover and fund the best regenerative projects and builders in web3.",
+  keywords: ["SwipePad", "Celo", "ReFi", "Web3", "Donations", "Funding"],
+  applicationName: "SwipePad",
+  appleWebApp: {
+    capable: true,
+    title: "SwipePad",
+    statusBarStyle: "black-translucent",
+  },
+  authors: [{ name: "SwipePad Team" }],
+  generator: "Next.js",
 }
 
 export default function RootLayout({
