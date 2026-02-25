@@ -1,0 +1,16 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjk3OTksInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhiYmFlOGU4NzFiMTM1ZWM2MTE0ZmI4YzI4NGY3MWFkMDA0NDVjZDliIiwibmV0d29yayI6NCwiYnl0ZXMiOiIxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3Iiwic2lnbmF0dXJlIjoiMHgxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMWMifQ=="
+  },
+  "frame": {
+    "version": "1.0.0",
+    "name": "SwipePad",
+    "iconUrl": "https://swipepad.app/icons/favicon-256x256.png",
+    "homeUrl": "https://swipepad.app",
+    "imageUrl": "https://swipepad.app/farcaster/frame-splash.png",
+    "buttonTitle": "Launch SwipePad",
+    "splashImageUrl": "https://swipepad.app/farcaster/frame-splash.png",
+    "splashBackgroundColor": "#070b14",
+    "webhookUrl": "https://swipepad.app/api/webhooks/farcaster"
+  }
+}
