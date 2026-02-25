@@ -7,8 +7,8 @@
   --card-foreground: hsl(223 34% 14%);
   --popover: hsl(0 0% 100% / 0.96);
   --popover-foreground: hsl(223 34% 14%);
-  --primary: hsl(49 100% 50%);
-  --primary-foreground: hsl(216 32% 9%);
+  --primary: hsl(48 100% 50%);         /* #FFD600 vibrant yellow */
+  --primary-foreground: hsl(0 0% 0%);
   --secondary: hsl(222 32% 94%);
   --secondary-foreground: hsl(223 35% 17%);
   --muted: hsl(222 32% 94%);
@@ -39,8 +39,8 @@
   --card-foreground: hsl(218 33% 96%);
   --popover: hsl(228 36% 10% / 0.95);
   --popover-foreground: hsl(218 33% 96%);
-  --primary: hsl(49 100% 50%);
-  --primary-foreground: hsl(216 32% 9%);
+  --primary: hsl(48 100% 50%);
+  --primary-foreground: hsl(0 0% 0%);
   --secondary: hsl(227 26% 18%);
   --secondary-foreground: hsl(218 33% 96%);
   --muted: hsl(227 23% 20%);
@@ -133,7 +133,7 @@ body {
 
 .focus-ring {
   outline: none;
-  box-shadow: 0 0 0 2px hsl(49 100% 50% / 0.55);
+  box-shadow: 0 0 0 2px hsl(var(--color-primary) / 0.55);
 }
 
 .scrollbar-hide {

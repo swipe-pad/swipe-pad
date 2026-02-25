@@ -9,6 +9,7 @@ import { useDisconnect as useThirdwebDisconnect, useActiveWallet } from "thirdwe
 import { useDisconnect as useWagmiDisconnect } from "wagmi"
 import { useApp } from "@/context/AppContext"
 import type { Project } from "@/lib/useConvexData"
+import { getCategoryFallbackImage } from "@/lib/utils"
 
 interface ProfileQuickViewProps {
   isOpen: boolean
@@ -256,7 +257,7 @@ export function ProfileQuickView({
                       flex items-center rounded-lg bg-gray-800 p-3
                     ">
                       <img
-                        src={donation.project.imageUrl || "/placeholder.svg"}
+                        src={donation.project.imageUrl || getCategoryFallbackImage(donation.project.category)}
                         alt={donation.project.name}
                         className="mr-3 size-12 rounded-md object-cover"
                       />
@@ -292,7 +293,7 @@ export function ProfileQuickView({
                       flex items-center rounded-lg bg-gray-800 p-3
                     ">
                       <img
-                        src={project.imageUrl || "/placeholder.svg"}
+                        src={project.imageUrl || getCategoryFallbackImage(project.category)}
                         alt={project.name}
                         className="mr-3 size-12 rounded-md object-cover"
                       />
@@ -375,11 +376,11 @@ export function ProfileQuickView({
                       <div className="mb-1 h-2 w-full rounded-full bg-gray-700">
                         <div
                           className="h-2 rounded-full bg-[#677FEB]"
-                          style={{ width: `${Math.floor(Math.random() * 60) + 40}%` }}
+                          style={{ width: `${60 - index * 10}%` }}
                         ></div>
                       </div>
                       <div className="text-xs text-gray-400">
-                        {Math.floor(Math.random() * 30) + 10}% of your donations
+                        {25 - index * 5}% of your donations
                       </div>
                     </div>
                   ))}

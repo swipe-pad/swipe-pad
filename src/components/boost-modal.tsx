@@ -34,12 +34,12 @@ export function BoostModal({ isOpen, onClose, projectName, onBoost }: BoostModal
 
   return (
     <div className="
-      bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black
-      p-4
-    ">
+      fixed inset-0 z-110 flex items-center justify-center bg-black/70 p-4
+    " onClick={onClose}>
       <div className="
-        w-full max-w-md rounded-2xl border border-gray-700 bg-gray-900 p-6
-      ">
+        surface-panel-strong w-full max-w-md rounded-2xl border
+        border-surface-border p-6 shadow-2xl
+      " onClick={(e) => e.stopPropagation()}>
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Zap className="size-6 text-yellow-400" />
