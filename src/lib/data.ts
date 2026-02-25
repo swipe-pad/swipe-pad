@@ -1322,76 +1322,6 @@ const rawProjects = [
   },
 ]
 
-// Transform Celo Builders projects
-const celoBuilderProjectsTransformed = celoBuilderProjects
-  .filter((project) => {
-    const hasValidName = project.name && project.name.trim().length > 0
-    return hasValidName
-  })
-  .map((project, index) => ({
-    id: `celo-builder-${index + 1}`,
-    name: project.name,
-    description: project.bio || `Building on Celo blockchain - ${project.name}`,
-    category: "Celo Builders",
-    imageUrl: project.image || `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(project.name)}`,
-    website: undefined,
-    twitter: undefined,
-    discord: undefined,
-    linkedin: project.linkedin || undefined,
-    farcaster: project.farcaster || undefined,
-    github: project.github || undefined,
-    fundingGoal: Math.floor(Math.random() * 100000) + 10000,
-    fundingCurrent: Math.floor(Math.random() * 50000) + 5000,
-    likes: Math.floor(Math.random() * 500) + 10,
-    comments: Math.floor(Math.random() * 100) + 1,
-    walletAddress: project.wallet,
-    isBookmarked: false,
-    userHasLiked: false,
-    userHasCommented: false,
-    reportCount: 0,
-    boostAmount: 0,
-  }))
-
-// Transform original projects to our Project interface
-const originalProjects: Project[] = rawProjects
-  .filter((project) => {
-    // Filter out projects with generic names or missing data
-    const hasValidName =
-      project["Name of Project"] &&
-      !project["Name of Project"].startsWith("Project ") &&
-      project["Name of Project"] !== "NA" &&
-      project["Name of Project"].trim().length > 0
-
-    const hasValidDescription =
-      project["Description of Project"] &&
-      project["Description of Project"] !== "NA" &&
-      project["Description of Project"].trim().length > 10
-
-    return hasValidName && hasValidDescription
-  })
-  .map((project, index) => ({
-    id: `project-${index + 1}`,
-    name: project["Name of Project"],
-    description: project["Description of Project"],
-    category: project.Category,
-    imageUrl:
-      project["URL to Logo"] && project["URL to Logo"] !== "NA"
-        ? project["URL to Logo"]
-        : `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(project["Name of Project"] + " " + project.Category)}`,
-    website: project.Website && project.Website !== "NA" ? project.Website : "NA",
-    twitter: project.Twitter && project.Twitter !== "NA" ? project.Twitter : "NA",
-    fundingGoal: Math.floor(Math.random() * 100000) + 10000,
-    fundingCurrent: Math.floor(Math.random() * 50000) + 5000,
-    likes: Math.floor(Math.random() * 500) + 10,
-    comments: Math.floor(Math.random() * 100) + 1,
-    walletAddress: `0x${Math.random().toString(16).substr(2, 40)}`,
-    isBookmarked: false,
-    userHasLiked: false,
-    userHasCommented: false,
-    reportCount: 0,
-    boostAmount: 0,
-  }))
-
 // The following code block is from the updates and replaces the previous 'categories' and 'projects' definitions.
 // It also adds new data structures for builders, ecoProjects, and karmagapProjects.
 
@@ -1689,7 +1619,7 @@ const buildersProjects: Project[] = buildersData.map((builder, index) => ({
   description: builder.Description,
   category: "Builders",
   imageUrl:
-    builder["Profile Image URL"] || `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(builder.Name)}`,
+    builder["Profile Image URL"] || "",
   website: undefined,
   twitter: builder.Twitter || undefined,
   github: builder.GitHub || undefined,
@@ -1713,7 +1643,7 @@ const ecoProjects: Project[] = ecoProjectsData.map((eco, index) => ({
   description: eco.Description,
   category: "Eco Projects",
   imageUrl:
-    eco["Image url"] || `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(eco["Project Name"])}`,
+    eco["Image url"] || "",
   website: eco.Website || undefined,
   twitter: undefined,
   github: undefined,
@@ -1737,7 +1667,7 @@ const karmagapProjects: Project[] = projectsData.map((project, index) => ({
   description: project.Description,
   category: "Projects",
   imageUrl:
-    project.project_image || `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(project.project_name)}`,
+    project.project_image || "",
   website: project.website || project.project_url || undefined,
   twitter: project.twitter || undefined,
   github: project.github || undefined,
