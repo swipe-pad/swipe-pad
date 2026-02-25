@@ -69,6 +69,15 @@ function toProject(project: ConvexProject): ServerProject {
   }
 }
 
+async function fetchAllProjects(): Promise<ConvexProject[]> {
+  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
+  if (!convexUrl) return []
+
+  const client = new ConvexHttpClient(convexUrl)
+  const projects = await client.query(api.projects.getAllProjects, {})
+  return (projects ?? []) as ConvexProject[]
+}
+
 export async function resolveProjectByRouteIdServer(routeId: string): Promise<ServerProject | null> {
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
   if (!convexUrl) return null
@@ -78,4 +87,15 @@ export async function resolveProjectByRouteIdServer(routeId: string): Promise<Se
   if (!project) return null
 
   return toProject(project as ConvexProject)
+}
+
+export async function getAllProjectsServer(): Promise<ServerProject[]> {
+  const projects = await fetchAllProjects()
+  return projects.map(toProject)
+}
+
+export async function getProjectByProjectIdServer(projectId: string): Promise<ServerProject | null> {
+  const projects = await fetchAllProjects()
+  const project = projects.find((candidate) => candidate.projectId === projectId)
+  return project ? toProject(project) : null
 }

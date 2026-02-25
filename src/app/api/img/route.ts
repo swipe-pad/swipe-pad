@@ -155,8 +155,8 @@ async function fetchImage(url: string): Promise<FetchOutcome> {
       redirect: "follow",
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       headers: {
-        Accept: "image/*,*/*;q=0.8",
-        "User-Agent": "SwipePad Image Proxy/1.0",
+        Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       },
     })
 
