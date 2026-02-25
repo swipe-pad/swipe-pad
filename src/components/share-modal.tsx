@@ -31,7 +31,7 @@ export function ShareModal({ project, projectPathId, isOpen, onClose }: ShareMod
   const origin = typeof window !== "undefined" ? window.location.origin : "https://swipepad.app"
   const shareTitle = `Support ${project.name} on SwipePad`
   const shareText = `Check out ${project.name} on SwipePad and help support their work!`
-  const shareUrl = `${origin}/project/${encodeURIComponent(projectKey)}`
+  const shareUrl = `${origin}/p/${encodeURIComponent(projectKey)}`
 
   // Handle copy to clipboard
   const handleCopyLink = () => {
@@ -107,9 +107,12 @@ export function ShareModal({ project, projectPathId, isOpen, onClose }: ShareMod
 
   return (
     <div className="
-      fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4
-    ">
-      <div className="w-full max-w-md rounded-xl bg-[#1F2732] p-6 shadow-xl">
+      fixed inset-0 z-110 flex items-center justify-center bg-black/70 p-4
+    " onClick={onClose}>
+      <div className="
+        surface-panel-strong w-full max-w-md rounded-2xl border
+        border-surface-border p-6 shadow-2xl
+      " onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-start justify-between">
           <h3 className="text-xl font-bold">Share Project</h3>
           <button onClick={onClose} className="
