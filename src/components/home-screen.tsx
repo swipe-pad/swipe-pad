@@ -632,7 +632,7 @@ export function HomeScreen({
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={0.4}
               onDragEnd={onDragDeckEnd}
-              className={`relative size-full transition-opacity duration-500 ${isFeedVisible ? "opacity-100" : "opacity-0"}`}
+              className={`relative size-full transition-opacity duration-300 ${isFeedVisible ? "opacity-100" : "opacity-0"}`}
             >
               <SwipeStack
                 ref={stackRef}
@@ -675,26 +675,32 @@ export function HomeScreen({
               />
 
               <div className="pointer-events-none absolute inset-x-0 -bottom-16 z-40 flex items-center justify-center gap-5 min-[380px]:-bottom-18 sm:-bottom-20">
-                <button
+                <motion.button
                   onClick={() => buttonSwipe("left")}
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.92 }}
                   className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-rose-100 bg-white/100 text-rose-500 opacity-100 shadow-[0_8px_20px_rgb(244,63,94,0.15)] transition-all hover:bg-rose-50"
                 >
                   <X className="size-6" />
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   onClick={handleUndo}
                   disabled={!canUndo || isAdvancing}
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.92 }}
                   className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white/100 text-slate-500 opacity-100 shadow-md transition-all disabled:opacity-40"
                 >
                   <RotateCcw className="size-5" />
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   onClick={() => buttonSwipe("right")}
                   disabled={!canSwipe}
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.92 }}
                   className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-emerald-100 bg-white/100 text-emerald-500 opacity-100 shadow-[0_8px_20px_rgb(16,185,129,0.15)] transition-all hover:bg-emerald-50 disabled:opacity-40"
                 >
                   <ThumbsUp className="size-6" />
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           ) : (
