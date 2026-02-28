@@ -551,7 +551,7 @@ export function HomeScreen({
                 disabled={isAdvancing}
                 rotationsEnabled={STACK_ROTATIONS_ENABLED}
                 visible={4}
-                visualDepth={4}
+                visualDepth={3}
                 stackRotations={[0, -2, 2]}
                 stackYs={[0, 0, 0]}
                 canSwipeDirection={(dir) => (dir === "right" ? canSwipe : dir === "left")}
