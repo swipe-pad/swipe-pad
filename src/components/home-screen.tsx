@@ -4,59 +4,43 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useShallow } from "zustand/react/shallow"
 import { useRouter } from "next/navigation"
 import { useMutation } from "convex/react"
+import { RotateCcw, ThumbsUp, X } from "lucide-react"
 
 import { useApp } from "@/context/AppContext"
 import { ProjectCard } from "@/components/project-card"
+import { useSwipeDeck, type SwipeItem } from "@/components/swipe/use-swipe-deck"
+import { useSwipeBusinessFlow } from "@/components/swipe/use-swipe-business-flow"
+import { SwipeStack, type SwipeStackHandle } from "@/components/swipe/SwipeStack"
 import type { Project } from "@/lib/useConvexData"
 import { buildImageProxyUrl, isRemoteImageUrl } from "@/lib/image-delivery"
 import type { ServerProject } from "@/lib/convex-server"
 import { api } from "../../convex/_generated/api"
 import type { Id } from "../../convex/_generated/dataModel"
 
-type UserStatsState = {
-  totalDonations: number
-  categoriesSupported: Set<string>
-  streak: number
-  lastDonation: Date | null
-}
-
-type UserProfileState = {
-  name?: string
-  image?: string
-  farcaster?: string
-  lens?: string
-  zora?: string
-  twitter?: string
-  nounsHeld?: number
-  lilNounsHeld?: number
-  projectsReported?: number
-  poaps?: number
-  paragraphs?: number
-  ens?: string
-  discord?: string
-  totalSwipes: number
-  totalDonated: number
-}
-
-type SwipeSnapshot = {
-  prevProject: Project | null
-  prevCurrentProject: Project | null
-  prevNextProject: Project | null
-  prevSwipeCount: number
-  prevCreditsRemaining: number
-  prevCart: Array<{ project: unknown; amount: number; currency: string }>
-  prevUserStats: UserStatsState
-  prevUserProfile: UserProfileState
-}
-
 const TOP_CATEGORIES = ["See All", "Builders", "Eco Projects", "Dapps"] as const
 type TopCategory = (typeof TOP_CATEGORIES)[number]
 const INITIAL_WARMUP_TIMEOUT_MS = 900
+const FEED_REQUEST_TIMEOUT_MS = 9000
+const STACK_ROTATIONS_ENABLED = false
 
 function wait(ms: number) {
   return new Promise<void>((resolve) => {
     window.setTimeout(resolve, ms)
   })
+}
+
+async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit, timeoutMs: number) {
+  const controller = new AbortController()
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    return await fetch(input, {
+      ...init,
+      signal: controller.signal,
+    })
+  } finally {
+    window.clearTimeout(timeout)
+  }
 }
 
 function getTopLevelCategory(category: string): TopCategory {
@@ -141,14 +125,8 @@ export function HomeScreen({
   )
 
   const [mode, setMode] = useState<"discover" | "shared-entry">(initialMode)
-  const [prevProject, setPrevProject] = useState<Project | null>(null)
-  const [currentProject, setCurrentProject] = useState<Project | null>((initialProject as Project | null) ?? null)
-  const [nextProject, setNextProject] = useState<Project | null>(null)
-  const [swipeHistory, setSwipeHistory] = useState<SwipeSnapshot[]>([])
-  const [isAdvancing, setIsAdvancing] = useState(false)
   const [isFeedVisible, setIsFeedVisible] = useState(Boolean(initialProject))
 
-  const canUndo = swipeHistory.length > 0
   const canSwipe = (betaStatus === "active" || betaStatus === "guest") && creditsRemaining > 0
   const effectiveDonationAmount = donationAmount ?? "0.01¢"
   const totalSwipes = userProfile.totalSwipes ?? 0
@@ -168,14 +146,13 @@ export function HomeScreen({
   const requestCounterRef = useRef(0)
   const preloadedUrlsRef = useRef<Set<string>>(new Set())
   const preloadingUrlsRef = useRef<Map<string, Promise<void>>>(new Map())
-  const inFlightPrefetchRef = useRef(false)
+  const swipeAbsoluteIndexRef = useRef(0)
+  const swipeIdRef = useRef(0)
+  const hasHydratedCategoryRef = useRef(false)
+  const deckProjectKeysRef = useRef<Set<string>>(new Set())
 
   const consumeCredits = useMutation(api.waitlist.consumeCredits)
   const recordSwipe = useMutation(api.waitlist.recordSwipe)
-
-  const stack = useMemo(() => {
-    return [prevProject, currentProject, nextProject].filter(Boolean) as Project[]
-  }, [prevProject, currentProject, nextProject])
 
   const queueImagePreload = (url: string): Promise<void> => {
     if (preloadedUrlsRef.current.has(url)) return Promise.resolve()
@@ -223,86 +200,204 @@ export function HomeScreen({
       }
       url.searchParams.set("seed", requestSeed)
 
-      const response = await fetch(url.toString(), { cache: "no-store" })
-      if (!response.ok) {
-        continue
-      }
+      try {
+        const response = await fetchWithTimeout(url.toString(), { cache: "no-store" }, FEED_REQUEST_TIMEOUT_MS)
+        if (!response.ok) {
+          continue
+        }
 
-      const data = (await response.json()) as { project?: Project }
-      const project = data.project
-      if (!project) {
-        continue
-      }
+        const data = (await response.json()) as { project?: Project }
+        const project = data.project
+        if (!project) {
+          continue
+        }
 
-      if (!matchesCategory(project, category)) {
-        exclude = project.projectId || project.routeId
-        continue
-      }
+        if (!matchesCategory(project, category)) {
+          exclude = project.projectId || project.routeId
+          continue
+        }
 
-      return project
+        return project
+      } catch (error) {
+        console.warn("[feed] request failed", { attempt, error })
+      }
     }
 
     return null
   }, [activeCategory])
 
-  const prefetchNextProject = useCallback(async (fromProject: Project, category: TopCategory) => {
-    if (mode !== "discover") return
-    if (inFlightPrefetchRef.current) return
+  const toSwipeItem = useCallback((project: Project): SwipeItem<Project> => {
+    const absoluteIndex = swipeAbsoluteIndexRef.current
+    swipeAbsoluteIndexRef.current += 1
+    swipeIdRef.current += 1
 
-    inFlightPrefetchRef.current = true
-    try {
-      const prefetched = await fetchFeedProject({
-        exclude: fromProject.projectId || fromProject.routeId,
-        category,
-      })
-      if (prefetched) {
-        setNextProject(prefetched)
-      }
-    } finally {
-      inFlightPrefetchRef.current = false
+    return {
+      id: `${project.projectId || project.routeId || "project"}-${swipeIdRef.current}`,
+      data: project,
+      absoluteIndex,
     }
-  }, [fetchFeedProject, mode])
+  }, [])
 
-  const advanceDiscoverStream = async () => {
-    if (!currentProject) return
+  const getProjectKey = useCallback((project: Project) => {
+    return project.projectId || project.routeId || project.id
+  }, [])
 
-    let incoming = nextProject
-    if (!incoming) {
-      incoming = await fetchFeedProject({
-        exclude: currentProject.projectId || currentProject.routeId,
+  const initialDeckItems = useMemo(() => {
+    if (!initialProject) return []
+    return [toSwipeItem(initialProject as Project)]
+  }, [initialProject, toSwipeItem])
+
+  const refillDeck = useCallback(async (need: number) => {
+    if (mode !== "discover") return []
+
+    const newItems: SwipeItem<Project>[] = []
+    const seenKeys = new Set(deckProjectKeysRef.current)
+    let exclude: string | undefined
+    let attempts = 0
+    const maxAttempts = Math.max(need * 4, 8)
+
+    while (newItems.length < need && attempts < maxAttempts) {
+      attempts += 1
+      const project = await fetchFeedProject({
+        exclude,
         category: activeCategory,
       })
+
+      if (!project) break
+
+      exclude = project.projectId || project.routeId
+
+      const projectKey = getProjectKey(project)
+      if (seenKeys.has(projectKey)) {
+        continue
+      }
+
+      seenKeys.add(projectKey)
+      newItems.push(toSwipeItem(project))
     }
 
-    if (!incoming) return
+    return newItems
+  }, [activeCategory, fetchFeedProject, getProjectKey, mode, toSwipeItem])
 
-    setPrevProject(currentProject)
-    setCurrentProject(incoming)
-    setNextProject(null)
+  const { busyRef, items, visibleItems, history: deckHistory, resetDeck, commit, undo } = useSwipeDeck<Project>({
+    config: { visible: 4 },
+    initial: initialDeckItems,
+    refill: refillDeck,
+  })
 
-    await prefetchNextProject(incoming, activeCategory)
-  }
+  const currentProject = visibleItems[0]?.data ?? null
+  const nextProject = visibleItems[1]?.data ?? null
 
-  const transitionFromSharedToDiscover = async () => {
-    if (!currentProject) return
+  const consumeCredit = useCallback(async () => {
+    if (!betaUserId) return null
 
-    setMode("discover")
-    setSelectedCategory("See All")
+    try {
+      const creditsResult = await consumeCredits({
+        userId: betaUserId as Id<"waitlistUsers">,
+        chain: "celo",
+        amount: 1,
+      })
+
+      return creditsResult.remaining
+    } catch (error) {
+      console.error("Failed to consume credits:", error)
+      return null
+    }
+  }, [betaUserId, consumeCredits])
+
+  const recordSwipeEvent = useCallback((input: { projectId: string; direction: "left" | "right"; amount?: number }) => {
+    if (!betaUserId) return
+
+    recordSwipe({
+      userId: betaUserId as Id<"waitlistUsers">,
+      projectId: input.projectId,
+      direction: input.direction,
+      ...(typeof input.amount === "number" ? { amount: input.amount } : {}),
+    }).catch((error) => console.error("Failed to record swipe:", error))
+  }, [betaUserId, recordSwipe])
+
+  const transitionToDiscover = useCallback(() => {
     router.replace("/")
+  }, [router])
 
-    const discoverProject = await fetchFeedProject({
-      exclude: currentProject.projectId || currentProject.routeId,
-      category: "See All",
-    })
+  const {
+    isAdvancing,
+    canUndo,
+    isRestoringSnapshotRef,
+    clearSwipeHistory,
+    handleSwipeRight,
+    handleSwipeLeft,
+    handleUndo,
+  } = useSwipeBusinessFlow({
+    mode,
+    setMode,
+    selectedCategory,
+    setSelectedCategory,
+    swipeCount,
+    setSwipeCount,
+    creditsRemaining,
+    setCreditsRemaining,
+    cart,
+    setCart,
+    userStats,
+    setUserStats,
+    userProfile,
+    setUserProfile,
+    confirmSwipes,
+    donationCurrency,
+    effectiveDonationAmount,
+    betaUserId,
+    canSwipe,
+    currentProject,
+    deckHistoryLength: deckHistory.length,
+    commit,
+    undoDeck: undo,
+    consumeCredit,
+    recordSwipe: recordSwipeEvent,
+    transitionToDiscover,
+  })
 
-    if (!discoverProject) return
+  const stackRef = useRef<SwipeStackHandle>(null)
 
-    setPrevProject(null)
-    setCurrentProject(discoverProject)
-    setNextProject(null)
+  const buttonSwipe = useCallback((dir: "left" | "right") => {
+    if (isAdvancing) return
+    if (dir === "right" && !canSwipe) return
+    stackRef.current?.swipe(dir)
+  }, [canSwipe, isAdvancing])
 
-    await prefetchNextProject(discoverProject, "See All")
-  }
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const active = document.activeElement as HTMLElement | null
+      const blocked =
+        active?.tagName === "INPUT" ||
+        active?.tagName === "TEXTAREA" ||
+        active?.tagName === "SELECT" ||
+        active?.isContentEditable
+
+      if (blocked) return
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault()
+        buttonSwipe("left")
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault()
+        buttonSwipe("right")
+      } else if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") {
+        event.preventDefault()
+        if (canUndo && !isAdvancing) {
+          handleUndo()
+        }
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [buttonSwipe, canUndo, handleUndo, isAdvancing])
+
+  useEffect(() => {
+    const keys = items.map((item) => getProjectKey(item.data))
+    deckProjectKeysRef.current = new Set(keys)
+  }, [getProjectKey, items])
 
   useEffect(() => {
     if (mode !== "discover") return
@@ -312,7 +407,7 @@ export function HomeScreen({
     const loadInitial = async () => {
       const project = await fetchFeedProject({ category: activeCategory })
       if (!cancelled && project) {
-        setCurrentProject(project)
+        resetDeck([toSwipeItem(project)])
       }
     }
 
@@ -321,19 +416,34 @@ export function HomeScreen({
     return () => {
       cancelled = true
     }
-  }, [activeCategory, currentProject, fetchFeedProject, mode])
+  }, [activeCategory, currentProject, fetchFeedProject, mode, resetDeck, toSwipeItem])
 
   useEffect(() => {
     if (mode !== "discover") return
-    if (!currentProject || nextProject) return
+    if (isRestoringSnapshotRef.current) {
+      isRestoringSnapshotRef.current = false
+      return
+    }
 
-    void prefetchNextProject(currentProject, activeCategory)
-  }, [activeCategory, currentProject, mode, nextProject, prefetchNextProject])
+    if (!hasHydratedCategoryRef.current) {
+      hasHydratedCategoryRef.current = true
+      return
+    }
 
-  useEffect(() => {
-    if (mode !== "discover") return
-    setNextProject(null)
-  }, [activeCategory, mode])
+    let cancelled = false
+    const reloadForCategory = async () => {
+      const project = await fetchFeedProject({ category: activeCategory })
+      if (!cancelled) {
+        resetDeck(project ? [toSwipeItem(project)] : [])
+      }
+    }
+
+    void reloadForCategory()
+
+    return () => {
+      cancelled = true
+    }
+  }, [activeCategory, fetchFeedProject, mode, resetDeck, toSwipeItem])
 
   useEffect(() => {
     const currentUrl = toPreloadUrl(currentProject)
@@ -344,166 +454,24 @@ export function HomeScreen({
       return
     }
 
-    let cancelled = false
-    setIsFeedVisible(false)
-
-    const warmup = async () => {
-      if (currentUrl) {
-        await Promise.race([queueImagePreload(currentUrl), wait(INITIAL_WARMUP_TIMEOUT_MS)])
-      }
-
-      if (nextUrl) {
-        void queueImagePreload(nextUrl)
-      }
-
-      if (!cancelled) {
-        setIsFeedVisible(true)
-      }
+    if (currentUrl) {
+      void Promise.race([queueImagePreload(currentUrl), wait(INITIAL_WARMUP_TIMEOUT_MS)])
+    }
+    if (nextUrl) {
+      void queueImagePreload(nextUrl)
     }
 
-    void warmup()
-
-    return () => {
-      cancelled = true
-    }
+    setIsFeedVisible(true)
+    return undefined
   }, [currentProject, nextProject])
 
   const handleCategoryChange = (category: string) => {
     if (mode === "shared-entry") return
+    clearSwipeHistory()
     setSelectedCategory(category)
   }
 
-  const buildSnapshot = (): SwipeSnapshot => ({
-    prevProject,
-    prevCurrentProject: currentProject,
-    prevNextProject: nextProject,
-    prevSwipeCount: swipeCount,
-    prevCreditsRemaining: creditsRemaining,
-    prevCart: [...cart],
-    prevUserStats: {
-      ...userStats,
-      categoriesSupported: new Set(userStats.categoriesSupported),
-    },
-    prevUserProfile: {
-      ...userProfile,
-      totalSwipes: userProfile.totalSwipes,
-      totalDonated: userProfile.totalDonated,
-    },
-  })
-
-  const handleSwipeRight = async () => {
-    if (!canSwipe || !betaUserId || !currentProject || isAdvancing) return
-
-    setIsAdvancing(true)
-    const snapshot = buildSnapshot()
-
-    try {
-      const creditsResult = await consumeCredits({
-        userId: betaUserId as Id<"waitlistUsers">,
-        chain: "celo",
-        amount: 1,
-      })
-      setCreditsRemaining(creditsResult.remaining)
-
-      setUserStats((prev: UserStatsState) => {
-        const categoriesSupported = new Set(prev.categoriesSupported)
-        categoriesSupported.add(currentProject.category)
-        return {
-          totalDonations: prev.totalDonations + 1,
-          categoriesSupported,
-          streak: prev.lastDonation ? prev.streak + 1 : 1,
-          lastDonation: new Date(),
-        }
-      })
-
-      const amountNum = parseFloat(effectiveDonationAmount.split(" ")[0])
-      setUserProfile((prev: UserProfileState) => ({
-        ...prev,
-        totalSwipes: prev.totalSwipes + 1,
-        totalDonated: prev.totalDonated + amountNum,
-      }))
-
-      setCart([...cart, { project: currentProject, amount: amountNum, currency: donationCurrency }])
-
-      recordSwipe({
-        userId: betaUserId as Id<"waitlistUsers">,
-        projectId: currentProject.projectId,
-        direction: "right",
-        amount: amountNum,
-      }).catch((error) => console.error("Failed to record swipe:", error))
-
-      const newCount = swipeCount + 1
-      if (newCount >= confirmSwipes) {
-        setSwipeCount(0)
-      } else {
-        setSwipeCount(newCount)
-      }
-
-      if (mode === "shared-entry") {
-        await transitionFromSharedToDiscover()
-      } else {
-        await advanceDiscoverStream()
-      }
-
-      setSwipeHistory((prev) => [...prev, snapshot])
-    } catch (error) {
-      console.error("Failed to process right swipe:", error)
-    } finally {
-      setIsAdvancing(false)
-    }
-  }
-
-  const handleSwipeLeft = async () => {
-    if (!currentProject || isAdvancing) return
-
-    setIsAdvancing(true)
-    const snapshot = buildSnapshot()
-
-    try {
-      setUserProfile((prev: UserProfileState) => ({ ...prev, totalSwipes: prev.totalSwipes + 1 }))
-
-      if (betaUserId) {
-        recordSwipe({
-          userId: betaUserId as Id<"waitlistUsers">,
-          projectId: currentProject.projectId,
-          direction: "left",
-        }).catch((error) => console.error("Failed to record swipe:", error))
-      }
-
-      if (mode === "shared-entry") {
-        await transitionFromSharedToDiscover()
-      } else {
-        await advanceDiscoverStream()
-      }
-
-      setSwipeHistory((prev) => [...prev, snapshot])
-    } finally {
-      setIsAdvancing(false)
-    }
-  }
-
-  const handleUndo = () => {
-    setSwipeHistory((prev) => {
-      if (prev.length === 0) return prev
-
-      const next = [...prev]
-      const last = next.pop()
-      if (!last) return prev
-
-      setPrevProject(last.prevProject)
-      setCurrentProject(last.prevCurrentProject)
-      setNextProject(last.prevNextProject)
-      setSwipeCount(last.prevSwipeCount)
-      setCreditsRemaining(last.prevCreditsRemaining)
-      setCart(last.prevCart)
-      setUserStats(last.prevUserStats)
-      setUserProfile(last.prevUserProfile)
-
-      return next
-    })
-  }
-
-  const shouldShowWarmup = !isFeedVisible && (Boolean(currentProject) || stack.length > 0)
+  const shouldShowWarmup = !currentProject
 
   return (
     <div className="flex h-full min-h-0 flex-col px-3 pt-1 pb-3">
@@ -560,7 +528,7 @@ export function HomeScreen({
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 items-center justify-center py-1">
+      <div className="flex min-h-0 flex-1 items-center justify-center pt-1 pb-20">
         <div className="aspect-5/8 h-[min(100%,740px)] w-auto max-w-full sm:h-[min(100%,820px)] lg:h-[min(100%,920px)]">
           {shouldShowWarmup ? (
             <div className="relative size-full overflow-hidden rounded-[28px] border border-surface-border bg-[#101a2f]">
@@ -574,21 +542,69 @@ export function HomeScreen({
               </div>
             </div>
           ) : currentProject ? (
-            <div className={`size-full transition-opacity duration-500 ${isFeedVisible ? "opacity-100" : "opacity-0"}`}>
-              <ProjectCard
-                className="size-full"
-                project={currentProject}
-                projectPathId={currentProject.routeId}
-                isLoading={false}
-                showImageLoader={false}
-                onSwipeLeft={isAdvancing ? undefined : handleSwipeLeft}
-                onSwipeRight={!canSwipe || isAdvancing ? undefined : handleSwipeRight}
-                onUndo={canUndo && !isAdvancing ? handleUndo : undefined}
-                viewMode="swipe"
-                donationAmount={effectiveDonationAmount}
-                donationCurrency={donationCurrency}
-                onBoost={(amount) => console.log("boost", amount)}
+            <div className={`relative size-full transition-opacity duration-500 ${isFeedVisible ? "opacity-100" : "opacity-0"}`}>
+              <SwipeStack
+                ref={stackRef}
+                items={visibleItems}
+                className="relative size-full"
+                busyRef={busyRef}
+                disabled={isAdvancing}
+                rotationsEnabled={STACK_ROTATIONS_ENABLED}
+                visible={4}
+                visualDepth={4}
+                stackRotations={[0, -2, 2]}
+                stackYs={[0, 0, 0]}
+                canSwipeDirection={(dir) => (dir === "right" ? canSwipe : dir === "left")}
+                onCommit={(decision) => {
+                  if (decision.dir === "left") {
+                    commit(decision)
+                    void handleSwipeLeft(decision, { skipDeckCommit: true })
+                    return
+                  }
+                  if (decision.dir === "right") {
+                    if (!canSwipe) return
+                    commit(decision)
+                    void handleSwipeRight(decision, { skipDeckCommit: true })
+                  }
+                }}
+                renderCard={(item, isTop) => {
+                  return (
+                    <ProjectCard
+                      className="size-full"
+                      project={item.data}
+                      projectPathId={item.data.routeId}
+                      isLoading={false}
+                      showImageLoader={false}
+                      viewMode="swipe"
+                      swipeControlMode="external"
+                      onBoost={(amount) => console.log("boost", amount)}
+                    />
+                  )
+                }}
               />
+
+              <div className="pointer-events-none absolute inset-x-0 -bottom-16 z-40 flex items-center justify-center gap-5 min-[380px]:-bottom-18 sm:-bottom-20">
+                <button
+                  onClick={() => buttonSwipe("left")}
+                  className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-rose-100 bg-white/100 text-rose-500 opacity-100 shadow-[0_8px_20px_rgb(244,63,94,0.15)] transition-all hover:bg-rose-50"
+                >
+                  <X className="size-6" />
+                </button>
+                <button
+                  onClick={handleUndo}
+                  disabled={!canUndo || isAdvancing}
+                  className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white/100 text-slate-500 opacity-100 shadow-md transition-all disabled:opacity-40"
+                >
+                  <RotateCcw className="size-5" />
+                </button>
+                <button
+                  onClick={() => buttonSwipe("right")}
+                  disabled={!canSwipe}
+                  className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-emerald-100 bg-white/100 text-emerald-500 opacity-100 shadow-[0_8px_20px_rgb(16,185,129,0.15)] transition-all hover:bg-emerald-50 disabled:opacity-40"
+                >
+                  <ThumbsUp className="size-6" />
+                </button>
+              </div>
             </div>
           ) : (
             <div className="surface-panel flex h-full items-center justify-center rounded-2xl text-sm text-muted-foreground">
