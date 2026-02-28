@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { motion, useAnimation, useMotionValue, useTransform } from "framer-motion"
+import { animate, motion, useMotionValue, useTransform } from "framer-motion"
 import confetti from "canvas-confetti"
 import { ChevronRight } from "lucide-react"
 
@@ -10,7 +10,6 @@ interface SlideToApproveProps {
 }
 
 export function SlideToApprove({ onComplete }: SlideToApproveProps) {
-    const controls = useAnimation()
     const x = useMotionValue(0)
     const [completed, setCompleted] = useState(false)
 
@@ -28,7 +27,7 @@ export function SlideToApprove({ onComplete }: SlideToApproveProps) {
 
         if (x.get() > maxDrag * 0.9) {
             setCompleted(true)
-            await controls.start({ x: maxDrag })
+            animate(x, maxDrag, { type: "spring", stiffness: 700, damping: 40 })
 
             confetti({
                 particleCount: 80,
@@ -43,7 +42,7 @@ export function SlideToApprove({ onComplete }: SlideToApproveProps) {
             return
         }
 
-        controls.start({ x: 0 })
+        animate(x, 0, { type: "spring", stiffness: 700, damping: 40 })
     }
 
     return (
@@ -98,7 +97,6 @@ export function SlideToApprove({ onComplete }: SlideToApproveProps) {
                 dragConstraints={{ left: 0, right: maxDrag }}
                 dragElastic={0.05}
                 dragMomentum={false}
-                animate={controls}
                 whileTap={{ scale: 0.95 }}
                 onDragEnd={handleDragEnd}
             >
