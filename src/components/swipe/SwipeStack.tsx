@@ -23,7 +23,7 @@ import { computeDecision, type CommitConfig, type SwipeDecision, type SwipeDir }
 import type { SwipeItem } from "@/components/swipe/use-swipe-deck"
 
 const SNAP = { type: "spring" as const, stiffness: 650, damping: 40, mass: 0.6 }
-const EXIT_DURATION = 0.35
+const EXIT_DURATION = 0.32
 const EXIT_EASE: [number, number, number, number] = [0.36, 0.66, 0.04, 1]
 
 type MeasureRect = { width: number; height: number }
@@ -252,8 +252,8 @@ type SwipeStackProps<T> = {
   visualDepth?: number
 }
 
-const DEFAULT_ROTATIONS = [-2, -2, -2, -2] as const
-const DEFAULT_YS = [0, 0, 0, 0] as const
+const DEFAULT_ROTATIONS = [0, -2, 2] as const
+const DEFAULT_YS = [0, 0, 0] as const
 
 export const SwipeStack = forwardRef(function SwipeStackInner<T>(
   {
