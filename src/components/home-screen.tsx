@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useShallow } from "zustand/react/shallow"
 import { useRouter } from "next/navigation"
 import { useMutation } from "convex/react"
+import { AnimatePresence, animate, motion, useMotionValue, useTransform, type PanInfo } from "framer-motion"
 import { RotateCcw, ThumbsUp, X } from "lucide-react"
 
 import { useApp } from "@/context/AppContext"
@@ -126,6 +127,7 @@ export function HomeScreen({
 
   const [mode, setMode] = useState<"discover" | "shared-entry">(initialMode)
   const [isFeedVisible, setIsFeedVisible] = useState(Boolean(initialProject))
+  const [showCategoryToast, setShowCategoryToast] = useState(true)
 
   const canSwipe = (betaStatus === "active" || betaStatus === "guest") && creditsRemaining > 0
   const effectiveDonationAmount = donationAmount ?? "0.01¢"
@@ -358,12 +360,71 @@ export function HomeScreen({
   })
 
   const stackRef = useRef<SwipeStackHandle>(null)
+  const deckY = useMotionValue(0)
+  const deckX = useTransform(deckY, [-400, 0, 400], [40, 0, 40])
+  const deckRotate = useTransform(deckY, [-400, 0, 400], [8, 0, -8])
+  const deckOpacity = useMotionValue(1)
 
   const buttonSwipe = useCallback((dir: "left" | "right") => {
     if (isAdvancing) return
     if (dir === "right" && !canSwipe) return
     stackRef.current?.swipe(dir)
   }, [canSwipe, isAdvancing])
+
+  useEffect(() => {
+    setShowCategoryToast(true)
+    const timer = window.setTimeout(() => setShowCategoryToast(false), 1200)
+    return () => window.clearTimeout(timer)
+  }, [activeCategory])
+
+  const switchCategory = useCallback((dir: "up" | "down") => {
+    if (busyRef.current || isAdvancing) return
+    busyRef.current = true
+
+    const currentIndex = TOP_CATEGORIES.indexOf(activeCategory)
+    const sign = dir === "up" ? -1 : 1
+    const distance = typeof window !== "undefined" ? window.innerHeight * 0.72 : 640
+    const nextIndex = (currentIndex + (dir === "up" ? 1 : -1) + TOP_CATEGORIES.length) % TOP_CATEGORIES.length
+    const nextCategory = TOP_CATEGORIES[nextIndex] ?? "See All"
+
+    animate(deckY, sign * distance, { duration: 0.26, ease: "easeIn" })
+    animate(deckOpacity, 0, {
+      duration: 0.18,
+      ease: "easeOut",
+      onComplete: () => {
+        clearSwipeHistory()
+        setSelectedCategory(nextCategory)
+
+        deckY.set(-sign * distance)
+
+        animate(deckY, 0, { type: "spring", stiffness: 420, damping: 28, mass: 0.82 })
+        animate(deckOpacity, 1, {
+          duration: 0.28,
+          ease: "easeOut",
+          onComplete: () => {
+            busyRef.current = false
+          },
+        })
+      },
+    })
+  }, [activeCategory, busyRef, clearSwipeHistory, deckOpacity, deckY, isAdvancing, setSelectedCategory])
+
+  const onDragDeckEnd = useCallback((_: unknown, info: PanInfo) => {
+    const { y: offsetY } = info.offset
+    const { y: velocityY } = info.velocity
+
+    if (offsetY < -80 || velocityY < -400) {
+      switchCategory("up")
+      return
+    }
+
+    if (offsetY > 80 || velocityY > 400) {
+      switchCategory("down")
+      return
+    }
+
+    animate(deckY, 0, { type: "spring", stiffness: 500, damping: 30 })
+  }, [deckY, switchCategory])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -382,6 +443,12 @@ export function HomeScreen({
       } else if (event.key === "ArrowRight") {
         event.preventDefault()
         buttonSwipe("right")
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault()
+        switchCategory("up")
+      } else if (event.key === "ArrowDown") {
+        event.preventDefault()
+        switchCategory("down")
       } else if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") {
         event.preventDefault()
         if (canUndo && !isAdvancing) {
@@ -392,7 +459,7 @@ export function HomeScreen({
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [buttonSwipe, canUndo, handleUndo, isAdvancing])
+  }, [buttonSwipe, canUndo, handleUndo, isAdvancing, switchCategory])
 
   useEffect(() => {
     const keys = items.map((item) => getProjectKey(item.data))
@@ -511,6 +578,22 @@ export function HomeScreen({
         </div>
       </div>
 
+      <div className="pointer-events-none absolute top-9 left-0 z-50 flex w-full justify-center sm:top-12">
+        <AnimatePresence>
+          {showCategoryToast ? (
+            <motion.div
+              initial={{ opacity: 0, y: -16, scale: 0.92 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 420, damping: 25 }}
+              className="rounded-full border border-slate-200 bg-white/85 px-5 py-1.5 shadow-lg backdrop-blur-xl sm:px-7 sm:py-2.5"
+            >
+              <span className="text-xs font-black tracking-widest text-slate-800 uppercase sm:text-sm">{activeCategory}</span>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </div>
+
       <div className="mb-2 flex items-end justify-between">
         <div>
           <p className="text-[10px] font-medium tracking-wide text-gray-400">YOUR LEVEL</p>
@@ -542,7 +625,15 @@ export function HomeScreen({
               </div>
             </div>
           ) : currentProject ? (
-            <div className={`relative size-full transition-opacity duration-500 ${isFeedVisible ? "opacity-100" : "opacity-0"}`}>
+            <motion.div
+              style={{ y: deckY, x: deckX, rotate: deckRotate, opacity: deckOpacity, willChange: "transform, opacity" }}
+              drag="y"
+              dragDirectionLock
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={0.4}
+              onDragEnd={onDragDeckEnd}
+              className={`relative size-full transition-opacity duration-500 ${isFeedVisible ? "opacity-100" : "opacity-0"}`}
+            >
               <SwipeStack
                 ref={stackRef}
                 items={visibleItems}
@@ -605,7 +696,7 @@ export function HomeScreen({
                   <ThumbsUp className="size-6" />
                 </button>
               </div>
-            </div>
+            </motion.div>
           ) : (
             <div className="surface-panel flex h-full items-center justify-center rounded-2xl text-sm text-muted-foreground">
               No projects available for this category.
