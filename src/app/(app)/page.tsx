@@ -1,7 +1,7 @@
 import { HomeScreen } from "@/components/home-screen"
 import { getFeedProject } from "@/lib/feed-server"
 
-export const runtime = "edge"
+export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 export const metadata = {

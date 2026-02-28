@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 
 import { getProjectById } from "@/lib/feed-server"
 
-export const runtime = "edge"
+export const runtime = "nodejs"
 
 type RouteContext = {
   params: Promise<{
