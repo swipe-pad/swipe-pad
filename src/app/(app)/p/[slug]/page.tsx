@@ -4,7 +4,7 @@ import { notFound } from "next/navigation"
 import { HomeScreen } from "@/components/home-screen"
 import { getProjectBySlug } from "@/lib/feed-server"
 
-export const runtime = "edge"
+export const runtime = "nodejs"
 export const dynamic = "force-static"
 export const revalidate = 60
 

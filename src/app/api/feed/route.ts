@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 import { getFeedProject } from "@/lib/feed-server"
 
-export const runtime = "edge"
+export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 export async function GET(request: NextRequest) {
