@@ -1,19 +1,24 @@
 import { afterAll, beforeAll, describe, expect, it, setDefaultTimeout } from "bun:test"
+import { existsSync } from "node:fs"
+import { join } from "node:path"
 
 const PORT = 3111
-const BASE_URL = `http://127.0.0.1:${PORT}`
+const MANAGED_BASE_URL = `http://127.0.0.1:${PORT}`
+const SHARED_DEV_BASE_URL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:3030"
 const STARTUP_TIMEOUT_MS = 90_000
 
 setDefaultTimeout(120_000)
 
 let devServer: Bun.Subprocess | null = null
+let baseUrl = MANAGED_BASE_URL
+let ownsDevServer = false
 
-async function waitForServerReady() {
+async function waitForServerReady(targetBaseUrl: string) {
   const startedAt = Date.now()
 
   while (Date.now() - startedAt < STARTUP_TIMEOUT_MS) {
     try {
-      const response = await fetch(`${BASE_URL}/project/e2e-ready-check`, {
+      const response = await fetch(`${targetBaseUrl}/project/e2e-ready-check`, {
         redirect: "manual",
       })
 
@@ -31,6 +36,14 @@ async function waitForServerReady() {
 }
 
 beforeAll(async () => {
+  const sharedLockPath = join(process.cwd(), ".next", "dev", "lock")
+  if (existsSync(sharedLockPath)) {
+    baseUrl = SHARED_DEV_BASE_URL
+    await waitForServerReady(baseUrl)
+    return
+  }
+
+  ownsDevServer = true
   devServer = Bun.spawn(["bunx", "next", "dev", "--port", String(PORT)], {
     cwd: process.cwd(),
     stdout: "pipe",
@@ -41,10 +54,11 @@ beforeAll(async () => {
     },
   })
 
-  await waitForServerReady()
+  await waitForServerReady(baseUrl)
 })
 
 afterAll(() => {
+  if (!ownsDevServer) return
   if (!devServer) return
   devServer.kill()
   devServer = null
@@ -52,7 +66,7 @@ afterAll(() => {
 
 describe("Routing e2e", () => {
   it("redirects legacy /project/:id to /p/:slug", async () => {
-    const response = await fetch(`${BASE_URL}/project/solar-dao`, {
+    const response = await fetch(`${baseUrl}/project/solar-dao`, {
       redirect: "manual",
     })
 
@@ -68,7 +82,7 @@ describe("Routing e2e", () => {
   })
 
   it("returns 404 for missing shared slug", async () => {
-    const response = await fetch(`${BASE_URL}/p/__e2e_missing_slug__`, {
+    const response = await fetch(`${baseUrl}/p/__e2e_missing_slug__`, {
       redirect: "manual",
     })
     const html = await response.text()
@@ -78,7 +92,7 @@ describe("Routing e2e", () => {
   })
 
   it("returns 404 JSON for missing /api/project/:id", async () => {
-    const response = await fetch(`${BASE_URL}/api/project/__e2e_missing_id__`)
+    const response = await fetch(`${baseUrl}/api/project/__e2e_missing_id__`)
     const body = await response.json()
 
     expect(response.status).toBe(404)
@@ -90,7 +104,7 @@ describe("Routing e2e", () => {
   ;(hasConvexDataSource ? it : it.skip)(
     "executes discover contract for shared-entry first-swipe fetch",
     async () => {
-      const firstFeed = await fetch(`${BASE_URL}/api/feed?seed=e2e-seed`)
+      const firstFeed = await fetch(`${baseUrl}/api/feed?seed=e2e-seed`)
       expect(firstFeed.status).toBe(200)
 
       const firstBody = (await firstFeed.json()) as {
@@ -100,11 +114,11 @@ describe("Routing e2e", () => {
       expect(firstBody.project.projectId.length).toBeGreaterThan(0)
       expect(firstBody.project.routeId.length).toBeGreaterThan(0)
 
-      const sharedEntry = await fetch(`${BASE_URL}/p/${encodeURIComponent(firstBody.project.routeId)}`)
+      const sharedEntry = await fetch(`${baseUrl}/p/${encodeURIComponent(firstBody.project.routeId)}`)
       expect(sharedEntry.status).toBe(200)
 
       const afterSwipeFeed = await fetch(
-        `${BASE_URL}/api/feed?exclude=${encodeURIComponent(firstBody.project.projectId)}&seed=e2e-seed-next`,
+        `${baseUrl}/api/feed?exclude=${encodeURIComponent(firstBody.project.projectId)}&seed=e2e-seed-next`,
       )
       expect(afterSwipeFeed.status).toBe(200)
 
