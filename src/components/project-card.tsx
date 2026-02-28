@@ -2,7 +2,8 @@
 
 import type React from "react"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { motion } from "framer-motion"
 import { MessageCircle, Flag, Zap, ExternalLink, RotateCcw, X, ThumbsUp } from "lucide-react"
 import { BoostModal } from "@/components/boost-modal"
 import { ShareModal } from "@/components/share-modal"
@@ -14,6 +15,8 @@ import type { Project } from "@/lib/useConvexData"
 import type { DonationAmount, StableCoin } from "@/components/amount-selector"
 import { stripMarkdown } from "@/lib/markdown"
 import { normalizeExternalUrl } from "@/lib/external-links"
+import { type SwipeDecision } from "@/components/swipe/engine"
+import { useSwipeCardController } from "@/components/swipe/use-swipe-card-controller"
 
 interface ProjectCardProps {
   project: Project
@@ -22,14 +25,15 @@ interface ProjectCardProps {
   viewMode?: "swipe" | "category"
   isLoading?: boolean
   showImageLoader?: boolean
-  onSwipeLeft?: () => void
-  onSwipeRight?: () => void
+  onSwipeLeft?: (decision?: SwipeDecision) => void
+  onSwipeRight?: (decision?: SwipeDecision) => void
   onUndo?: () => void
   onDonate?: (amount?: number) => void
   onShare?: () => void
   onBoost?: (amount: number) => void
   donationAmount?: DonationAmount
   donationCurrency?: StableCoin
+  swipeControlMode?: "internal" | "external"
 }
 
 function getCategoryBadgeClasses(category: string) {
@@ -133,9 +137,10 @@ export function ProjectCard({
   onUndo,
   onDonate,
   onBoost,
+  swipeControlMode = "internal",
 }: ProjectCardProps) {
   type SwipeDirection = "left" | "right"
-  const DRAG_THRESHOLD = 50
+  const internalSwipeEnabled = viewMode === "swipe" && swipeControlMode === "internal"
 
   const ENABLE_REPORTS = false
   const [showBoostModal, setShowBoostModal] = useState(false)
@@ -145,100 +150,26 @@ export function ProjectCard({
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set())
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set())
 
-  // Touch/swipe handling
   const cardRef = useRef<HTMLDivElement>(null)
-  const dragStateRef = useRef({
-    startX: 0,
-    currentX: 0,
-    isDragging: false,
-    isMouseDown: false,
-  })
-  const dragOffsetRef = useRef(0)
-  const dragFrameRef = useRef<number | null>(null)
-  const [visualDragOffset, setVisualDragOffset] = useState(0)
-  const [isPointerDragging, setIsPointerDragging] = useState(false)
-  const [isSwipingOut, setIsSwipingOut] = useState(false)
   const [pressedArrow, setPressedArrow] = useState<SwipeDirection | null>(null)
-  const keyboardOffset = pressedArrow === "right" ? 48 : pressedArrow === "left" ? -48 : 0
-  const dragOffset = isPointerDragging ? visualDragOffset : keyboardOffset
-  const swipeProgress = Math.min(Math.abs(dragOffset) / 120, 1)
-
-  const resetCardPosition = useCallback(() => {
-    if (!cardRef.current) return
-    cardRef.current.style.transition = "transform 180ms ease-out"
-    cardRef.current.style.transform = ""
-  }, [])
-
-  const flushDragFrame = useCallback(() => {
-    dragFrameRef.current = null
-
-    const offset = dragOffsetRef.current
-    setVisualDragOffset(offset)
-
-    if (cardRef.current && dragStateRef.current.isDragging) {
-      cardRef.current.style.transition = "none"
-      cardRef.current.style.transform = `translateX(${offset}px) rotate(${offset * 0.1}deg)`
-    }
-  }, [])
-
-  const scheduleDragFrame = useCallback(() => {
-    if (dragFrameRef.current !== null) return
-    dragFrameRef.current = window.requestAnimationFrame(flushDragFrame)
-  }, [flushDragFrame])
-
-  const clearDragFrame = useCallback(() => {
-    if (dragFrameRef.current !== null) {
-      window.cancelAnimationFrame(dragFrameRef.current)
-      dragFrameRef.current = null
-    }
-  }, [])
-
-  const resetDragState = useCallback(() => {
-    dragStateRef.current = {
-      startX: 0,
-      currentX: 0,
-      isDragging: false,
-      isMouseDown: false,
-    }
-    dragOffsetRef.current = 0
-    setVisualDragOffset(0)
-    setIsPointerDragging(false)
-  }, [])
-
-  const triggerSwipe = useCallback((direction: SwipeDirection) => {
-    if (isLoading || isSwipingOut || viewMode !== "swipe") return
-    const callback = direction === "right" ? onSwipeRight : onSwipeLeft
-    if (!callback) return
-
-    setIsSwipingOut(true)
-    setPressedArrow(null)
-
-    if (cardRef.current) {
-      cardRef.current.style.transition = "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)"
-      cardRef.current.style.transform = `translateX(${direction === "right" ? 260 : -260}px) rotate(${direction === "right" ? 14 : -14}deg)`
-    }
-
-    window.setTimeout(() => {
-      callback()
-
-      if (cardRef.current) {
-        cardRef.current.style.transition = "none"
-        cardRef.current.style.transform = ""
+  const swipeController = useSwipeCardController({
+    cardRef,
+    enabled: internalSwipeEnabled,
+    isLoading,
+    resetKey: project.id,
+    onSwipe: (direction, decision) => {
+      setPressedArrow(null)
+      if (direction === "right") {
+        onSwipeRight?.(decision)
+        return
       }
-
-      resetDragState()
-      setIsSwipingOut(false)
-    }, 210)
-  }, [isLoading, isSwipingOut, onSwipeLeft, onSwipeRight, resetDragState, viewMode])
-
-  useEffect(() => {
-    return () => {
-      clearDragFrame()
-    }
-  }, [clearDragFrame])
+      onSwipeLeft?.(decision)
+    },
+  })
+  const { isSwipingOut, triggerSwipe, previewDirection, handleDragEnd, snapBack } = swipeController
 
   useEffect(() => {
-    if (viewMode !== "swipe" || isLoading) return
+    if (!internalSwipeEnabled || isLoading) return
 
     const isEditableTarget = (target: EventTarget | null) => {
       if (!(target instanceof HTMLElement)) return false
@@ -261,11 +192,7 @@ export function ProjectCard({
 
       event.preventDefault()
       setPressedArrow(direction)
-
-      if (cardRef.current) {
-        cardRef.current.style.transition = "transform 120ms ease-out"
-        cardRef.current.style.transform = `translateX(${direction === "right" ? 48 : -48}px) rotate(${direction === "right" ? 4 : -4}deg)`
-      }
+      previewDirection(direction)
     }
 
     const handleKeyUp = (event: KeyboardEvent) => {
@@ -279,8 +206,7 @@ export function ProjectCard({
 
     const handleBlur = () => {
       setPressedArrow(null)
-      resetDragState()
-      resetCardPosition()
+      snapBack()
     }
 
     window.addEventListener("keydown", handleKeyDown)
@@ -293,16 +219,15 @@ export function ProjectCard({
       window.removeEventListener("blur", handleBlur)
     }
   }, [
-    clearDragFrame,
     isLoading,
     isSwipingOut,
     onSwipeLeft,
     onSwipeRight,
     pressedArrow,
-    resetCardPosition,
-    resetDragState,
+    snapBack,
     triggerSwipe,
-    viewMode,
+    internalSwipeEnabled,
+    previewDirection,
   ])
 
   const handleProjectLike = (e?: React.MouseEvent) => {
@@ -358,111 +283,6 @@ export function ProjectCard({
     action()
   }
 
-  // Touch event handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (isLoading || viewMode !== "swipe" || isSwipingOut) return
-    const touch = e.touches[0]
-    dragStateRef.current.startX = touch.clientX
-    dragStateRef.current.currentX = touch.clientX
-    dragStateRef.current.isDragging = false
-    dragOffsetRef.current = 0
-    setIsPointerDragging(false)
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (isLoading || viewMode !== "swipe" || isSwipingOut) return
-    const touch = e.touches[0]
-    dragStateRef.current.currentX = touch.clientX
-    const diff = touch.clientX - dragStateRef.current.startX
-
-    if (!dragStateRef.current.isDragging && Math.abs(diff) > 10) {
-      dragStateRef.current.isDragging = true
-      setIsPointerDragging(true)
-    }
-
-    if (dragStateRef.current.isDragging) {
-      dragOffsetRef.current = diff
-      scheduleDragFrame()
-    }
-  }
-
-  const handleTouchEnd = () => {
-    if (!dragStateRef.current.isDragging || viewMode !== "swipe") {
-      if (cardRef.current) {
-        cardRef.current.style.transform = ""
-      }
-      resetDragState()
-      return
-    }
-
-    const diff = dragStateRef.current.currentX - dragStateRef.current.startX
-
-    clearDragFrame()
-    resetCardPosition()
-
-    if (Math.abs(diff) > DRAG_THRESHOLD) {
-      triggerSwipe(diff > 0 ? "right" : "left")
-    }
-
-    resetDragState()
-  }
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (isLoading || viewMode !== "swipe" || isSwipingOut) return
-    e.preventDefault()
-    dragStateRef.current.startX = e.clientX
-    dragStateRef.current.currentX = e.clientX
-    dragStateRef.current.isMouseDown = true
-    dragStateRef.current.isDragging = false
-    dragOffsetRef.current = 0
-    setIsPointerDragging(false)
-  }
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (viewMode !== "swipe" || !dragStateRef.current.isMouseDown || isSwipingOut) return
-    dragStateRef.current.currentX = e.clientX
-    const diff = e.clientX - dragStateRef.current.startX
-
-    if (!dragStateRef.current.isDragging && Math.abs(diff) > 10) {
-      dragStateRef.current.isDragging = true
-      setIsPointerDragging(true)
-    }
-
-    if (dragStateRef.current.isDragging) {
-      dragOffsetRef.current = diff
-      scheduleDragFrame()
-    }
-  }
-
-  const handleMouseUp = () => {
-    if (!dragStateRef.current.isMouseDown) return
-
-    if (!dragStateRef.current.isDragging || viewMode !== "swipe") {
-      if (cardRef.current) {
-        cardRef.current.style.transform = ""
-      }
-      resetDragState()
-      return
-    }
-
-    const diff = dragStateRef.current.currentX - dragStateRef.current.startX
-
-    clearDragFrame()
-    resetCardPosition()
-
-    if (Math.abs(diff) > DRAG_THRESHOLD) {
-      triggerSwipe(diff > 0 ? "right" : "left")
-    }
-
-    resetDragState()
-  }
-
-  const handleMouseLeave = () => {
-    if (dragStateRef.current.isMouseDown) {
-      handleMouseUp()
-    }
-  }
-
   const getCategoryFallbackImage = (categoryName: string) => {
     switch (categoryName) {
       case "Builders":
@@ -493,8 +313,16 @@ export function ProjectCard({
   const topLevelCategory = getTopLevelCategory(project.category)
 
   const cardContent = (
-    <div
+    <motion.div
       ref={cardRef}
+      style={{
+        x: swipeController.x,
+        y: swipeController.y,
+        rotate: swipeController.rotate,
+        opacity: swipeController.cardOpacity,
+        scale: swipeController.scale,
+        willChange: "transform, opacity",
+      }}
       className={`
         relative overflow-hidden select-none
         ${viewMode === "swipe"
@@ -506,49 +334,49 @@ export function ProjectCard({
         }
         ${className ?? ""}
       `}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
+      drag={internalSwipeEnabled && !isLoading ? "x" : false}
+      dragDirectionLock
+      dragElastic={0.5}
+      dragMomentum={false}
+      dragConstraints={{ left: 0, right: 0 }}
+      onDragEnd={internalSwipeEnabled ? handleDragEnd : undefined}
+      onPointerCancel={internalSwipeEnabled ? snapBack : undefined}
     >
-      {viewMode === "swipe" && (
+      {internalSwipeEnabled && (
         <>
-          <div
+          <motion.div
             className="
               pointer-events-none absolute inset-0 z-10 bg-green-500/10
             "
-            style={{ opacity: dragOffset > 0 ? swipeProgress : 0 }}
+            style={{ opacity: swipeController.likeOverlayOpacity }}
           />
-          <div
+          <motion.div
             className="pointer-events-none absolute inset-0 z-10 bg-red-500/10"
-            style={{ opacity: dragOffset < 0 ? swipeProgress : 0 }}
+            style={{ opacity: swipeController.skipOverlayOpacity }}
           />
 
-          <div
+          <motion.div
             className="
               pointer-events-none absolute top-8 left-8 z-50 -rotate-12
               transform rounded-lg border-4 border-white bg-green-500/90 px-4
               py-2 text-2xl font-black tracking-wide text-white shadow-xl
               transition-opacity
             "
-            style={{ opacity: dragOffset > 0 ? swipeProgress : 0 }}
+            style={{ opacity: swipeController.likeStampOpacity }}
           >
             LIKE
-          </div>
-          <div
+          </motion.div>
+          <motion.div
             className="
               pointer-events-none absolute top-8 right-8 z-50 rotate-12
               transform rounded-lg border-4 border-white bg-red-500/90 px-4 py-2
               text-2xl font-black tracking-wide text-white shadow-xl
               transition-opacity
             "
-            style={{ opacity: dragOffset < 0 ? swipeProgress : 0 }}
+            style={{ opacity: swipeController.skipStampOpacity }}
           >
             SKIP
-          </div>
+          </motion.div>
         </>
       )}
 
@@ -585,6 +413,7 @@ export function ProjectCard({
             onLoad={handleImageLoad}
             loading={viewMode === "swipe" ? "eager" : "lazy"}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            draggable={false}
           />
         )}
 
@@ -621,7 +450,7 @@ export function ProjectCard({
           </div>
         )}
 
-        {viewMode === "swipe" && (
+        {viewMode === "swipe" && swipeControlMode === "internal" && (
           <div className="
             pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[44%]
             bg-linear-to-t from-[#050a16]/95 via-[#0b1327]/82 to-transparent
@@ -830,12 +659,12 @@ export function ProjectCard({
         </div>
 
         {/* Swipe Mode Actions */}
-        {viewMode === "swipe" && (
+        {viewMode === "swipe" && swipeControlMode === "internal" && (
           <div className="mt-2 flex items-center gap-2">
             <button
               onClick={(e) => handleButtonClick(e, () => {
                 if (isLoading) return
-                onSwipeLeft && onSwipeLeft()
+                triggerSwipe("left")
               })}
               disabled={isLoading}
               className="
@@ -875,9 +704,7 @@ export function ProjectCard({
                 handleButtonClick(e, () => {
                   if (isLoading) return
                   handleProjectLike()
-                  if (onSwipeRight) {
-                    onSwipeRight()
-                  }
+                  triggerSwipe("right")
                 })
               }
               disabled={isLoading}
@@ -950,7 +777,7 @@ export function ProjectCard({
           label={externalLinkPreview.label}
         />
       ) : null}
-    </div>
+    </motion.div>
   )
 
   if (viewMode === "category") {
