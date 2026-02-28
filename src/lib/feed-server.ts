@@ -61,7 +61,10 @@ function pickWeightedProject(projects: ServerProject[], seed: string): ServerPro
 export async function getFeedProject(options: FeedOptions = {}) {
   const allProjects = await getAllProjectsServer()
   if (allProjects.length === 0) {
-    throw new Error("Feed is empty")
+    return {
+      project: null,
+      nextCursor: "",
+    }
   }
 
   const nextSeed = options.seed ?? crypto.randomUUID()

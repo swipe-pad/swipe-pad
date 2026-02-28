@@ -2,11 +2,11 @@ import { NextResponse } from "next/server"
 
 import { getIpfsFallbackUrl, normalizeUrl } from "@/lib/image-delivery"
 
-export const runtime = "edge"
+export const runtime = "nodejs"
 
 const FETCH_TIMEOUT_MS = 5000
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024
-const CACHE_CONTROL = "public, s-maxage=31536000, stale-while-revalidate=86400"
+const CACHE_CONTROL = "public, max-age=31536000, s-maxage=31536000, stale-while-revalidate=86400, immutable"
 
 type ProxyError = {
   status: number
@@ -149,11 +149,14 @@ function parseUrl(raw: string): ParsedTarget {
 
 async function fetchImage(url: string): Promise<FetchOutcome> {
   const startedAt = Date.now()
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+
   try {
     const response = await fetch(url, {
       method: "GET",
       redirect: "follow",
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      signal: controller.signal,
       headers: {
         Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -187,6 +190,8 @@ async function fetchImage(url: string): Promise<FetchOutcome> {
         error: timeoutLike ? "Upstream timeout" : "Upstream network error",
       },
     }
+  } finally {
+    clearTimeout(timeout)
   }
 }
 
