@@ -88,6 +88,7 @@ export function useSwipeBusinessFlow(options: {
   effectiveDonationAmount: string
   betaUserId: string | null
   canSwipe: boolean
+  freeMode: boolean
   currentProject: Project | null
   deckHistoryLength: number
   commit: (decision: SwipeDecision) => void
@@ -116,6 +117,7 @@ export function useSwipeBusinessFlow(options: {
     effectiveDonationAmount,
     betaUserId,
     canSwipe,
+    freeMode,
     currentProject,
     deckHistoryLength,
     commit,
@@ -147,12 +149,27 @@ export function useSwipeBusinessFlow(options: {
   }), [cart, creditsRemaining, mode, selectedCategory, swipeCount, userProfile, userStats])
 
   const handleSwipeRight = useCallback(async (decision?: SwipeDecision, options?: { skipDeckCommit?: boolean }) => {
-    if (!canSwipe || !betaUserId || !currentProject || isAdvancing) return
+    if (!canSwipe || !currentProject || isAdvancing) return
+    if (!freeMode && !betaUserId) return
 
     setIsAdvancing(true)
     const snapshot = buildSnapshot()
 
     try {
+      if (freeMode) {
+        if (mode === "shared-entry") {
+          setMode("discover")
+          setSelectedCategory("See All")
+          transitionToDiscover()
+        }
+
+        if (!options?.skipDeckCommit) {
+          commit(decision ?? fallbackDecision("right"))
+        }
+        setSwipeHistory((prev) => [...prev, snapshot])
+        return
+      }
+
       const remaining = await consumeCredit()
       if (remaining === null) {
         if (options?.skipDeckCommit) {
@@ -236,6 +253,7 @@ export function useSwipeBusinessFlow(options: {
     currentProject,
     donationCurrency,
     effectiveDonationAmount,
+    freeMode,
     isAdvancing,
     mode,
     recordSwipe,
@@ -258,9 +276,11 @@ export function useSwipeBusinessFlow(options: {
     const snapshot = buildSnapshot()
 
     try {
-      setUserProfile((prev) => ({ ...prev, totalSwipes: prev.totalSwipes + 1 }))
+      if (!freeMode) {
+        setUserProfile((prev) => ({ ...prev, totalSwipes: prev.totalSwipes + 1 }))
+      }
 
-      if (betaUserId) {
+      if (!freeMode && betaUserId) {
         if (decision) {
           const intent = mapDecisionToFundingIntent(decision)
           console.log("[SwipeIntent] left", {
@@ -300,6 +320,7 @@ export function useSwipeBusinessFlow(options: {
     buildSnapshot,
     commit,
     currentProject,
+    freeMode,
     isAdvancing,
     mode,
     recordSwipe,

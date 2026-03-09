@@ -10,13 +10,13 @@ import { ShareModal } from "@/components/share-modal"
 import { ReportModal } from "@/components/report-modal"
 import { ExternalLinkDialog } from "@/components/external-link-dialog"
 import { SafeImage } from "@/components/ui/safe-image"
-import { buildImageProxyUrl, isRemoteImageUrl } from "@/lib/image-delivery"
 import type { Project } from "@/lib/useConvexData"
 import type { DonationAmount, StableCoin } from "@/components/amount-selector"
 import { stripMarkdown } from "@/lib/markdown"
 import { normalizeExternalUrl } from "@/lib/external-links"
 import { type SwipeDecision } from "@/components/swipe/engine"
 import { useSwipeCardController } from "@/components/swipe/use-swipe-card-controller"
+import { getCategoryFallbackImage, getProjectImageSrc, getTopLevelCategory, isInvalidProjectImage } from "@/lib/project-taxonomy"
 
 interface ProjectCardProps {
   project: Project
@@ -48,16 +48,6 @@ function getCategoryBadgeClasses(category: string) {
   if (key.includes("social")) return "border-pink-300/60 bg-pink-500 text-white"
 
   return "border-amber-300/60 bg-amber-500 text-slate-900"
-}
-
-function getTopLevelCategory(category: string) {
-  const key = category.toLowerCase()
-
-  if (key.includes("dapp")) return "Dapps"
-  if (key.includes("eco") || key.includes("climate") || key.includes("regen") || key.includes("nature")) {
-    return "Eco Projects"
-  }
-  return "Builders"
 }
 
 // Custom X (Twitter) Icon Component
@@ -283,34 +273,18 @@ export function ProjectCard({
     action()
   }
 
-  const getCategoryFallbackImage = (categoryName: string) => {
-    switch (categoryName) {
-      case "Builders":
-        return "/assets/builders-placeholder.png"
-      case "Eco Projects":
-        return "/assets/eco-projects-placeholder.png"
-      default:
-        // Everything else uses the "dApps" generic placeholder
-        return "/assets/dapps-placeholder.png"
-    }
-  }
-
   const getImageSrc = () => {
-    if (failedImages.has(project.imageUrl) || !project.imageUrl || project.imageUrl === "NA" || project.imageUrl.includes("/placeholder.svg")) {
-      return getCategoryFallbackImage(getTopLevelCategory(project.category))
+    const categoryInput = { category: project.category, source: project.source }
+    if (failedImages.has(project.imageUrl) || isInvalidProjectImage(project.imageUrl)) {
+      return getCategoryFallbackImage(categoryInput)
     }
 
-    if (!isRemoteImageUrl(project.imageUrl)) return project.imageUrl
-
-    return buildImageProxyUrl(project.imageUrl, {
-      width: 1080,
-      quality: 75,
-    })
+    return getProjectImageSrc(project.imageUrl, categoryInput)
   }
 
   const imageSrc = getImageSrc()
   const imageLoading = !isLoading && !loadedImages.has(imageSrc)
-  const topLevelCategory = getTopLevelCategory(project.category)
+  const topLevelCategory = getTopLevelCategory({ category: project.category, source: project.source })
 
   const cardContent = (
     <motion.div
