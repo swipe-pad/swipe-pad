@@ -1,7 +1,12 @@
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { mutation, query } from "./_generated/server";
 import { requireAdmin } from "./admin";
 import { generateUniqueRouteId } from "./routeId";
+import { markDashboardStatsDirty } from "./waitlist";
+
+const ADMIN_LIST_SCAN_PAGES = 3;
+const ADMIN_LIST_SCAN_BATCH = 25;
 
 // ============================================
 // Queries
@@ -15,6 +20,54 @@ export const getAllProjects = query({
       .query("projects")
       .filter((q) => q.eq(q.field("active"), true))
       .collect();
+  },
+});
+
+/**
+ * Feed-focused active projects page.
+ * Returns only the fields needed to render swipe cards.
+ */
+export const getFeedProjectsPage = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const numItems = Math.min(Math.max(args.paginationOpts.numItems ?? 30, 1), 120);
+    const page = await ctx.db
+      .query("projects")
+      .withIndex("by_active_createdAt", (q) => q.eq("active", true))
+      .order("desc")
+      .paginate({
+        cursor: args.paginationOpts.cursor,
+        numItems,
+      });
+
+    return {
+      page: page.page.map((project) => ({
+        _id: project._id,
+        projectId: project.projectId,
+        routeId: project.routeId,
+        title: project.title,
+        description: project.description,
+        category: project.category,
+        imageUrl: project.imageUrl,
+        recipientWallet: project.recipientWallet,
+        chain: project.chain,
+        source: project.source,
+        verifiedLevel: project.verifiedLevel,
+        featured: project.featured,
+        active: project.active,
+        website: project.website,
+        twitter: project.twitter,
+        github: project.github,
+        farcaster: project.farcaster,
+        linkedin: project.linkedin,
+      })),
+      isDone: page.isDone,
+      continueCursor: page.continueCursor,
+      pageStatus: page.pageStatus,
+      splitCursor: page.splitCursor,
+    };
   },
 });
 
@@ -133,12 +186,13 @@ export const upsertProject = mutation({
         featured: args.featured ?? existing.featured,
         updatedAt: Date.now(),
       });
+      await markDashboardStatsDirty(ctx);
       return existing._id;
     }
 
     const routeId = await generateUniqueRouteId(ctx.db, args.projectId);
 
-    return await ctx.db.insert("projects", {
+    const inserted = await ctx.db.insert("projects", {
       projectId: args.projectId,
       routeId,
       title: args.title,
@@ -153,6 +207,8 @@ export const upsertProject = mutation({
       active: true,
       createdAt: Date.now(),
     });
+    await markDashboardStatsDirty(ctx);
+    return inserted;
   },
 });
 
@@ -176,6 +232,10 @@ export const backfillRouteIds = mutation({
         routeId,
         updatedAt: Date.now(),
       });
+    }
+
+    if (missing.length > 0) {
+      await markDashboardStatsDirty(ctx);
     }
 
     return {
@@ -207,6 +267,7 @@ export const setProjectActive = mutation({
       active: args.active,
       updatedAt: Date.now(),
     });
+    await markDashboardStatsDirty(ctx);
   },
 });
 
@@ -231,5 +292,155 @@ export const setProjectFeatured = mutation({
       featured: args.featured,
       updatedAt: Date.now(),
     });
+    await markDashboardStatsDirty(ctx);
+  },
+});
+
+/** Admin projects explorer with search (intended for local/dev tooling) */
+export const listProjectsForAdmin = query({
+  args: {
+    search: v.optional(v.string()),
+    includeInactive: v.optional(v.boolean()),
+    quickFilter: v.optional(v.union(v.literal("all"), v.literal("active"), v.literal("inactive"), v.literal("featured"))),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const normalizedSearch = (args.search ?? "").trim().toLowerCase();
+    const includeInactive = args.includeInactive ?? true;
+    const quickFilter = args.quickFilter ?? "all";
+    const limit = Math.min(Math.max(args.paginationOpts.numItems ?? 10, 1), 10);
+
+    const rows: Array<{
+      id: string;
+      projectId: string;
+      routeId: string;
+      title: string;
+      category: string;
+      source: string;
+      chain: string;
+      active: boolean;
+      featured: boolean;
+      updatedAt: number;
+    }> = [];
+
+    let cursor: string | null = args.paginationOpts.cursor;
+    let scannedPages = 0;
+    let isDone = false;
+
+    const paginateProjectsPage = async (pageCursor: string | null) => {
+      if (quickFilter === "active") {
+        return await ctx.db
+          .query("projects")
+          .withIndex("by_active_createdAt", (q) => q.eq("active", true))
+          .order("desc")
+          .paginate({ cursor: pageCursor, numItems: ADMIN_LIST_SCAN_BATCH });
+      }
+
+      if (quickFilter === "inactive") {
+        return await ctx.db
+          .query("projects")
+          .withIndex("by_active_createdAt", (q) => q.eq("active", false))
+          .order("desc")
+          .paginate({ cursor: pageCursor, numItems: ADMIN_LIST_SCAN_BATCH });
+      }
+
+      if (quickFilter === "featured") {
+        return await ctx.db
+          .query("projects")
+          .withIndex("by_featured_createdAt", (q) => q.eq("featured", true))
+          .order("desc")
+          .paginate({ cursor: pageCursor, numItems: ADMIN_LIST_SCAN_BATCH });
+      }
+
+      if (!includeInactive) {
+        return await ctx.db
+          .query("projects")
+          .withIndex("by_active_createdAt", (q) => q.eq("active", true))
+          .order("desc")
+          .paginate({ cursor: pageCursor, numItems: ADMIN_LIST_SCAN_BATCH });
+      }
+
+      return await ctx.db
+        .query("projects")
+        .withIndex("by_createdAt")
+        .order("desc")
+        .paginate({ cursor: pageCursor, numItems: ADMIN_LIST_SCAN_BATCH });
+    };
+
+    while (rows.length < limit && scannedPages < ADMIN_LIST_SCAN_PAGES) {
+      const page = await paginateProjectsPage(cursor);
+
+      for (const project of page.page) {
+        if (!includeInactive && !project.active) continue;
+        if (quickFilter === "active" && !project.active) continue;
+        if (quickFilter === "inactive" && project.active) continue;
+        if (quickFilter === "featured" && !project.featured) continue;
+        if (normalizedSearch) {
+          const haystack = [
+            project.projectId,
+            project.routeId,
+            project.title,
+            project.category,
+            project.source,
+            project.chain,
+          ]
+            .join(" ")
+            .toLowerCase();
+
+          if (!haystack.includes(normalizedSearch)) continue;
+        }
+
+        rows.push({
+          id: project._id,
+          projectId: project.projectId,
+          routeId: project.routeId,
+          title: project.title,
+          category: project.category,
+          source: project.source,
+          chain: project.chain,
+          active: project.active,
+          featured: project.featured,
+          updatedAt: project.updatedAt ?? project.createdAt,
+        });
+
+        if (rows.length >= limit) break;
+      }
+
+      cursor = page.continueCursor;
+      isDone = page.isDone;
+      scannedPages += 1;
+      if (page.isDone) break;
+    }
+
+    return {
+      rows,
+      continueCursor: cursor,
+      isDone,
+    };
+  },
+});
+
+/** Dev-friendly active toggle for project curation */
+export const setProjectActiveDev = mutation({
+  args: {
+    projectId: v.string(),
+    active: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db
+      .query("projects")
+      .withIndex("by_projectId", (q) => q.eq("projectId", args.projectId))
+      .first();
+
+    if (!project) throw new Error("Project not found");
+
+    await ctx.db.patch(project._id, {
+      active: args.active,
+      updatedAt: Date.now(),
+    });
+
+    await markDashboardStatsDirty(ctx);
+
+    return { ok: true };
   },
 });

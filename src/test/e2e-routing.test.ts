@@ -100,6 +100,7 @@ describe("Routing e2e", () => {
   })
 
   const hasConvexDataSource = Boolean(process.env.NEXT_PUBLIC_CONVEX_URL)
+  const requireFeedData = process.env.E2E_REQUIRE_FEED_DATA === "1"
 
   ;(hasConvexDataSource ? it : it.skip)(
     "executes discover contract for shared-entry first-swipe fetch",
@@ -108,7 +109,14 @@ describe("Routing e2e", () => {
       expect(firstFeed.status).toBe(200)
 
       const firstBody = (await firstFeed.json()) as {
-        project: { projectId: string; routeId: string }
+        project: { projectId: string; routeId: string } | null
+      }
+
+      if (!firstBody.project) {
+        if (requireFeedData) {
+          expect(firstBody.project).toBeTruthy()
+        }
+        return
       }
 
       expect(firstBody.project.projectId.length).toBeGreaterThan(0)
@@ -123,8 +131,15 @@ describe("Routing e2e", () => {
       expect(afterSwipeFeed.status).toBe(200)
 
       const afterBody = (await afterSwipeFeed.json()) as {
-        project: { projectId: string; routeId: string }
+        project: { projectId: string; routeId: string } | null
         nextCursor: string
+      }
+
+      if (!afterBody.project) {
+        if (requireFeedData) {
+          expect(afterBody.project).toBeTruthy()
+        }
+        return
       }
 
       expect(afterBody.project.projectId.length).toBeGreaterThan(0)

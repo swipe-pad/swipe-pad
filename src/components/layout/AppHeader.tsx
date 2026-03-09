@@ -1,6 +1,8 @@
 "use client"
 
+import { useRef, type MouseEvent } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Award, Flame } from "lucide-react"
 
 import { CartIcon, ChevronDownIcon } from "@/components/icons"
@@ -22,11 +24,30 @@ export function AppHeader({
   onOpenCart,
   onOpenDonationSetup,
 }: AppHeaderProps) {
+  const router = useRouter()
+  const isDev = process.env.NODE_ENV !== "production"
+  const logoClickTimestampsRef = useRef<number[]>([])
+
+  const handleLogoClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!isDev) return
+
+    const now = Date.now()
+    const recent = logoClickTimestampsRef.current.filter((stamp) => now - stamp < 900)
+    recent.push(now)
+    logoClickTimestampsRef.current = recent
+
+    if (recent.length >= 3) {
+      event.preventDefault()
+      logoClickTimestampsRef.current = []
+      router.push("/dev/settings")
+    }
+  }
+
   return (
     <header className="view-header bg-transparent">
       <div className="px-3 py-2">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-          <Link href="/" className="font-display text-xs font-bold tracking-wide text-white transition-colors hover:text-primary">
+          <Link href="/" onClick={handleLogoClick} className="font-display text-xs font-bold tracking-wide text-white transition-colors hover:text-primary">
             SwipePad
           </Link>
 

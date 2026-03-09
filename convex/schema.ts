@@ -90,7 +90,9 @@ export default defineSchema({
   })
     .index("by_wallet", ["wallet"])
     .index("by_fid", ["farcasterFid"])
-    .index("by_status", ["status"]),
+    .index("by_status", ["status"])
+    .index("by_createdAt", ["createdAt"])
+    .index("by_status_createdAt", ["status", "createdAt"]),
 
   /** Swipe credits per user per chain */
   credits: defineTable({
@@ -149,6 +151,9 @@ export default defineSchema({
     .index("by_chain", ["chain", "active"])
     .index("by_projectId", ["projectId"])
     .index("by_routeId", ["routeId"])
+    .index("by_createdAt", ["createdAt"])
+    .index("by_active_createdAt", ["active", "createdAt"])
+    .index("by_featured_createdAt", ["featured", "createdAt"])
     .index("by_featured", ["featured", "active"])
     .index("by_source", ["source", "active"]),
 
@@ -183,4 +188,11 @@ export default defineSchema({
     context: v.string(), // "post_donation" | "general" | "bug"
     ts: v.number(),
   }).index("by_user", ["userId"]),
+
+  /** Materialized dashboard stats snapshots */
+  dashboardStats: defineTable({
+    name: v.string(),
+    generatedAt: v.number(),
+    payloadJson: v.string(),
+  }).index("by_name", ["name"]),
 });
