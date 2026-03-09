@@ -3,11 +3,15 @@ import "server-only"
 import { ConvexHttpClient } from "convex/browser"
 
 import { api } from "../../convex/_generated/api"
+import { getProjectImageSrc, normalizeProjectCategory } from "@/lib/project-taxonomy"
 
 const CONVEX_QUERY_TIMEOUT_MS = 8000
-const PROJECTS_CACHE_TTL_MS = 300_000
+const FEED_CANDIDATES_CACHE_TTL_MS = 5 * 60_000
+const FEED_CANDIDATES_PAGE_SIZE = 120
+const FEED_CANDIDATES_MAX_PAGES = 3
+const FEED_ALLOW_LEGACY_FALLBACK = process.env.CONVEX_FEED_ALLOW_LEGACY_FALLBACK !== "0"
 
-let projectsCache: {
+let feedCandidatesCache: {
   expiresAt: number
   data: ConvexProject[]
   inFlight: Promise<ConvexProject[]> | null
@@ -87,18 +91,19 @@ type ConvexProject = {
   discord?: string
 }
 
-function toProject(project: ConvexProject): ServerProject {
-  const categoryKey = project.category.toLowerCase()
-  const fallbackImage = categoryKey.includes("eco") || categoryKey.includes("climate") || categoryKey.includes("regen")
-    ? "/assets/eco-projects-placeholder.png"
-    : categoryKey.includes("dapp")
-      ? "/assets/dapps-placeholder.png"
-      : "/assets/builders-placeholder.png"
+type FeedProjectsPage = {
+  page: ConvexProject[]
+  continueCursor: string | null
+  isDone: boolean
+}
 
-  const imageUrl = project.imageUrl?.startsWith("data:") ? fallbackImage : project.imageUrl
+function toProject(project: ConvexProject): ServerProject {
+  const category = normalizeProjectCategory({ category: project.category, source: project.source })
+  const imageUrl = getProjectImageSrc(project.imageUrl, { category, source: project.source })
 
   return {
     ...project,
+    category,
     imageUrl,
     id: project.routeId,
     name: project.title,
@@ -106,14 +111,14 @@ function toProject(project: ConvexProject): ServerProject {
   }
 }
 
-async function fetchAllProjects(): Promise<ConvexProject[]> {
+async function fetchFeedCandidates(): Promise<ConvexProject[]> {
   const now = Date.now()
-  if (projectsCache.expiresAt > now && projectsCache.data.length > 0) {
-    return projectsCache.data
+  if (feedCandidatesCache.expiresAt > now && feedCandidatesCache.data.length > 0) {
+    return feedCandidatesCache.data
   }
 
-  if (projectsCache.inFlight) {
-    return projectsCache.inFlight
+  if (feedCandidatesCache.inFlight) {
+    return feedCandidatesCache.inFlight
   }
 
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
@@ -121,24 +126,63 @@ async function fetchAllProjects(): Promise<ConvexProject[]> {
 
   const task = (async () => {
     const client = new ConvexHttpClient(convexUrl)
-    const projects = await withTimeout(client.query(api.projects.getAllProjects, {}), CONVEX_QUERY_TIMEOUT_MS, "project feed")
-    const normalized = (projects ?? []) as ConvexProject[]
-    projectsCache = {
-      expiresAt: Date.now() + PROJECTS_CACHE_TTL_MS,
+    let normalized: ConvexProject[] = []
+
+    try {
+      let cursor: string | null = null
+      let pageCount = 0
+
+      while (pageCount < FEED_CANDIDATES_MAX_PAGES) {
+        const page: FeedProjectsPage = await withTimeout(
+          client.query(api.projects.getFeedProjectsPage, {
+            paginationOpts: {
+              cursor,
+              numItems: FEED_CANDIDATES_PAGE_SIZE,
+            },
+          }),
+          CONVEX_QUERY_TIMEOUT_MS,
+          "feed candidates"
+        )
+
+        const rows = ((page?.page ?? []) as ConvexProject[]).filter((project) => project.active !== false)
+        normalized.push(...rows)
+        pageCount += 1
+
+        if (page?.isDone || !page?.continueCursor) {
+          break
+        }
+
+        cursor = page.continueCursor
+      }
+    } catch (feedLightError) {
+      if (!FEED_ALLOW_LEGACY_FALLBACK) {
+        throw feedLightError
+      }
+
+      const projects = await withTimeout(
+        client.query(api.projects.getAllProjects, {}),
+        CONVEX_QUERY_TIMEOUT_MS,
+        "project feed fallback"
+      )
+      normalized = ((projects ?? []) as ConvexProject[]).filter((project) => project.active !== false)
+    }
+
+    feedCandidatesCache = {
+      expiresAt: Date.now() + FEED_CANDIDATES_CACHE_TTL_MS,
       data: normalized,
       inFlight: null,
     }
     return normalized
   })()
 
-  projectsCache.inFlight = task
+  feedCandidatesCache.inFlight = task
 
   try {
     return await task
   } catch (error) {
-    projectsCache.inFlight = null
-    console.error("[feed] failed to query all projects", error)
-    return projectsCache.data
+    feedCandidatesCache.inFlight = null
+    console.error("[feed] failed to query feed candidates", error)
+    return feedCandidatesCache.data
   }
 }
 
@@ -151,24 +195,36 @@ export async function resolveProjectByRouteIdServer(routeId: string): Promise<Se
     const project = await withTimeout(
       client.query(api.projects.getProjectByRouteId, { routeId }),
       CONVEX_QUERY_TIMEOUT_MS,
-      `project ${routeId}`,
-    )
+      `project route ${routeId}`
+    ) as ConvexProject | null
     if (!project) return null
 
-    return toProject(project as ConvexProject)
+    return toProject(project)
   } catch (error) {
     console.error("[feed] failed to resolve project by route", { routeId, error })
     return null
   }
 }
 
-export async function getAllProjectsServer(): Promise<ServerProject[]> {
-  const projects = await fetchAllProjects()
+export async function getFeedCandidatesServer(): Promise<ServerProject[]> {
+  const projects = await fetchFeedCandidates()
   return projects.map(toProject)
 }
 
 export async function getProjectByProjectIdServer(projectId: string): Promise<ServerProject | null> {
-  const projects = await fetchAllProjects()
-  const project = projects.find((candidate) => candidate.projectId === projectId)
-  return project ? toProject(project) : null
+  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
+  if (!convexUrl) return null
+
+  try {
+    const client = new ConvexHttpClient(convexUrl)
+    const project = await withTimeout(
+      client.query(api.projects.getProject, { projectId }),
+      CONVEX_QUERY_TIMEOUT_MS,
+      `project id ${projectId}`
+    ) as ConvexProject | null
+    return project ? toProject(project) : null
+  } catch (error) {
+    console.error("[feed] failed to resolve project by id", { projectId, error })
+    return null
+  }
 }

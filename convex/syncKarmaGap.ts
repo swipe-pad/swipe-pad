@@ -99,7 +99,7 @@ export const syncFromKarmaGap = action({
           title: details.title,
           description: details.description ?? "",
           imageUrl: details.imageURL ?? details.logoUrl ?? "",
-          category: "Regeneration", 
+          category: "Dapps",
           recipientWallet,
           chain,
           source: "karma",

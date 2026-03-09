@@ -8,7 +8,7 @@ type NavigationSlice = Pick<
 >
 
 export const createNavigationSlice: AppSliceCreator<NavigationSlice> = (set) => ({
-  selectedCategory: "Regeneration",
+  selectedCategory: "See All",
   currentProjectIndex: 0,
   setSelectedCategory: (next) =>
     set((state) => ({ selectedCategory: resolveUpdater(next, state.selectedCategory) })),
