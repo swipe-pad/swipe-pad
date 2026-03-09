@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, action } from "./_generated/server";
 import { api } from "./_generated/api";
+import { markDashboardStatsDirty } from "./waitlist";
 
 // ============================================
 // Queries
@@ -117,6 +118,8 @@ export const prepareDonation = mutation({
       createdAt: Date.now(),
     });
 
+    await markDashboardStatsDirty(ctx);
+
     return {
       donationId,
       recipients,
@@ -138,6 +141,7 @@ export const markSubmitted = mutation({
       status: "submitted",
       txHash: args.txHash,
     });
+    await markDashboardStatsDirty(ctx);
   },
 });
 
@@ -149,6 +153,7 @@ export const markConfirmed = mutation({
       status: "confirmed",
       confirmedAt: Date.now(),
     });
+    await markDashboardStatsDirty(ctx);
   },
 });
 
@@ -180,5 +185,6 @@ export const markFailed = mutation({
       status: "failed",
       errorMessage: args.errorMessage,
     });
+    await markDashboardStatsDirty(ctx);
   },
 });

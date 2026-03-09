@@ -53,6 +53,12 @@ verify:
   bun run test:e2e
   bun run build
 
+ops-sync:
+  bun --env-file .env ops/system/scripts/ops-sync.js
+
+ops-sync-apply:
+  bun --env-file .env ops/system/scripts/ops-sync.js --apply
+
 vercel-pull env="production":
   bunx vercel pull --yes --environment {{env}}
 

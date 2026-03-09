@@ -1,12 +1,13 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useMutation } from "convex/react"
 import { useActiveAccount } from "thirdweb/react"
 import { useAccount as useWagmiAccount } from "wagmi"
 import { useShallow } from "zustand/react/shallow"
 
 import { useApp } from "@/context/AppContext"
+import { getDevGuestProvisioningEnabled } from "@/lib/dev-guest-provisioning"
 import { api } from "../../convex/_generated/api"
 
 const GUEST_WALLET_STORAGE_KEY = "swipepad:guest-wallet"
@@ -53,15 +54,44 @@ export function useAppBootstrap() {
     setCreditsMax: state.setCreditsMax,
   })))
 
+  const [allowGuestProvisioning, setAllowGuestProvisioning] = useState(false)
+
   useEffect(() => {
-    const guestWallet = getOrCreateGuestWalletId()
+    const sync = () => setAllowGuestProvisioning(getDevGuestProvisioningEnabled())
+    sync()
+
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== "swipepad.devGuestProvisioning") return
+      sync()
+    }
+    const onCustom = () => sync()
+
+    window.addEventListener("storage", onStorage)
+    window.addEventListener("swipepad:guest-provisioning-change", onCustom)
+
+    return () => {
+      window.removeEventListener("storage", onStorage)
+      window.removeEventListener("swipepad:guest-provisioning-change", onCustom)
+    }
+  }, [])
+
+  useEffect(() => {
+    const guestWallet = allowGuestProvisioning ? getOrCreateGuestWalletId() : null
     const nextAddress = thirdwebAccount?.address ?? wagmiAddress ?? guestWallet
     setWalletConnected(Boolean(nextAddress))
     setWalletAddress(nextAddress)
-  }, [thirdwebAccount?.address, wagmiAddress, setWalletAddress, setWalletConnected])
+  }, [allowGuestProvisioning, thirdwebAccount?.address, wagmiAddress, setWalletAddress, setWalletConnected])
 
   useEffect(() => {
-    if (!walletAddress) return
+    const hasConnectedWallet = Boolean(thirdwebAccount?.address ?? wagmiAddress)
+
+    if (!walletAddress || (!allowGuestProvisioning && !hasConnectedWallet)) {
+      setBetaUserId(null)
+      setBetaStatus(null)
+      setCreditsRemaining(0)
+      setCreditsMax(0)
+      return
+    }
 
     let isMounted = true
 
@@ -81,6 +111,9 @@ export function useAppBootstrap() {
       isMounted = false
     }
   }, [
+    allowGuestProvisioning,
+    thirdwebAccount?.address,
+    wagmiAddress,
     walletAddress,
     ensureGuestUser,
     setBetaUserId,
