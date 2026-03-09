@@ -1,15 +1,17 @@
 import "server-only"
 
 import {
-  getAllProjectsServer,
+  getFeedCandidatesServer,
   getProjectByProjectIdServer,
   resolveProjectByRouteIdServer,
   type ServerProject,
 } from "@/lib/convex-server"
+import { getTopLevelCategory, type FeedCategory } from "@/lib/project-taxonomy"
 
 type FeedOptions = {
   exclude?: string
   seed?: string
+  category?: FeedCategory
 }
 
 function hashSeed(input: string): number {
@@ -59,7 +61,7 @@ function pickWeightedProject(projects: ServerProject[], seed: string): ServerPro
 }
 
 export async function getFeedProject(options: FeedOptions = {}) {
-  const allProjects = await getAllProjectsServer()
+  const allProjects = await getFeedCandidatesServer()
   if (allProjects.length === 0) {
     return {
       project: null,
@@ -69,12 +71,14 @@ export async function getFeedProject(options: FeedOptions = {}) {
 
   const nextSeed = options.seed ?? crypto.randomUUID()
   const excluded = options.exclude
+  const category = options.category && options.category !== "See All" ? options.category : null
 
-  const eligibleProjects = excluded
-    ? allProjects.filter((project) => {
-        return project.projectId !== excluded && project.routeId !== excluded
-      })
-    : allProjects
+  const eligibleProjects = allProjects.filter((project) => {
+    if (excluded && project.projectId === excluded) return false
+    if (excluded && project.routeId === excluded) return false
+    if (category && getTopLevelCategory({ category: project.category, source: project.source }) !== category) return false
+    return true
+  })
 
   const pool = eligibleProjects.length > 0 ? eligibleProjects : allProjects
   const project = pickWeightedProject(pool, `${nextSeed}:${excluded ?? "none"}`)

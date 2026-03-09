@@ -8,18 +8,21 @@ import { AnimatePresence, animate, motion, useMotionValue, useTransform, type Pa
 import { RotateCcw, ThumbsUp, X } from "lucide-react"
 
 import { useApp } from "@/context/AppContext"
+import { OzkCard } from "@/components/cards/OzkCard"
 import { ProjectCard } from "@/components/project-card"
 import { useSwipeDeck, type SwipeItem } from "@/components/swipe/use-swipe-deck"
 import { useSwipeBusinessFlow } from "@/components/swipe/use-swipe-business-flow"
 import { SwipeStack, type SwipeStackHandle } from "@/components/swipe/SwipeStack"
+import { getStoredCardDesign } from "@/lib/card-design-preference"
+import { getDevFreeModeEnabled } from "@/lib/dev-free-mode"
+import type { CardDesignId } from "@/lib/card-designs"
 import type { Project } from "@/lib/useConvexData"
-import { buildImageProxyUrl, isRemoteImageUrl } from "@/lib/image-delivery"
+import { getProjectImageSrc, getTopLevelCategory, TOP_LEVEL_CATEGORIES, type FeedCategory } from "@/lib/project-taxonomy"
 import type { ServerProject } from "@/lib/convex-server"
 import { api } from "../../convex/_generated/api"
 import type { Id } from "../../convex/_generated/dataModel"
 
-const TOP_CATEGORIES = ["See All", "Builders", "Eco Projects", "Dapps"] as const
-type TopCategory = (typeof TOP_CATEGORIES)[number]
+type TopCategory = FeedCategory
 const INITIAL_WARMUP_TIMEOUT_MS = 900
 const FEED_REQUEST_TIMEOUT_MS = 9000
 const STACK_ROTATIONS_ENABLED = false
@@ -44,28 +47,12 @@ async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit, tim
   }
 }
 
-function getTopLevelCategory(category: string): TopCategory {
-  const key = category.toLowerCase()
-  if (key.includes("dapp")) return "Dapps"
-  if (key.includes("eco") || key.includes("climate") || key.includes("regen") || key.includes("nature")) {
-    return "Eco Projects"
-  }
-  return "Builders"
-}
-
 function toPreloadUrl(project: Project | null): string | null {
-  if (!project?.imageUrl || project.imageUrl === "NA" || project.imageUrl.includes("/placeholder.svg")) {
+  if (!project) {
     return null
   }
 
-  if (!isRemoteImageUrl(project.imageUrl)) {
-    return project.imageUrl
-  }
-
-  return buildImageProxyUrl(project.imageUrl, {
-    width: 1080,
-    quality: 75,
-  })
+  return getProjectImageSrc(project.imageUrl, { category: project.category, source: project.source })
 }
 
 type HomeScreenProps = {
@@ -128,15 +115,52 @@ export function HomeScreen({
   const [mode, setMode] = useState<"discover" | "shared-entry">(initialMode)
   const [isFeedVisible, setIsFeedVisible] = useState(Boolean(initialProject))
   const [showCategoryToast, setShowCategoryToast] = useState(true)
+  const [activeCardDesign, setActiveCardDesign] = useState<CardDesignId>("SP_CARD_V2_STACK")
+  const [freeModeEnabled, setFreeModeEnabled] = useState(false)
 
-  const canSwipe = (betaStatus === "active" || betaStatus === "guest") && creditsRemaining > 0
+  useEffect(() => {
+    const next = getStoredCardDesign()
+    if (next) setActiveCardDesign(next)
+
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== "swipepad.activeCardDesign") return
+      const value = getStoredCardDesign()
+      if (value) setActiveCardDesign(value)
+    }
+
+    window.addEventListener("storage", onStorage)
+    return () => window.removeEventListener("storage", onStorage)
+  }, [])
+
+  useEffect(() => {
+    const syncFreeMode = () => {
+      setFreeModeEnabled(getDevFreeModeEnabled())
+    }
+
+    syncFreeMode()
+
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== "swipepad.devFreeMode") return
+      syncFreeMode()
+    }
+    const onCustom = () => syncFreeMode()
+
+    window.addEventListener("storage", onStorage)
+    window.addEventListener("swipepad:free-mode-change", onCustom)
+    return () => {
+      window.removeEventListener("storage", onStorage)
+      window.removeEventListener("swipepad:free-mode-change", onCustom)
+    }
+  }, [])
+
+  const canSwipe = freeModeEnabled || ((betaStatus === "active" || betaStatus === "guest") && creditsRemaining > 0)
   const effectiveDonationAmount = donationAmount ?? "0.01¢"
   const totalSwipes = userProfile.totalSwipes ?? 0
   const level = Math.max(1, Math.floor(totalSwipes / 25) + 1)
   const xpInLevel = totalSwipes % 500
   const xpProgress = (xpInLevel / 500) * 100
 
-  const categoryTabs = TOP_CATEGORIES
+  const categoryTabs = TOP_LEVEL_CATEGORIES
   const activeCategory = categoryTabs.includes(selectedCategory as TopCategory)
     ? (selectedCategory as TopCategory)
     : "See All"
@@ -183,7 +207,7 @@ export function HomeScreen({
 
   const matchesCategory = (project: Project, category: TopCategory) => {
     if (category === "See All") return true
-    return getTopLevelCategory(project.category) === category
+    return getTopLevelCategory({ category: project.category, source: project.source }) === category
   }
 
   const fetchFeedProject = useCallback(async (options: FeedRequestOptions = {}): Promise<Project | null> => {
@@ -201,6 +225,7 @@ export function HomeScreen({
         url.searchParams.set("exclude", exclude)
       }
       url.searchParams.set("seed", requestSeed)
+      url.searchParams.set("category", category)
 
       try {
         const response = await fetchWithTimeout(url.toString(), { cache: "no-store" }, FEED_REQUEST_TIMEOUT_MS)
@@ -350,6 +375,7 @@ export function HomeScreen({
     effectiveDonationAmount,
     betaUserId,
     canSwipe,
+    freeMode: freeModeEnabled,
     currentProject,
     deckHistoryLength: deckHistory.length,
     commit,
@@ -381,11 +407,11 @@ export function HomeScreen({
     if (busyRef.current || isAdvancing) return
     busyRef.current = true
 
-    const currentIndex = TOP_CATEGORIES.indexOf(activeCategory)
+    const currentIndex = TOP_LEVEL_CATEGORIES.indexOf(activeCategory)
     const sign = dir === "up" ? -1 : 1
     const distance = typeof window !== "undefined" ? window.innerHeight * 0.72 : 640
-    const nextIndex = (currentIndex + (dir === "up" ? 1 : -1) + TOP_CATEGORIES.length) % TOP_CATEGORIES.length
-    const nextCategory = TOP_CATEGORIES[nextIndex] ?? "See All"
+    const nextIndex = (currentIndex + (dir === "up" ? 1 : -1) + TOP_LEVEL_CATEGORIES.length) % TOP_LEVEL_CATEGORIES.length
+    const nextCategory = TOP_LEVEL_CATEGORIES[nextIndex] ?? "See All"
 
     animate(deckY, sign * distance, { duration: 0.26, ease: "easeIn" })
     animate(deckOpacity, 0, {
@@ -659,6 +685,27 @@ export function HomeScreen({
                   }
                 }}
                 renderCard={(item, isTop) => {
+                  if (activeCardDesign === "OZK_CARD_V1_NEON") {
+                    return (
+                      <OzkCard
+                        project={item.data}
+                        onBoost={() => console.log("boost")}
+                        onSwipeLeft={() => {
+                          if (!isTop) return
+                          buttonSwipe("left")
+                        }}
+                        onSwipeRight={() => {
+                          if (!isTop) return
+                          buttonSwipe("right")
+                        }}
+                        onUndo={() => {
+                          if (!isTop) return
+                          handleUndo()
+                        }}
+                      />
+                    )
+                  }
+
                   return (
                     <ProjectCard
                       className="size-full"
@@ -667,14 +714,27 @@ export function HomeScreen({
                       isLoading={false}
                       showImageLoader={false}
                       viewMode="swipe"
-                      swipeControlMode="external"
+                      swipeControlMode={activeCardDesign === "SP_CARD_V2_INLINE" ? "internal" : "external"}
+                      onSwipeLeft={() => {
+                        if (!isTop) return
+                        buttonSwipe("left")
+                      }}
+                      onSwipeRight={() => {
+                        if (!isTop) return
+                        buttonSwipe("right")
+                      }}
+                      onUndo={() => {
+                        if (!isTop) return
+                        handleUndo()
+                      }}
                       onBoost={(amount) => console.log("boost", amount)}
                     />
                   )
                 }}
               />
 
-              <div className="pointer-events-none absolute inset-x-0 -bottom-16 z-40 flex items-center justify-center gap-5 min-[380px]:-bottom-18 sm:-bottom-20">
+              {activeCardDesign === "SP_CARD_V2_STACK" ? (
+                <div className="pointer-events-none absolute inset-x-0 -bottom-16 z-40 flex items-center justify-center gap-5 min-[380px]:-bottom-18 sm:-bottom-20">
                 <motion.button
                   onClick={() => buttonSwipe("left")}
                   whileHover={{ scale: 1.08 }}
@@ -701,7 +761,8 @@ export function HomeScreen({
                 >
                   <ThumbsUp className="size-6" />
                 </motion.button>
-              </div>
+                </div>
+              ) : null}
             </motion.div>
           ) : (
             <div className="surface-panel flex h-full items-center justify-center rounded-2xl text-sm text-muted-foreground">
