@@ -1,10 +1,42 @@
 "use client"
 
-import { useQuery } from "convex/react"
+import { useCallback, useEffect, useState } from "react"
+import Link from "next/link"
 
-import { api } from "../../../convex/_generated/api"
+import { DevBreadcrumbs } from "@/components/dev/DevBreadcrumbs"
+import { Button } from "@/components/ui/button"
+import { fetchConvexMutation, fetchConvexQuery } from "@/lib/convex-client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+
+interface DashboardData {
+  generatedAt: number
+  users: {
+    total: number
+    guestUsers: number
+    thirdwebLikeAccounts: number
+    byStatus: Record<string, number>
+  }
+  projects: {
+    total: number
+    active: number
+    featured: number
+    bySource: Record<string, number>
+    byChain: Record<string, number>
+  }
+  donations: {
+    total: number
+    totalAmount: number
+    byStatus: Record<string, number>
+  }
+  credits: {
+    totalRows: number
+    remaining: number
+    max: number
+  }
+  swipes: {
+    recentCount: number
+  }
+}
 
 function MetricCard({ title, value, hint }: { title: string; value: string | number; hint?: string }) {
   return (
@@ -21,15 +53,57 @@ function MetricCard({ title, value, hint }: { title: string; value: string | num
 }
 
 export default function AdminDashboardPage() {
-  const data = useQuery(api.waitlist.getAdminDashboard, {
-    recentProjectsLimit: 250,
-    recentUsersLimit: 50,
-  })
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const loadDashboard = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const result = await fetchConvexQuery<{}, DashboardData>(
+        "waitlist:getAdminDashboard",
+        {},
+        { cacheTtlMs: 120_000 }
+      )
+      if (result.generatedAt === 0) {
+        const hydrated = await fetchConvexMutation<{ force?: boolean }, DashboardData>(
+          "waitlist:refreshAdminDashboardStats",
+          { force: true }
+        )
+        setData(hydrated)
+      } else {
+        setData(result)
+      }
+    } catch (err) {
+      console.error("Failed to load dashboard:", err)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  const refreshDashboard = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const result = await fetchConvexMutation<{ force?: boolean }, DashboardData>(
+        "waitlist:refreshAdminDashboardStats",
+        { force: true }
+      )
+      setData(result)
+    } catch (err) {
+      console.error("Failed to refresh dashboard:", err)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadDashboard()
+  }, [loadDashboard])
 
   if (!data) {
     return (
       <main className="mx-auto w-full max-w-6xl p-6 text-white">
-        <p className="text-sm text-muted-foreground">Loading admin dashboard...</p>
+        <DevBreadcrumbs current="Dashboard" />
+        <p className="text-sm text-muted-foreground">{isLoading ? "Loading dashboard..." : "No data available"}</p>
       </main>
     )
   }
@@ -37,11 +111,25 @@ export default function AdminDashboardPage() {
   return (
     <main className="h-screen overflow-y-auto">
       <div className="mx-auto w-full max-w-6xl space-y-6 p-6 text-white">
+      <DevBreadcrumbs current="Dashboard" />
       <header className="space-y-1">
-        <h1 className="font-display text-2xl tracking-wide">Admin Dashboard</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="font-display text-2xl tracking-wide">Dashboard</h1>
+          <Button variant="secondary" size="sm" onClick={() => void refreshDashboard()} disabled={isLoading}>
+            {isLoading ? "Loading..." : "Refresh"}
+          </Button>
+        </div>
         <p className="text-xs text-muted-foreground">
           Convex snapshot generated at {new Date(data.generatedAt).toLocaleString()}
         </p>
+        <div className="flex flex-wrap gap-2 pt-2 text-xs">
+          <Link href="/dev/users" className="rounded-full border border-surface-border px-2 py-1 text-muted-foreground hover:text-white">
+            Manage users
+          </Link>
+          <Link href="/dev/projects" className="rounded-full border border-surface-border px-2 py-1 text-muted-foreground hover:text-white">
+            Manage projects
+          </Link>
+        </div>
       </header>
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -121,51 +209,6 @@ export default function AdminDashboardPage() {
         </Card>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Recent users</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {data.recentUsers.map((user) => (
-              <div key={user.id} className="rounded-md border border-surface-border px-3 py-2">
-                <div className="mb-1 flex items-center justify-between">
-                  <Badge variant="outline">{user.status}</Badge>
-                  <span className="text-[11px] text-muted-foreground">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <p className="truncate text-xs text-gray-300">{user.wallet ?? "no wallet"}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">
-              Synced projects ({data.recentProjects.length} / {data.projects.total})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {data.recentProjects.map((project) => (
-              <div key={project.id} className="rounded-md border border-surface-border px-3 py-2">
-                <div className="mb-1 flex items-center justify-between gap-2">
-                  <p className="line-clamp-1 text-sm font-medium text-white">{project.title}</p>
-                  <div className="flex items-center gap-1">
-                    {project.featured ? <Badge>featured</Badge> : null}
-                    <Badge variant="outline" className="uppercase">{project.chain}</Badge>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                  <span>{project.source}</span>
-                  <span>{new Date(project.updatedAt).toLocaleDateString()}</span>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </section>
       </div>
     </main>
   )

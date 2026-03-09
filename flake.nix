@@ -10,22 +10,57 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        playwrightLibs = with pkgs; [
+          glib
+          nspr
+          nss
+          dbus
+          atk
+          at-spi2-atk
+          at-spi2-core
+          expat
+          alsa-lib
+          udev
+          mesa
+          cairo
+          pango
+          cups
+          libdrm
+          xorg.libX11
+          xorg.libXcomposite
+          xorg.libXdamage
+          xorg.libXext
+          xorg.libXfixes
+          xorg.libXrandr
+          xorg.libxcb
+          xorg.libXcursor
+          xorg.libXi
+          xorg.libXtst
+          xorg.libxshmfence
+          libxkbcommon
+        ];
       in
       {
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             nodejs_22
             bun
+            playwright
+            chromium
             # corepack to have pnpm/yarn if needed
             corepack_22
             # git in case it is not in the path
             git
-          ];
+          ] ++ playwrightLibs;
 
           shellHook = ''
+            export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath playwrightLibs}:$LD_LIBRARY_PATH"
+            export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1
+            export PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="${pkgs.chromium}/bin/chromium"
             echo "🚀 Swipe-pad development environment loaded"
             echo "📦 Node.js: $(node --version)"
             echo "🍞 Bun: $(bun --version)"
+            echo "🎭 Playwright: $(bunx --yes playwright --version 2>/dev/null || true)"
             echo "🛠️  Use 'bun dev' to start"
           '';
         };
