@@ -115,7 +115,7 @@ export function HomeScreen({
   const [mode, setMode] = useState<"discover" | "shared-entry">(initialMode)
   const [isFeedVisible, setIsFeedVisible] = useState(Boolean(initialProject))
   const [showCategoryToast, setShowCategoryToast] = useState(true)
-  const [activeCardDesign, setActiveCardDesign] = useState<CardDesignId>("SP_CARD_V2_STACK")
+  const [activeCardDesign, setActiveCardDesign] = useState<CardDesignId>("OZK_CARD_V1_NEON")
   const [freeModeEnabled, setFreeModeEnabled] = useState(false)
 
   useEffect(() => {
