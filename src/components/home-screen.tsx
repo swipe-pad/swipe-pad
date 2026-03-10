@@ -13,7 +13,7 @@ import { ProjectCard } from "@/components/project-card"
 import { useSwipeDeck, type SwipeItem } from "@/components/swipe/use-swipe-deck"
 import { useSwipeBusinessFlow } from "@/components/swipe/use-swipe-business-flow"
 import { SwipeStack, type SwipeStackHandle } from "@/components/swipe/SwipeStack"
-import { getStoredCardDesign } from "@/lib/card-design-preference"
+import { getStoredCardDesign, setStoredCardDesign } from "@/lib/card-design-preference"
 import { getDevFreeModeEnabled } from "@/lib/dev-free-mode"
 import type { CardDesignId } from "@/lib/card-designs"
 import type { Project } from "@/lib/useConvexData"
@@ -120,7 +120,15 @@ export function HomeScreen({
 
   useEffect(() => {
     const next = getStoredCardDesign()
-    if (next) setActiveCardDesign(next)
+    if (next) {
+      // Migrate users with old card designs to OZK by default
+      if (next === "SP_CARD_V2_STACK" || next === "SP_CARD_V2_INLINE") {
+        setStoredCardDesign("OZK_CARD_V1_NEON")
+        setActiveCardDesign("OZK_CARD_V1_NEON")
+      } else {
+        setActiveCardDesign(next)
+      }
+    }
 
     const onStorage = (event: StorageEvent) => {
       if (event.key !== "swipepad.activeCardDesign") return
