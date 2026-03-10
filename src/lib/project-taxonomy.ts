@@ -1,6 +1,6 @@
 import { buildImageProxyUrl, isRemoteImageUrl } from "@/lib/image-delivery"
 
-export const TOP_LEVEL_CATEGORIES = ["See All", "Builders", "Eco Projects", "Dapps"] as const
+export const TOP_LEVEL_CATEGORIES = ["See All", "Builders", "Eco Projects", "Dapps", "Agents", "DeScience"] as const
 
 export type TopLevelCategory = Exclude<(typeof TOP_LEVEL_CATEGORIES)[number], "See All">
 export type FeedCategory = (typeof TOP_LEVEL_CATEGORIES)[number]
@@ -20,8 +20,26 @@ export function getTopLevelCategory(input: CategoryInput | string): TopLevelCate
   const categoryKey = normalizeKey(category)
   const sourceKey = normalizeKey(source)
 
+  if (categoryKey.includes("agent") || sourceKey === "agents_8004scan") {
+    return "Agents"
+  }
+
+  if (
+    categoryKey.includes("descience") ||
+    categoryKey.includes("de science") ||
+    categoryKey.includes("desci") ||
+    categoryKey.includes("science") ||
+    categoryKey.includes("research")
+  ) {
+    return "DeScience"
+  }
+
   if (sourceKey === "karma" || categoryKey.includes("dapp") || categoryKey.includes("defi") || categoryKey.includes("app")) {
     return "Dapps"
+  }
+
+  if (sourceKey === "talent" || categoryKey.includes("builder")) {
+    return "Builders"
   }
 
   if (
@@ -50,6 +68,10 @@ export function getCategoryFallbackImage(input: CategoryInput | string): string 
       return "/assets/eco-projects-placeholder.png"
     case "Dapps":
       return "/assets/dapps-placeholder.png"
+    case "Agents":
+      return "/assets/builders-placeholder.png"
+    case "DeScience":
+      return "/assets/eco-projects-placeholder.png"
   }
 }
 

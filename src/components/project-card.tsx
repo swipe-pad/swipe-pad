@@ -40,6 +40,8 @@ function getCategoryBadgeClasses(category: string) {
   const key = category.toLowerCase()
 
   if (key.includes("builder")) return "border-blue-300/60 bg-blue-500 text-white"
+  if (key.includes("agent")) return "border-orange-300/60 bg-orange-500 text-white"
+  if (key.includes("science") || key.includes("desci")) return "border-cyan-300/60 bg-cyan-500 text-slate-900"
   if (key.includes("eco") || key.includes("climate") || key.includes("regen")) {
     return "border-emerald-300/60 bg-emerald-500 text-white"
   }

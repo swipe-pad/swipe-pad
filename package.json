@@ -20,6 +20,7 @@
     "test:ui:e2e": "playwright test",
     "test:all": "bun run test && bun run test:e2e",
     "seed:e2e:feed": "bun run scripts/seed-e2e-feed.ts",
+    "import:ui-lab:json": "bun run scripts/import-ui-lab-json.ts",
     "contracts:test": "cd contracts && forge test",
     "contracts:deploy:anvil": "cd contracts && forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast",
     "contracts:deploy:celo": "cd contracts && forge script script/Deploy.s.sol --rpc-url $CELO_RPC --broadcast --verify",
