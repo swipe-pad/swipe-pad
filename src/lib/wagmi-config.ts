@@ -1,13 +1,13 @@
 import { http, createConfig } from "wagmi"
-import { mainnet } from "wagmi/chains"
+import { base, celo, mainnet } from "wagmi/chains"
 import { injected } from "wagmi/connectors"
 
-// Minimal wagmi config - only used for MiniPay/Farcaster injected wallet fallback
-// Main wallet functionality is handled by thirdweb
 export const config = createConfig({
-  chains: [mainnet],
+  chains: [celo, base, mainnet],
   connectors: [injected()],
   transports: {
+    [celo.id]: http(),
+    [base.id]: http(),
     [mainnet.id]: http(),
   },
 })

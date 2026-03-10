@@ -9,6 +9,7 @@ import { RotateCcw, ThumbsUp, X } from "lucide-react"
 
 import { useApp } from "@/context/AppContext"
 import { OzkCard } from "@/components/cards/OzkCard"
+import { ShareModal } from "@/components/share-modal"
 import { ProjectCard } from "@/components/project-card"
 import { useSwipeDeck, type SwipeItem } from "@/components/swipe/use-swipe-deck"
 import { useSwipeBusinessFlow } from "@/components/swipe/use-swipe-business-flow"
@@ -117,6 +118,7 @@ export function HomeScreen({
   const [showCategoryToast, setShowCategoryToast] = useState(true)
   const [activeCardDesign, setActiveCardDesign] = useState<CardDesignId>("OZK_CARD_V1_NEON")
   const [freeModeEnabled, setFreeModeEnabled] = useState(false)
+  const [showSharedEntryShare, setShowSharedEntryShare] = useState(false)
 
   useEffect(() => {
     const next = getStoredCardDesign()
@@ -669,6 +671,23 @@ export function HomeScreen({
           sm:w-[min(100%,420px)]
           lg:w-[min(100%,480px)]
         ">
+          {mode === "shared-entry" && currentProject ? (
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-50 flex justify-end p-3">
+              <button
+                type="button"
+                onClick={() => setShowSharedEntryShare(true)}
+                className="
+                  pointer-events-auto rounded-full border border-white/20 bg-black/55
+                  px-3 py-1 text-xs font-semibold tracking-wide text-white
+                  backdrop-blur-md transition-colors hover:bg-black/70
+                "
+                data-testid="shared-entry-share-trigger"
+              >
+                Share
+              </button>
+            </div>
+          ) : null}
+
           {shouldShowWarmup ? (
             <div className="
               relative size-full overflow-hidden rounded-[28px] border
@@ -764,6 +783,7 @@ export function HomeScreen({
                       showImageLoader={false}
                       viewMode="swipe"
                       swipeControlMode={activeCardDesign === "SP_CARD_V2_INLINE" ? "internal" : "external"}
+                      showShareButtonInSwipe={mode === "shared-entry"}
                       onSwipeLeft={() => {
                         if (!isTop) return
                         buttonSwipe("left")
@@ -841,6 +861,15 @@ export function HomeScreen({
             ">
               No projects available for this category.
             </div>
+          )}
+
+          {currentProject && (
+            <ShareModal
+              project={currentProject}
+              projectPathId={currentProject.routeId}
+              isOpen={showSharedEntryShare}
+              onClose={() => setShowSharedEntryShare(false)}
+            />
           )}
         </div>
       </div>
