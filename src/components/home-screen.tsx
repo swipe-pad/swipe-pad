@@ -645,8 +645,8 @@ export function HomeScreen({
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 items-center justify-center pt-1 pb-20">
-        <div className="aspect-5/8 h-[min(100%,740px)] w-auto max-w-full sm:h-[min(100%,820px)] lg:h-[min(100%,920px)]">
+      <div className="flex min-h-0 flex-1 items-center justify-center pt-1 pb-16 sm:pb-20">
+        <div className="aspect-[3/4] h-[min(100%,85vh)] sm:aspect-5/8 sm:h-[min(100%,740px)] lg:h-[min(100%,920px)]">
           {shouldShowWarmup ? (
             <div className="relative size-full overflow-hidden rounded-[28px] border border-surface-border bg-[#101a2f]">
               <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_20%_20%,rgba(74,101,146,0.22),transparent_50%)]" />
