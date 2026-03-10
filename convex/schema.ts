@@ -126,7 +126,7 @@ export default defineSchema({
     category: v.string(),
     recipientWallet: v.string(),
     chain: v.string(), // "celo" | "base"
-    source: v.string(), // "karma" | "manual" | "gitcoin" | "hypercerts" | "talent"
+    source: v.string(), // "karma" | "manual" | "gitcoin" | "hypercerts" | "talent" | "json"
     verifiedLevel: v.number(), // 0=unverified, 1=basic, 2=full
     featured: v.boolean(),
     active: v.boolean(),
@@ -147,6 +147,15 @@ export default defineSchema({
     github: v.optional(v.string()),
     farcaster: v.optional(v.string()),
     linkedin: v.optional(v.string()),
+    discord: v.optional(v.string()),
+
+    // === Import provenance ===
+    rawCategory: v.optional(v.string()),
+    sourceDataset: v.optional(v.string()),
+    rawSourceId: v.optional(v.string()),
+    profileUrl: v.optional(v.string()),
+    network: v.optional(v.string()),
+    importedAt: v.optional(v.number()),
   })
     .index("by_chain", ["chain", "active"])
     .index("by_projectId", ["projectId"])

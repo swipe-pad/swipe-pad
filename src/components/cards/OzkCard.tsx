@@ -8,11 +8,14 @@ import type { Project } from "@/lib/useConvexData"
 import { SafeImage } from "@/components/ui/safe-image"
 import { getCategoryFallbackImage, getProjectImageSrc, getTopLevelCategory } from "@/lib/project-taxonomy"
 
-function getCategoryType(category: string): "builders" | "eco" | "apps" | "agents" {
+function getCategoryType(category: string): "builders" | "eco" | "apps" | "agents" | "science" {
   const key = category.toLowerCase()
   if (key.includes("agent")) return "agents"
+  if (key.includes("science") || key.includes("desci")) return "science"
   if (getTopLevelCategory(category) === "Eco Projects") return "eco"
   if (getTopLevelCategory(category) === "Dapps") return "apps"
+  if (getTopLevelCategory(category) === "Agents") return "agents"
+  if (getTopLevelCategory(category) === "DeScience") return "science"
   return "builders"
 }
 
@@ -44,12 +47,14 @@ export function OzkCard({ project, onSwipeLeft, onSwipeRight, onUndo, onBoost }:
     eco: "bg-emerald-600/90",
     apps: "bg-purple-600/90",
     agents: "bg-orange-500/90",
+    science: "bg-cyan-600/90",
   }[categoryType]
   const categoryText = {
     builders: "BUILDERS",
     eco: "ECO PROJECT",
     apps: "DAPP",
     agents: "AGENT",
+    science: "DE-SCI",
   }[categoryType]
 
   const triggerBoost = () => {
