@@ -575,7 +575,7 @@ export function HomeScreen({
   const shouldShowWarmup = !currentProject
 
   return (
-    <div className="flex h-full min-h-0 flex-col px-3 pt-1 pb-3">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden px-3 pt-1 pb-3">
       <div className="mb-2">
         <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
           {mode === "discover"
@@ -646,7 +646,7 @@ export function HomeScreen({
       </div>
 
       <div className="flex min-h-0 flex-1 items-center justify-center pt-1 pb-16 sm:pb-20">
-        <div className="aspect-[3/4] h-[min(100%,85vh)] sm:aspect-5/8 sm:h-[min(100%,740px)] lg:h-[min(100%,920px)]">
+        <div className="aspect-[3/4] h-full sm:aspect-5/8 sm:h-[min(100%,740px)] lg:h-[min(100%,920px)]">
           {shouldShowWarmup ? (
             <div className="relative size-full overflow-hidden rounded-[28px] border border-surface-border bg-[#101a2f]">
               <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_20%_20%,rgba(74,101,146,0.22),transparent_50%)]" />
