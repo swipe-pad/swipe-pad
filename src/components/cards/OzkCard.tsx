@@ -72,7 +72,12 @@ export function OzkCard({ project, onSwipeLeft, onSwipeRight, onUndo, onBoost }:
     <motion.div
       animate={isBoosting ? { scale: [1, 0.95, 1.05, 1], x: [0, -3, 3, -3, 3, 0] } : { scale: 1, x: 0 }}
       transition={{ duration: 0.2 }}
-      className={`relative mx-auto flex w-full flex-col rounded-[26px] ${isTurboActive ? "p-[1px]" : "p-0"}`}
+      className={`
+        relative mx-auto flex h-full max-w-full flex-col overflow-hidden
+        rounded-[26px]
+        ${isTurboActive ? `p-px` : `p-0`}
+      `}
+      style={{ aspectRatio: "10 / 14" }}
     >
       {isTurboActive ? (
         <motion.div
@@ -86,7 +91,10 @@ export function OzkCard({ project, onSwipeLeft, onSwipeRight, onUndo, onBoost }:
       <AnimatePresence>
         {showParticles ? (
           <motion.div
-            className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center"
+            className="
+              pointer-events-none absolute inset-0 z-50 flex items-center
+              justify-center
+            "
             initial={{ opacity: 1 }}
             animate={{ opacity: 0 }}
             exit={{ opacity: 0 }}
@@ -98,9 +106,15 @@ export function OzkCard({ project, onSwipeLeft, onSwipeRight, onUndo, onBoost }:
         ) : null}
       </AnimatePresence>
 
-      <div className="relative z-10 flex w-full select-none flex-col overflow-hidden rounded-[25px] bg-[#0D0D0D]">
-        {/* Image section - fixed aspect ratio */}
-        <div className="relative aspect-square w-full overflow-hidden rounded-t-[24px] border-b border-zinc-800/50 bg-black">
+      <div className="
+        relative z-10 flex size-full flex-col overflow-hidden rounded-[25px]
+        bg-[#0D0D0D] select-none
+      ">
+        {/* Image section - fixed aspect ratio (1:1), makes it exactly as wide as the card */}
+        <div className="
+          relative aspect-square w-full shrink-0 overflow-hidden
+          rounded-t-[24px] border-b border-zinc-800/50 bg-black
+        ">
           <SafeImage
             src={imageSrc}
             alt={project.name}
@@ -111,36 +125,55 @@ export function OzkCard({ project, onSwipeLeft, onSwipeRight, onUndo, onBoost }:
             onError={() => setImageFailed(true)}
           />
 
-          <div className={`absolute left-4 top-4 z-10 rounded-full px-3 py-1 text-[10px] font-bold tracking-wider text-white ${categoryStyle}`}>
+          <div className={`
+            absolute top-4 left-4 z-10 rounded-full px-3 py-1 text-[10px]
+            font-bold tracking-wider text-white
+            ${categoryStyle}
+          `}>
             {categoryText}
           </div>
 
           {isTurboActive ? (
-            <div className="absolute right-4 top-4 z-10 flex items-center gap-1 rounded border border-white/30 bg-gradient-to-r from-[#7C3AED] to-[#DB2777] px-2.5 py-1.5 text-[9px] font-bold tracking-wider text-white">
+            <div className="
+              absolute top-4 right-4 z-10 flex items-center gap-1 rounded-sm
+              border border-white/30 bg-linear-to-r from-[#7C3AED] to-[#DB2777]
+              px-2.5 py-1.5 text-[9px] font-bold tracking-wider text-white
+            ">
               <Rocket className="size-3 fill-current" /> BOOSTED
             </div>
           ) : null}
 
-          <div className="absolute bottom-3 right-3 z-30">
+          <div className="absolute right-3 bottom-3 z-30">
             <button
               onClick={triggerBoost}
-              className="rounded-full border border-indigo-400/30 bg-indigo-600/80 px-3 py-1.5 text-[11px] font-bold text-white shadow-[0_4px_15px_rgba(79,70,229,0.5)] transition-all hover:bg-indigo-500"
+              className="
+                rounded-full border border-indigo-400/30 bg-indigo-600/80 px-3
+                py-1.5 text-[11px] font-bold text-white
+                shadow-[0_4px_15px_rgba(79,70,229,0.5)] transition-all
+                hover:bg-indigo-500
+              "
             >
               ✨ Boost
             </button>
           </div>
         </div>
 
-        {/* Content section - fixed height for description, flexible space */}
-        <div className="flex flex-col bg-[#0D0D0D] px-4 pb-2 pt-3">
-          {/* Description area - fixed height showing exactly 2 lines */}
-          <div className="h-[72px] overflow-hidden">
+        {/* Content section - flexible space for description, fixed space for buttons */}
+        <div className="
+          flex min-h-0 flex-1 flex-col bg-[#0D0D0D] px-4 pt-3 pb-2
+        ">
+          {/* Description area - flexible height and scrollable if needed */}
+          <div className="
+            no-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pb-2
+          ">
             <div className="flex items-center gap-1.5">
-              <h2 className="truncate text-lg leading-tight font-bold text-white">{project.name}</h2>
-              {project.verifiedLevel && project.verifiedLevel > 0 ? <Zap className="size-4 fill-current text-[#FFD600]" /> : null}
+              <h2 className="truncate text-lg/tight font-bold text-white">{project.name}</h2>
+              {project.verifiedLevel && project.verifiedLevel > 0 ? <Zap className="
+                size-4 fill-current text-[#FFD600]
+              " /> : null}
             </div>
-            <p className="line-clamp-2 text-sm leading-snug text-gray-400">{project.description}</p>
-            <div className="mt-0.5 flex items-center gap-3 text-gray-500">
+            <p className="mt-1 text-sm/snug text-gray-400">{project.description}</p>
+            <div className="mt-2 mb-1 flex items-center gap-3 text-gray-500">
               {project.github ? <Github className="size-4" /> : null}
               {project.twitter ? <Twitter className="size-4" /> : null}
               {project.website ? <Globe className="size-4" /> : null}
@@ -148,15 +181,27 @@ export function OzkCard({ project, onSwipeLeft, onSwipeRight, onUndo, onBoost }:
             </div>
           </div>
 
-          {/* Buttons - fixed size */}
-          <div className="mt-1 flex items-center gap-2 px-1 pb-2">
-            <button onClick={onSwipeLeft} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-[24px] border border-zinc-700/50 bg-zinc-800 text-white">
+          {/* Buttons - fixed size at bottom */}
+          <div className="mt-auto flex shrink-0 items-center gap-2 px-1 py-2">
+            <button onClick={onSwipeLeft} className="
+              flex h-12 flex-1 items-center justify-center gap-2 rounded-[24px]
+              border border-zinc-700/50 bg-zinc-800 text-white transition-colors
+              hover:bg-zinc-700
+            ">
               <X className="size-5" /> <span className="text-base">Skip</span>
             </button>
-            <button onClick={onUndo} className="flex size-11 items-center justify-center rounded-full border border-zinc-700/50 bg-zinc-800 text-blue-400">
+            <button onClick={onUndo} className="
+              flex size-11 items-center justify-center rounded-full border
+              border-zinc-700/50 bg-zinc-800 text-blue-400 transition-colors
+              hover:bg-zinc-700
+            ">
               <RotateCcw className="size-4" />
             </button>
-            <button onClick={onSwipeRight} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-[24px] bg-[#F9DE4B] text-black">
+            <button onClick={onSwipeRight} className="
+              flex h-12 flex-1 items-center justify-center gap-2 rounded-[24px]
+              bg-[#F9DE4B] text-black transition-transform
+              hover:scale-[1.02]
+            ">
               <ThumbsUp className="size-5" /> <span className="text-base">Like</span>
             </button>
           </div>
