@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { Award, Flame } from "lucide-react"
 
 import { CartIcon, ChevronDownIcon } from "@/components/icons"
+import { FarcasterMiniAppPrompt } from "@/components/farcaster-miniapp-prompt"
 
 interface AppHeaderProps {
   donationAmountLabel: string
@@ -100,6 +101,8 @@ export function AppHeader({
               </Link>
           </div>
         </div>
+
+        <FarcasterMiniAppPrompt />
       </div>
     </header>
   )

@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { HomeScreen } from "@/components/home-screen"
+import { getAppUrl } from "@/lib/farcaster/config"
+import { buildFarcasterMetadata } from "@/lib/farcaster/metadata"
 import { getProjectBySlug } from "@/lib/feed-server"
 
 export const runtime = "nodejs"
@@ -17,11 +19,19 @@ type PageProps = {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const project = await getProjectBySlug(slug)
+  const appUrl = getAppUrl()
 
   if (!project) {
     return {
       title: "SwipePad Project",
       description: "Discover projects on SwipePad",
+      ...buildFarcasterMetadata({
+        canonicalPath: `/p/${slug}`,
+        title: "SwipePad Project",
+        description: "Discover projects on SwipePad",
+        imageUrl: `${appUrl}/opengraph-image.png`,
+        buttonTitle: "Open SwipePad",
+      }),
       robots: {
         index: true,
         follow: true,
@@ -32,16 +42,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = project.description?.slice(0, 160) || `Support ${project.name} on SwipePad`
 
   return {
-    title: `${project.name} | SwipePad`,
-    description,
+    ...buildFarcasterMetadata({
+      canonicalPath: `/p/${slug}`,
+      title: `${project.name} | SwipePad`,
+      description,
+      imageUrl: project.imageUrl || `${appUrl}/opengraph-image.png`,
+      buttonTitle: `Open ${project.name}`,
+      splashImageUrl: `${appUrl}/farcaster/frame-splash.png`,
+      splashBackgroundColor: "#070b14",
+    }),
     robots: {
       index: true,
       follow: true,
-    },
-    openGraph: {
-      title: `${project.name} | SwipePad`,
-      description,
-      images: project.imageUrl ? [project.imageUrl] : undefined,
     },
   }
 }

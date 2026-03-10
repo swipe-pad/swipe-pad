@@ -1,11 +1,11 @@
+import { getHostEnvironmentSync } from "@/lib/farcaster/context"
+
 export function isMiniPay(): boolean {
-  if (typeof window === "undefined") return false
-  return !!(window.ethereum && (window.ethereum as any).isMiniPay)
+  return getHostEnvironmentSync() === "minipay"
 }
 
 export function isFarcaster(): boolean {
-  if (typeof window === "undefined") return false
-  return !!(window.ethereum && (window.ethereum as any).isFarcaster)
+  return getHostEnvironmentSync() === "farcaster-miniapp"
 }
 
 export function getMiniPayProvider() {
