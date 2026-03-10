@@ -8,6 +8,7 @@ import { config } from "@/lib/wagmi-config"
 import { useState } from "react"
 
 import { AppProvider } from "@/context/AppContext"
+import { FarcasterBootstrap } from "@/components/farcaster-bootstrap"
 import { ProjectsProvider } from "@/lib/useConvexData"
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
@@ -34,6 +35,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                     <AppProvider>
                         <WagmiProvider config={config}>
                             <QueryClientProvider client={queryClient}>
+                                <FarcasterBootstrap />
                                 {children}
                             </QueryClientProvider>
                         </WagmiProvider>

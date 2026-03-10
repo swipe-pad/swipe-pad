@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { Nunito, Press_Start_2P } from "next/font/google"
 import { Providers } from "@/components/providers"
+import { getAppUrl } from "@/lib/farcaster/config"
+import { buildFarcasterMetadata } from "@/lib/farcaster/metadata"
 import { cn } from "@/lib/utils"
 import "./globals.css"
 
@@ -17,8 +19,19 @@ const displayFont = Press_Start_2P({
   display: "swap",
 })
 
+const appUrl = getAppUrl()
+const homeMetadata = buildFarcasterMetadata({
+  canonicalPath: "/",
+  title: "SwipePad | Support Regenerative Projects",
+  description: "Swipe to discover and fund the best regenerative projects and builders in web3.",
+  imageUrl: `${appUrl}/opengraph-image.png`,
+  buttonTitle: "Launch SwipePad",
+  splashImageUrl: `${appUrl}/farcaster/frame-splash.png`,
+  splashBackgroundColor: "#070b14",
+})
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://app.swipepad.xyz"),
+  metadataBase: new URL(appUrl),
   title: "SwipePad | Support Regenerative Projects",
   description: "Swipe to discover and fund the best regenerative projects and builders in web3.",
   keywords: ["SwipePad", "Celo", "ReFi", "Web3", "Donations", "Funding"],
@@ -31,14 +44,12 @@ export const metadata: Metadata = {
   authors: [{ name: "SwipePad Team" }],
   generator: "Next.js",
   openGraph: {
+    ...homeMetadata.openGraph,
     type: "website",
-    url: "https://swipepad.app",
-    title: "SwipePad | Support Regenerative Projects",
-    description: "Swipe to discover and fund the best regenerative projects and builders in web3.",
     siteName: "SwipePad",
     images: [
       {
-        url: "/opengraph-image.png",
+        url: `${appUrl}/opengraph-image.png`,
         width: 1200,
         height: 630,
         alt: "SwipePad - Fund regenerative projects with crypto",
@@ -49,8 +60,10 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SwipePad | Support Regenerative Projects",
     description: "Swipe to discover and fund the best regenerative projects and builders in web3.",
-    images: ["/twitter-image.png"],
+    images: [`${appUrl}/twitter-image.png`],
   },
+  alternates: homeMetadata.alternates,
+  other: homeMetadata.other,
   robots: {
     index: true,
     follow: true,
