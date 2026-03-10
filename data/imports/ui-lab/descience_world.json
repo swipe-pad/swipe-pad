@@ -1,0 +1,602 @@
+[
+    {
+        "name": "Opensci",
+        "project_url": "https://desci.world/projects/opensci",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/b4436f7db3444dd982a81174852b92c1/photo/ahvhLoWB",
+        "description": "OPENSCI is a decentralized infrastructure for scientific value creation that empowers creators to own ideas from inception, permanently track contributions, and automatically receive returns.",
+        "website": "https://OpenSCI.io",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Biotexturas",
+        "project_url": "https://desci.world/projects/biotexturas",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/94f003bf4cf44a24b57f0014888fb9e4/photo/nHqi8EHd",
+        "description": "Biotexturas is a decentralized research platform dedicated to unraveling the mysteries of microbial collective intelligence. At its core is a DePIN (Decentralized Physical Infrastructure Network) of open-source biotic game consoles; DIY robotic microscopes that allow players to interact with real-world microbial habitats. These habitats render a biotic engine that is mapped onto discrete NFT-based virtual locations. Through open computer vision and robotics we track colony expansion over habitat territory, detecting biological phases of morphological development and map these onto NFT-based game elements. These unique digital assets fuel the co-creation of The Rise of Microbes, a Web3 story. In this GameFi metaverse, ecology battles unfold, creating a collaborative design space for gamers, makers, and researchers alike. Players explore their ecosystems in search of microbial intelligence and collaborate with AI agents, robotic instruments, microbes, and humans to uncover the biocomplexity of soil ecosystems. Our DeSci EdTech approach engages a transgenerational collective of players and citizen scientists. Through gamified research, we decode how biological intelligence can shape sustainable futures linking biological computation with the construction of ecosystem function.",
+        "website": "https://biotexturas.org/www/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Psydao",
+        "project_url": "https://desci.world/projects/psydao",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/4730f80ff12146ac90adf2a8f5b5f0ff/photo/gKHZYZ0c",
+        "description": "Decentralized funding promoting progress in psychedelic science and culture. Developing, elevating, and protecting psychedelic IP. Incubated by Molecule AG and BIO Protocol.",
+        "website": "https://www.psydao.io/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Desai Xyz",
+        "project_url": "https://desci.world/projects/desai-xyz",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/a13c26e7b4e1437093aba6bfae88e381/photo/F2EGjKsL",
+        "description": "DeSAI XYZ is an open innovation ecosystem founded by Professor YoSean at the Institute of Digital Medicine, City University of Hong Kong. It explores the frontier of Decentralized Science (DeSci) by integrating AI, Web3, and biomedical innovation. Through community co-building, education, and incubation, DeSAI XYZ empowers scientists, builders, and creators to collaboratively reshape how scientific knowledge, data, and intellectual property are owned, shared, and translated. Its mission is to build a future where open, intelligent, and trustless infrastructure accelerates science and longevity innovation for all.",
+        "website": "https://x.com/DeSAI_xyz",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Moleculayer",
+        "project_url": "https://desci.world/projects/moleculayer",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/06e5d971816a4a90baa95d65bc8897f2/photo/8etDW55r",
+        "description": "MolecuLayer, built on Arbius\u2019s decentralized inference architecture, transforms drug discovery and biomolecular research by creating a peer-to-peer marketplace for AI-driven computational tasks like protein folding. Starting with Meta AI\u2019s ESMFold v1, it operates as a DAO with model-specific tokens, addressing centralized platform limitations such as commercial use restrictions and high costs. With smart contracts for IP-NFT minting and crowd-funding, MolecuLayer ensures secure ownership and incentivizes complex tasks, powered by the MLYR token for governance, staking, and solver rewards.",
+        "website": "https://moleculayer.xyz/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Descipherfund",
+        "project_url": "https://desci.world/projects/descipherfund",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/661e4a7beb1248029ae9dd3a88ea0cef/photo/wia4ENEq",
+        "description": "\ud83d\udd2c The Research Crew: A swarm of specialized AI agents supporting scientists at every stage of their journey. Each agent focuses on a core area \u2014 scientific papers, patents, funding, collaborations, or legal. Together, they identify opportunities, solve problems, and help advance scientific progress.",
+        "website": "https://descipher.fund/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Desci Dao",
+        "project_url": "https://desci.world/projects/desci-dao",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/baf0fcc5e9df437abd638e479c52e199/photo/IqdPQKTU",
+        "description": "DeSciWorld, formerly known as DeSciDAO, was conceived to revolutionize research funding by leveraging peer-to-peer (P2P) infrastructure. Our initial goal was to connect researchers and funders in a permissionless and anonymous manner, enabling scientific endeavors that might challenge prevailing narratives.\u200b",
+        "website": "https://www.descidao.pro/#contactForm",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Episteme",
+        "project_url": "https://desci.world/projects/episteme",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/e73bb611f1ca4ffcac3357efddca70ed/photo/TFb6a8Wk",
+        "description": "Episteme turns scientific truth into a shared wager. By transforming hypotheses into AI-resolved prediction markets, it invites the world to bet on knowledge and makes verification a collective act.",
+        "website": "https://linktr.ee/episteme_sci",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Astrocodex",
+        "project_url": "https://desci.world/projects/astrocodex",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/2410b96455754804989a17ced1fa300d/photo/sEe8pdao",
+        "description": "AstroCodex.IO is a decentralized, open-access registry for scientific knowledge, protocols, and research outputs created in space-based and off-world environments.",
+        "website": "https://www.astrocodex.io/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Bonfiresai",
+        "project_url": "https://desci.world/projects/bonfiresai",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/0748c1e9518e44dca4a5d604c0545c99/photo/z3xXcU05",
+        "description": "Bonfires is a multiplayer collaboration platform that enables group sensemaking and coordination by automating the structuring of data for AI agents to search and interact with; Bonfires puts the 'A' in 'DAO'.",
+        "website": "https://calendar.google.com/calendar/r/eventedit?text=Bonfires.ai+Genesis+Mint&dates=20250819T213955%2F20251021T213955&details=Participate+in+the+Bonfires.ai+Genesis+Mint+to+get+exclusive+early+access+to+%24KNOW%3B+the+token+of+the+onchain+knowledge+economy.+Genesis+Mint+holders+also+have+exclusive+early+access+to+launching+their+own+Bonfire.",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Ginger Science 1",
+        "project_url": "https://desci.world/projects/ginger-science-1",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/f69b89d72ffe4fac98e801b0dd24a99a/photo/Tu5zgDF8",
+        "description": "Redheads account for barely 1-2% percent of the world\u2019s population, yet their melanocortin-1-driven biology brings special challenges in pain management, anesthesia dosing and, most pressingly, sun protection. The United States has not approved a new sunscreen active since 1999, so modern European and Asian UV filters remain out of reach or arrive through sketchy grey-market channels. With higher melanoma risk and few trusted product options, redheads are left guessing about both safety and efficacy. Ginger Science launches the Global Sun Study to crowd-source real-world evidence on these newer filters, pairing self-reported use, photos and outcomes with peer-reviewed literature to build the first open dataset on how advanced sunscreens perform for MC1R-variant skin.",
+        "website": "https://discord.gg/VguV4RYmcK",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Bio Synq Dao 3",
+        "project_url": "https://desci.world/projects/bio-synq-dao-3",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/145842e2fd7a4d4fb9071c118e3a4c50/photo/deN26EEY",
+        "description": "BIO SYNQ DAO builds a decentralized research ecosystem where scientists, funders and communities co-create and co-own intellectual property- setting a new standard for transparency, global collaboration, and open biomedical innovation.",
+        "website": "https://t.me/Biosynqai",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Decentralabs",
+        "project_url": "https://desci.world/projects/decentralabs",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/49771752093146368af0b0925a58e676/photo/yCa8HekA",
+        "description": "DecentraLabs is building a decentralized infrastructure for sharing online laboratories (OLs) across institutions and communities worldwide. By integrating smart contracts, token-based incentives ($LAB), and federated authentication, DecentraLabs transforms underused scientific equipment into discoverable, bookable, and verifiable experimental resources.",
+        "website": "https://decentralabs.nebsyst.com",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Rejuveai",
+        "project_url": "https://desci.world/projects/rejuveai",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/e23704c219914df09487e9451763ce27/photo/XDJbUJDr",
+        "description": "Rejuve.AI is a pioneering decentralized longevity research network dedicated to extending healthy human lifespan. Its AI\u2011powered, blockchain\u2011secured platform lets users worldwide log personal health data into a global participatory database, receive science\u2011backed health\u2011optimization guidance, and earn on\u2011chain rewards for advancing longevity research. The native $RJV token unlocks premium analytics, advanced in\u2011app features, and a curated marketplace spanning biomarker and biological\u2011age tests, supplements, wearables, expert consultations, and longevity\u2011focused travel. By bridging data gaps across borders and applying AI to surface new insights and steer future studies, Rejuve.AI\u2014one of the original DeSci initiatives\u2014turns community contributions into actionable breakthroughs in longevity science.\n\nA core ambition is to scale decentralized n-of-1 trials\u2014single-participant interventions rigorously tracked through the app\u2014into statistically robust, aggregate insights. Each user can test and measure their protocols while the platform\u2019s AI models analyze multi-omic, lifestyle, and sensor data in real time, adjusting recommendations and flagging responders vs. non-responders. The resulting anonymized datasets feed back into machine learning pipelines that uncover population-level patterns, derive phenotype-to-intervention \u201cfingerprints,\u201d and prioritize promising research directions.",
+        "website": "https://www.rejuve.ai/ambassadorprogram",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "The Desci Journals",
+        "project_url": "https://desci.world/projects/the-desci-journals",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/596459ea8eb94cc781c29ed883d6e6d7/photo/mTYkADO9",
+        "description": "A journal-as-a-service publications platform for collaborative creation of technical and scientific publications, leveraging web3 principles and technologies: 100% copyright to authors, different percentages of authorship (as built-in feature) and scientific assets construction (through blockchain registration).",
+        "website": "https://platform.desci.reviews",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Decentralized Science Nigeria Desci Ng",
+        "project_url": "https://desci.world/projects/decentralized-science-nigeria-desci-ng",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/6c724d752f644deebf35d7fe8a720e9d/photo/ZYfIfEJL",
+        "description": "DeSci NG is where research meets intention in Nigeria. We support students, independent researchers, and anyone researching to make sense of the problems around them. Whether it starts as a final year project or a personal investigation, we help that work move forward with funding, visibility, and a community that cares.",
+        "website": "https://x.com/DeSci_NG",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Ideosphere",
+        "project_url": "https://desci.world/projects/ideosphere",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/2138a6d6be004880a95437b476fd80cf/photo/17xO0KVo",
+        "description": "Ideosphere powers Research Funding Prediction Markets for DeSci\u2014blockchain funding that kills the valley of death. Scientists get instant capital, no grant BS. Traders flex their science know-how, betting on winning projects and stacking profits. A merit-first platform to fund what matters. Landing page live at ideosphere.io\u2014web app dropping soon.",
+        "website": "https://ideosphere.io/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Open Heart Mind Ohm",
+        "project_url": "https://desci.world/projects/open-heart-mind-ohm",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/039c277ad38d49bd86e78984441d231e/photo/UDA6WGjP",
+        "description": "We\u2019re developing an open-source framework that empowers communities to evaluate and reward the value of diverse contributions through an inclusive peer-review process, fostering collaboration and coordination for the common good.",
+        "website": "https://opencollective.com/open-heart-mind",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Mushroom Protocol",
+        "project_url": "https://desci.world/projects/mushroom-protocol",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/7de4deb75b2b447f8659e2fc4a93dbba/photo/SochgARX",
+        "description": "For the past 20 years, investment in R&D\u2014especially in biotechnology\u2014has remained stagnant in Latin America. While developed countries allocate over 3% of their GDP to R&D (with 70% coming from private sources), Latin American countries invest an average of just 0.5%, with 60% of funding coming from public institutions.",
+        "website": "https://mushroomprotocol.io/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Fringe Protocol",
+        "project_url": "https://desci.world/projects/fringe-protocol",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/196b78bee39644fbb23bba9006f1c5b0/photo/AIwx7QYN",
+        "description": "Fringe Protocol discovers and provides opportunities for the community to fund engineering and applied science research. Transforming visionary ideas into real world technologies while rewarding its global network of supporters in the process.",
+        "website": "https://fringe.tech/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Cancerdao",
+        "project_url": "https://desci.world/projects/cancerdao",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/0f495bbd0c9d4e12bc2f1ad04a9de26c/photo/adOLfBZ2",
+        "description": "CancerDAO is building AI-empowered and Web3 community-driven open-source solutions for cancer care and cancer prevention.",
+        "website": "https://x.com/CancerDAOxyz",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Ranger",
+        "project_url": "https://desci.world/projects/ranger",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/e76f1df5a34c456987b196a19920bcc7/photo/3a5BXSzt",
+        "description": "DeSci for the masses. Ranger is a portal that incentivizes citizen scientists to upload geotagged photographs of wildlife. Researchers can create their own custom portals to suit their areas of activity.",
+        "website": "https://x.com/mito_sys_tems",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Qure",
+        "project_url": "https://desci.world/projects/qure",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/a744b334a9c744a9b2741a5a6ecf7278/photo/3RZoqhQX",
+        "description": "QURE is Masterclass for Scientists and Engineers. We've built a real-time Scientist Training, Execution and Collaboration Platform, addressing slow, costly and inefficient collaboration in the life sciences, by means of our Mixed Reality Content Creation Tool.",
+        "website": "https://www.qurexr.com/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Spectruth Dao",
+        "project_url": "https://desci.world/projects/spectruth-dao",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/90a2513986294b2293522c3f287e1a2a/photo/uFWG8NX8",
+        "description": "At Spectruth DAO, we\u2019re rewriting the story of mental health\u2014starting where traditional care leaves off. Founded in Ukraine in 2021, our mission is to transform PTSD treatment through a unique blend of AI, predictive epigenetics, and cutting-edge clinical research. Our journey begins with pioneering ibogaine clinics in Ukraine and Poland, expanding to holistic longevity and detox retreats in Patagonia and Scotland. By harnessing technology and global expertise, we deliver early detection, personalized care, and real-world solutions for trauma and addiction. Join us as we build a future where hope, healing, and innovation work hand in hand for those who need it most.",
+        "website": "https://x.com/SpectruthAI",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Reputable Health",
+        "project_url": "https://desci.world/projects/reputable-health",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/0fa39b6eb61d49cf987b50605c3e8d0b/photo/aHl4caA4",
+        "description": "Capture 20,000+ daily data points per participant with regulatory-grade rigor and complete control. Monitor progress and adjust in real-time to prove your claims with unmatched transparency and accuracy.",
+        "website": "https://calendly.com/reputablehealth/intro",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Metaflora Inc",
+        "project_url": "https://desci.world/projects/metaflora-inc",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/6258d97130e744c68a665c690d44a689/photo/1orznC5P",
+        "description": "MetaFlora is a blockchain-powered ecosystem revolutionizing the cannabis industry through Web3 technology, NFTs, and decentralized finance. As an L1 blockchain with its own node network and token, $FLORA, MetaFlora ensures transparency, traceability, and community-driven growth.",
+        "website": " https://metaflora.xyz/?pricing=true",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Desci Ghana",
+        "project_url": "https://desci.world/projects/desci-ghana",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/33d096c8d32a4d758c064e6642ce00c6/photo/IJhHyNF4",
+        "description": "At DeSci Ghana, we are committed to providing a deep dive into our activities and engagements within the decentralized science ecosystem. Through our platform, we aim to share updates, events, and insights from our interactions with the DeSci community in Ghana and across Africa.",
+        "website": "http://descighana.blogspot.com/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Asterisk Womens Health",
+        "project_url": "https://desci.world/projects/asterisk-womens-health",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/adeafcb8ad374a0286d144936b0f0462/photo/Unlg2GrM",
+        "description": "We\u2019re reclaiming the attitude that women are an asterisk in medical journals and research files. Women make up 51% of the world\u2019s population. Women\u2019s medical care is far from niche, yet that is how women are classified. Asterisk is here to change that.",
+        "website": "https://asteriskdao.xyz",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "New Project Zero",
+        "project_url": "https://desci.world/projects/new-project-zero",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/422a74d65c904494a13f84a1ed997627/photo/furQMzT5",
+        "description": "Zero Version Man: Building a Decentralized, Self-Sustaining Machine Intelligence",
+        "website": "https://linktr.ee/newprojectzero",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Ipulse Protocol",
+        "project_url": "https://desci.world/projects/ipulse-protocol",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/c0e8536819f141cabee05b8bc1fea7a4/photo/SE3eLaGF",
+        "description": "iPulse Protocol is a community-driven global Web3 health management protocol that integrates AI-powered predictive analytics, DeSci collaboration, and DePIN infrastructure. It ensures user data privacy, facilitates data tokenization, and fosters global scientific collaboration while providing precise health guidance.",
+        "website": "https://linktr.ee/iPulseProtocol",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Desci Turkiye",
+        "project_url": "https://desci.world/projects/desci-turkiye",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/79f1c6bf4fc147bc89fedb1e1725e27d/photo/9rvSLw4C",
+        "description": "N/A",
+        "website": "https://x.com/DeSciTurkiye",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Genpulse Ai",
+        "project_url": "https://desci.world/projects/genpulse-ai",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/7bd0860197e64ae7aef4be0eb9b53579/photo/8s2uqzwq",
+        "description": "\ud83c\udf1f AI Agent for Decentralized Precise Skin Care and Hair Care \ud83c\udf1f",
+        "website": "https://commerce.coinbase.com/checkout/67b10364-bf3d-4459-aa00-4246b7f16ee8",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Changa Institute",
+        "project_url": "https://desci.world/projects/changa-institute",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/3b775a1545bc4053ac63529b2fdf318a/photo/LZzrTSk9",
+        "description": "A Global Foundation dedicated to advancing human consciousness, improving mental health, and pioneering research in psychedelic therapies.",
+        "website": "https://commerce.coinbase.com/pay/eff301b7-5fae-44c7-b54e-ae242bffda4d",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Skymapper",
+        "project_url": "https://desci.world/projects/skymapper",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/7cfa689096e54bea891638f030e243ba/photo/elgARF2v",
+        "description": "Our mission is to transform the collection, standardization, sharing, and monetization of space data. Inspired by successful decentralized physical infrastructure networks (DePIN) such as HiveMapper, SkyMapper focuses on astronomical data. Utilizing the latest generation of smart telescopes, which number in the tens of thousands, SkyMapper fosters a new era of collective space data acquisition. It operates as a two-sided marketplace, linking data providers\u2014including individual telescope users and smart telescope networks\u2014with a diverse array of data consumers. These buyers range from scientific institutions and universities to AI researchers, commercial satellite operators, the emerging space industry, governmental bodies, and other entities.",
+        "website": "https://www.desci.world/dashboard",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "The Transhumanist Council",
+        "project_url": "https://desci.world/projects/the-transhumanist-council",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/11d094caeca746c7b5545a51ab087d98/photo/VefDuppc",
+        "description": "The Transhumanist Council is an international organization dedicated to the advancement and advocacy of transhumanism, a philosophical and scientific movement aiming to enhance human capabilities and overcome biological limitations through the use of advanced technologies. The Transhumanist Council operates the largest Transhumanist groups across all platforms, allowing people to connect and collaborate with others at any time.",
+        "website": "https://biohackinginternational.com/support",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Transhuman Coin",
+        "project_url": "https://desci.world/projects/transhuman-coin",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/9835463eac87473585fddd9fda6f2e46/photo/VBiYZj74",
+        "description": "Transhuman Coin ($THC) is a 3+ year impact-driven DeSci project committed to advancing human longevity, health, and well-being through cutting-edge science and technology. Powered by a dynamic Scientific Advisory Board featuring visionaries such as Prof. Aubrey De Grey (Father of Longevity Science), Prof. Avinash Singh (a Brain Computer Interface Expert), Dr. Charles Awuzie (a biochemist), Peter Xing (AI innovation leader at Microsoft Australia), and Alyse Sue (former Director of Metaverse, KPMG Australia), among others, Transhuman Coin drives innovation in decentralized science.",
+        "website": "https://swap.swft.pro/#/?sourceFlag=THC",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Bionic Dao",
+        "project_url": "https://desci.world/projects/bionic-dao",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/9b47b3eab2c24c04a7081bb15ad8ebbd/photo/pYBtjhDe",
+        "description": "Bionic exists to build an open protocol that enables projects of all stages and sizes to access a permissionless framework for starting, funding and launching the technologies that will drive humanity forward.",
+        "website": "https://www.bionicdao.com/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Genomesdao",
+        "project_url": "https://desci.world/projects/genomesdao",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/bd5dbdd88fb340d2998c085ed1321a25/photo/YimZMwr1",
+        "description": "Earn money and anonymously power scientific and medical research",
+        "website": "https://blog.genomes.io/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "International Biohacking Community",
+        "project_url": "https://desci.world/projects/international-biohacking-community",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/3cb9ba0e1294489fb5b43509550b6125/photo/lBCXgUji",
+        "description": "The International Biohacking Community was founded to provide a decentralized platform to facilitate collaboration among biohackers, enabling the sharing of insights, methodologies, and discoveries. The community encompasses a broad range of disciplines within the biohacking domain, such as grinding, human longevity, Do-It-Yourself biology, and human augmentation.",
+        "website": "https://giveth.io/donate/international-biohacking-community",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Astrochain",
+        "project_url": "https://desci.world/projects/astrochain",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/e63d18a0912f4547906bfa52101221a1/photo/ctLX0iGy",
+        "description": "AstroChain\u2122 is the first decentralized platform to create a blockchain database of astronomy captures to promote education, scientific research, and innovation.",
+        "website": "https://giveth.io/donate/astrochain-astronomy-meets-the-blockchain",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Musematrix",
+        "project_url": "https://desci.world/projects/musematrix",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/6d71854aabef4a0281f17c09b02aa982/photo/a7bHQPTS",
+        "description": "MuseMatrix is a decentralised research institute focused on the development of DeSci products, tools and services.\n\nWe run cohorts of scientists and developers, helping to cross-pollinate ideas, coordinate and build from the ideation stage to execution.\n\nOur working groups focus on key areas such as product development, marketing, zero-knowledge (ZK) technology, AI, and hardware\n\nApplications for our third cohort are currently open (check our twitter!)",
+        "website": "https://musematrix.xyz/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "The Innovation Game Tig",
+        "project_url": "https://desci.world/projects/the-innovation-game-tig",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/0a6e969355ae4f5d9de20f64d72c67f7/photo/cWUhQ0HP",
+        "description": "The Innovation Game (TIG) is a protocol designed to accelerate the development of algorithms for solving asymmetric problems in data-driven sciences. It creates a synthetic market where innovators contribute solutions to computational challenges and are rewarded based on adoption and performance.",
+        "website": "https://docs.tig.foundation/how-to-contribute",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Desci Germany",
+        "project_url": "https://desci.world/projects/desci-germany",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/9960eb1deeba4146943d5f7215dfc2f0/photo/jiNGi6SL",
+        "description": "Connecting People",
+        "website": "https://x.com/DesciGerma41444",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Moondao",
+        "project_url": "https://desci.world/projects/moondao",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/24ca883ce16a4da9ac240f921d50d1c9/photo/btF1QMX3",
+        "description": "MoonDAO is accelerating our multiplanetary future with a global network and open platform to fund, collaborate, and compete on challenges that get us closer to a lunar settlement.",
+        "website": "https://moondao.com/join",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Mesoreef Dao",
+        "project_url": "https://desci.world/projects/mesoreef-dao",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/ce23f6c1231a42129a4ff17933b0b86f/photo/BKRVnLTV",
+        "description": "MesoReefDAO is an initiative focused on regenerating coral reef ecosystems, incubated in the Mesoamerican Reefs and eager to scale worldwide. Its Regen Reef project will offer a holistic solution by combining decentralized science, marine biotechnology, and community-led innovation to regenerate coral reefs and human communities. It leverages blockchain for transparent funding and data sharing, uses IoT for real-time monitoring, and applies AI to scale coral and fish restoration through modular wetlabs, while contributing to developing a new, regenerative blue economy. Ideal customers/users, eco-conscious investors, research institutions, conservationists, and affected communities, seek measurable reef health improvements with transparent resource use and progress tracking. With coral reefs under threat, blockchain and Web3 allow global, accountable participation, aligning with DeSci\u2019s rise for open, collaborative conservation.",
+        "website": "https://forms.gle/UAWqX19ntrqdbUdA9",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Weavechain",
+        "project_url": "https://desci.world/projects/weavechain",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/88be78f80cc748de9ea55fbe528a4069/photo/zCR0njrK",
+        "description": "Weavechain established Provability and Data Economics for normal, compliant application stacks. Now anybody from a regulated lab to a hedge fund can benefit from the future of data.",
+        "website": "https://www.weavechain.com",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Helice",
+        "project_url": "https://desci.world/projects/helice",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/a89ec36f3b2f454ba8300534364b9562/photo/CpVFtvGx",
+        "description": "HELICE is pioneering financial engineering on the Ethereum blockchain, with the goal of halving the cost of high-tech prosthetics and artificial organs.",
+        "website": "https://helice-prosthesis.com/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Unbound Science",
+        "project_url": "https://desci.world/projects/unbound-science",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/3864c8e2111a4950a43a4a4b24f236a3/photo/TtOwongR",
+        "description": "Unbound Science is a platform for inventors to spread their technology around the world faster than ever before. Inventors can apply for funding, store the data needed to replicate their inventions, and lease/license it out to major manufacturers instead of becoming international businessmen. We're building alternative rails and tools for the 95% of scientists left outside the cult of TradSci.",
+        "website": "https://explorer.gitcoin.co/#/projects/0x9658da59cb81b51bef5307cfb566fb2da6f3028da91f677eeed3d769768ac3be",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Ecosynthesisx",
+        "project_url": "https://desci.world/projects/ecosynthesisx",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/20ad884daabe432bb7bc172cb3dd70d1/photo/auLuHpL7",
+        "description": "## Fundraising Live on JuiceBox https://juicebox.money/v4/eth:76 (Works on Ethereum, Base, Arbitrum, Optimism)",
+        "website": "https://t.me/EcoSynthesisX",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Follow The Black Hare",
+        "project_url": "https://desci.world/projects/follow-the-black-hare",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/110f0d94739c45519673ebece436f6ff/photo/nmSGm5fw",
+        "description": "Can DeSci onboarding be fun and scary?",
+        "website": "https://giveth.io/project/follow-the-black-hare",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Decentralize Space",
+        "project_url": "https://desci.world/projects/decentralize-space",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/6bf79d0dbde5498aa72b935b06d58a14/photo/v7f8L563",
+        "description": "Decentralize! Space: A new community for space exploration and Web3 enthusiasts and professionals.",
+        "website": "https://t.me/despace_ruchat",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Fundesci",
+        "project_url": "https://desci.world/projects/fundesci",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/82a0be2383bd460584c083e6e9f2e0b2/photo/3yoQZWSS",
+        "description": "FunDeSci is a decentralized platform that revolutionizes scientific funding, connecting researchers, investors, and organizations to drive meaningful advancements in research. Through blockchain technology and NFTs, we provide a transparent, accessible, and efficient ecosystem, solving the challenges of traditional funding models.",
+        "website": "https://t.me/Fundesci",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Hyperdesci",
+        "project_url": "https://desci.world/projects/hyperdesci",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/91cd79631e484430b345d2a5551132e2/photo/jrfp1OSK",
+        "description": "We are a community on Telegram, experementing with funding for DeSci like running small QF round, convition voting, etc",
+        "website": "https://t.me/hyperdesci_chat",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Lunco",
+        "project_url": "https://desci.world/projects/lunco",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/f0c230cd404a45599ddba72624bd14cd/photo/QUTBEt1P",
+        "description": "We are experimenting with all sorts of web3 solutions to grow opensource space exploration.\n\nOut main product - LunCo Sim - collaborative Space Missions Design tool",
+        "website": "https://discord.gg/WwjGJUeJQQ",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Desci Latam",
+        "project_url": "https://desci.world/projects/desci-latam",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/fe697dcbab86401497e20d1c8120ce9f/photo/UxNuaJIV",
+        "description": "DeSci LATAM is a public good with a mission to promote the advancement of science in Latin America, by bridging the gap between the scientific community and the blockchain ecosystem. Founded in June 2022, we aim to serve the community and disseminate DeSci knowledge in Spanish and Portuguese. We've already hosted the first DeSci event in Buenos Aires and co-organized an event in Rio de Janeiro, as well as participated in panels at ETH Brazil and presented at Vitalia this year, highlighting our commitment to raising awareness about DeSci in our region.",
+        "website": "https://etherscan.io/address/0x7Dd488f03E0A043b550E82D3C2685aA83B96407C",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Brainstem Digital Health",
+        "project_url": "https://desci.world/projects/brainstem-digital-health",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/a2034342905e4276be06e2091c83eaf6/photo/agQhH77D",
+        "description": "ReflexDAO is a DePIN solution based on personal health sensors, a mobile app, and self-sovereign data collaboration infrastructure to accelerate the adoption and evolution of digital health and digital health research. Combined with revolutionary analytics, this reward driven, self sovereign data collaboration network will empower individuals to transform the way health data is collected, shared, and utilized globally.",
+        "website": "https://app.bio.xyz/launchpad/ReflexDAO",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Cryodao Cpa Database",
+        "project_url": "https://desci.world/projects/cryodao-cpa-database",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/5f990936305849bca8f47b6709b07ff5/photo/IwC69sg7",
+        "description": "Cryoprotective Agents (CPAs) and CPA solutions are essential elements of the cryopreservation process of biological materials, helping prevent damage caused by ice crystal formation at low temperatures. However, there isn\u2019t a currently known compound that does this perfectly, yet. The discovery of new CPAs is therefore fundamental in advancing the field. It is a complex process that involves a combination of biological understanding, chemical synthesis, and rigorous testing.",
+        "website": "https://www.cryodao.org/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Index Network",
+        "project_url": "https://desci.world/projects/index-network",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/53c7eaf35c274371bac7f36162322358/photo/b3nRaYOr",
+        "description": "Index Network is a protocol for discovery that functions a composable vector database and an agent-based query engine. By enabling autonomous agents to work for user intents, Index enables a network that competes for relevancy.",
+        "website": "https://index.network/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Preprints",
+        "project_url": "https://desci.world/projects/preprints",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/6c84e833fa414c0e8bab7f69ffc9e75b/photo/uF6BfKGt",
+        "description": "At its core, Preprints.io is a permissionless preprint platform that ensures the permanence and accessibility of manuscripts by recording them as NFTs on the blockchain, with authors retaining ownership and control.",
+        "website": "https://app.preprints.io",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Deep Venture Dao",
+        "project_url": "https://desci.world/projects/deep-venture-dao",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/473253df0c9747b7aa55b28dfcff9a1a/photo/9hRA7KnJ",
+        "description": "Deep Venture DAO offers DAO management and a community incubator program, providing funding, expertise, and decentralized science tools to support and accelerate space science and engineering communities.",
+        "website": "https://www.deepventure.io",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Etica",
+        "project_url": "https://desci.world/projects/etica",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/9af619fd710b46929846acc45e88b28b/photo/9pY5yFLc",
+        "description": "Etica serves as a pioneering blockchain platform dedicated to advancing open-source medical research. It introduces a decentralized approach to scientific discovery in the medical field, eliminating traditional barriers associated with intellectual property. This platform is designed to facilitate and economically sustain open-source medical research through a unique economic model.",
+        "website": "https://www.etica.io/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Hades",
+        "project_url": "https://desci.world/projects/hades",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/4541a231bed74703866f61209bbf3937/photo/4hY2dnn4",
+        "description": "At HADeS, we leverage advanced AI and calorimetry technology to detect hard-to-diagnose health conditions, from neurodegenerative disorders to various cancers. Our proactive health management approach empowers individuals of all ages to achieve Healthy Aging through a single blood scan, providing real-time insights into their well-being. With over 20 years of expertise, we aim to democratize healthcare, alleviate the strain on overburdened systems, and foster a culture of preventive medicine.",
+        "website": "https://hades.health/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Data Lake",
+        "project_url": "https://desci.world/projects/data-lake",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/53f6db4801bf4cd3b81e32c95092ce6a/photo/0ELQMKg5",
+        "description": "N/A",
+        "website": "https://data-lake.co/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Valleydao",
+        "project_url": "https://desci.world/projects/valleydao",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/d984efda7cce4b69bfa6b952820b5fcf/photo/NkOkqfIj",
+        "description": "Climate biotechnology leverages biological organisms to sustainably manufacture products such as animal-free meat, nutrients, clothes, fuels, fertilizers and medicine. We believe that development and adoption these technologies is going to be paramount in solving the existential threats of climate change and food security.\n\nValleyDAO is a global and open community that funds and collectively incubates academic and independent research projects. Our decentralised community helps researchers maximize the impact of their work by taking their research results beyond the bench and into the real world. To date, we've raised $500,000 for various research projects and helped several researchers bring their technologies out from the lab with the help of our community of researchers, entrepreneurs, investors, and biotech enthusiasts. Our projects range from manufacturing of real chocolate without the plant, and biomaterials replacing forever chemicals and microplastics, to agricultural products replacing glyphosate and atrazine, and biomining to secure our future needs for rare earth metals to fuel the AI revolution.",
+        "website": "https://calendar.google.com/calendar/r/eventedit?text=Crowdraise+HempKnit%2C+The+Future+of+Sustainable+Textiles&dates=20241022T102000%2F20241231T102000&details=ValleyDAO+partners+with+ACIB+to+make+HempKnit%E2%80%99s+IP+fundable+by+anyone.+HempKnit+improves+hemp+textiles+using+enzymes.+Funders+can+vote%2C+shape+the+project%2C+and+share+in+its+IP+upside+%E2%80%94+like+Kickstarter+but+in+decentralized+research.",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Hippocrat",
+        "project_url": "https://desci.world/projects/hippocrat",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/ebe105f6d8eb492d83e857d1d091da57/photo/RCQnO1R4",
+        "description": "Hippocrat is a Healthcare Data Protocol that transforms healthcare data collection and utilization by leveraging blockchain technology and zero-knowledge proofs. Hippocrat empowers individuals with control over their health data, ensuring data sovereignty while enhancing personalized medical care and contributing to global health advancements.",
+        "website": "https://hippocrat.io/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Biohackerdao",
+        "project_url": "https://desci.world/projects/biohackerdao",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/d3afecf4a61d441faa3be9498c027619/photo/In6CvfCn",
+        "description": "BiohackerDAO is a citizen science organization dedicated to running decentralised self-enahncement experiments and responsibly collecting, analyzing, and monetizing data generated in the process.",
+        "website": "https://biohackerdao.org/private-group",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Bitdoctor Ai",
+        "project_url": "https://desci.world/projects/bitdoctor-ai",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/44336b2a7ed6493ea32f9466bba88655/photo/gWRhArwn",
+        "description": "Driving a new era in healthcare with an AI-powered doctor, paving the way for hyper-personalized universal healthcare access, especially for underserved communities.\n\n\ud83c\udf15The Product:",
+        "website": "https://play.google.com/store/apps/details?id=com.bitDoctor.ai.android&hl=en",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Researchhub",
+        "project_url": "https://desci.world/projects/researchhub",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/61e61bec0d1244798e027ab16b24cc3e/photo/cw1gSUl8",
+        "description": "The scientific record is too important to be hidden behind paywalls and in ivory towers. Science should be open: not only for reading, but also for reusing.",
+        "website": "https://www.researchhub.com/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Merito",
+        "project_url": "https://desci.world/projects/merito",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/d2d4f8ff91f8496689587724420d841b/photo/SbYyEnhx",
+        "description": "Merito enables open innovation by brokering Sponsored Research Agreement (SRA) deals between science teams & global industry/investors. We are digitizing science ownership to enable a more MERITOcratic science system for benefit of humanity.",
+        "website": "https://medium.com/@merito.network",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Aurasci",
+        "project_url": "https://desci.world/projects/aurasci",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/2b00c210e49444888f2803c4929ac30d/photo/gTEtHdb0",
+        "description": "\u200b\u200b\u200bAuraSci is on a mission to harness the transformative power of decentralized science, driving social innovation by merging the humanistic spirit with scientific innovation. We advocate for the decentralized science movement, empowering global communities, accelerating scientific discovery, and revolutionizing the future of science.",
+        "website": "https://aurasci.xyz/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Aminochain",
+        "project_url": "https://desci.world/projects/aminochain",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/a15ef3c17512452f93eefc4a636f95c5/photo/GQreMIPD",
+        "description": "AminoChain is an innovative platform designed to revolutionize the healthcare industry by connecting enterprise medical institutions and enabling the development of user-owned decentralized healthcare applications. It serves as a decentralized bio-sample marketplace, linking biobanks, clinical sites, and bio-pharma companies to enhance sample transparency, improve cost recovery, and foster industry collaborations. By leveraging blockchain technology, AminoChain ensures the ethical use, sharing, and tracking of bio-samples, allowing donors to stay informed about the utilization of their contributions in research that benefits them and their communities. Committed to building a globally-integrated HIPAA and GDPR compliant protocol, AminoChain aims to establish a new bioeconomy, streamlining clinical R&D and improving academic-industry partnerships, with a focus on ensuring patients are the first to benefit from their participation in scientific research.",
+        "website": "https://aminochain.io/#contact",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Coophive",
+        "project_url": "https://desci.world/projects/coophive",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/e724da03170a480a8d4aedfab2bb7a98/photo/JFBIlCL2",
+        "description": "Autonomous agents are just beginning to trade simple assets like stocks or ETH. In the future, everyone will have an AI agent negotiating on their behalf, trading with other agents, buying and selling data, compute, and everyday items to meet their personal financial goals.\n\nCoopHive is building the only platform that lets agents barter and exchange complex combinations of goods and services on behalf of their owners.\n\nWe are starting with buying and selling compute in a distributed network. We will expand to storage, bandwidth, verifiable computing, off-chain compute jobs from smart contracts, RWA marketplaces, tokenization of latent computing power, bridging, energy, and more.\n\nIn the future, CoopHive will be the new Amazon that lets any agent exchange goods and services to maximize the utility of the owners they represent.",
+        "website": "https://www.coophive.network",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Desci Asia",
+        "project_url": "https://desci.world/projects/desci-asia",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/3e989d0373e34a4ab2686fd602d489b8/photo/QPzTr8mx",
+        "description": "Our vibrant DeSci Asia Telegram group is home to over 400 members hailing from diverse regions such as Thailand, India, China, Japan, Indonesia, Hong Kong, Taiwan, and beyond.",
+        "website": "https://gap.karmahq.xyz/project/desci-asia",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Desci Africa",
+        "project_url": "https://desci.world/projects/desci-africa",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/a05adb60a3f74237971d1b17e0c4625a/photo/yVtYXsK7",
+        "description": "DeSci Africa is dedicated to empowering scientists in Africa through the principles of Decentralized Science. Our goal is to build a thriving community that promotes the awareness and adoption of decentralized scientific practices across the continent.",
+        "website": "https://www.desciafrica.xyz/",
+        "creator_page_url": "N/A"
+    },
+    {
+        "name": "Desciworld",
+        "project_url": "https://desci.world/projects/desciworld",
+        "image_url": "https://amtlwechzhlnhifiobhw.supabase.co/storage/v1/object/public/images/project/316bdb66d41f4f40b5c59fd6b0538aa8/photo/1lYq7ZCV",
+        "description": "DeSciWorld, much like planet Earth, is an ecosystem, fluid and evolving, interconnected and symbiotic. It is designed as the social and participatory layer of DeSci, supporting all fields of science as an agnostic repository and champion of open source, permissionless tooling for the advancement of knowledge.",
+        "website": "https://twitter.com/jb87ua",
+        "creator_page_url": "N/A"
+    }
+]

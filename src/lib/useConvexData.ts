@@ -9,9 +9,6 @@ const PROJECTS_CACHE_KEY = "swipepad:projects:v2";
 const PROJECTS_CACHE_TTL_MS = 5 * 60_000;
 const DEV_PROJECTS_CACHE_TTL_MS = 30 * 60_000;
 const DEV_CACHE_ONLY = process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_CONVEX_CACHE_ONLY_DEV === "1";
-const PROJECTS_CATALOG_PAGE_SIZE = 120;
-const PROJECTS_CATALOG_MAX_ITEMS = 240;
-
 // Re-export the Project type from Convex for frontend compatibility
 // This type mirrors the static data.ts Project interface but comes from Convex
 export interface Project {
@@ -64,47 +61,46 @@ export function adaptConvexProject(p: ConvexProjectShape): Project {
   };
 }
 
-type FeedProjectsPageResponse = {
-  page: ConvexProjectShape[];
-  continueCursor: string | null;
-  isDone: boolean;
-};
-
 function isMissingFeedPageFunctionError(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
   return error.message.includes("Could not find public function for 'projects:getFeedProjectsPage'");
 }
 
-async function fetchProjectCatalogSnapshot(cacheTtlMs: number): Promise<ConvexProjectShape[]> {
-  const rows: ConvexProjectShape[] = [];
-  let cursor: string | null = null;
-  let guard = 0;
+function isQuotaExceededError(error: unknown): boolean {
+  return error instanceof DOMException && (
+    error.name === "QuotaExceededError" ||
+    error.name === "NS_ERROR_DOM_QUOTA_REACHED"
+  );
+}
+
+function writeProjectsCache(rows: ConvexProjectShape[]) {
+  if (typeof window === "undefined") return;
 
   try {
-    while (rows.length < PROJECTS_CATALOG_MAX_ITEMS && guard < 4) {
-      const result: FeedProjectsPageResponse = await fetchConvexQuery<
-        { paginationOpts: { numItems: number; cursor: string | null } },
-        FeedProjectsPageResponse
-      >(
-        "projects:getFeedProjectsPage",
-        {
-          paginationOpts: {
-            numItems: PROJECTS_CATALOG_PAGE_SIZE,
-            cursor,
-          },
-        },
-        {
-          cacheTtlMs,
-          cacheKey: `projects:getFeedProjectsPage:${cursor ?? "root"}:${PROJECTS_CATALOG_PAGE_SIZE}`,
-        }
-      );
+    window.localStorage.setItem(PROJECTS_CACHE_KEY, JSON.stringify({ ts: Date.now(), rows }));
+  } catch (error) {
+    if (!isQuotaExceededError(error)) throw error;
 
-      rows.push(...result.page);
-      if (result.isDone || !result.continueCursor) break;
-
-      cursor = result.continueCursor;
-      guard += 1;
+    try {
+      window.localStorage.removeItem(PROJECTS_CACHE_KEY);
+    } catch {
+      return;
     }
+
+    console.warn("[projects] skipping local cache because project snapshot exceeds storage quota");
+  }
+}
+
+async function fetchProjectCatalogSnapshot(cacheTtlMs: number): Promise<ConvexProjectShape[]> {
+  try {
+    return await fetchConvexQuery<{}, ConvexProjectShape[]>(
+      "projects:getAllProjects",
+      {},
+      {
+        cacheTtlMs,
+        cacheKey: "projects:getAllProjects",
+      }
+    );
   } catch (error) {
     if (!isMissingFeedPageFunctionError(error)) throw error;
 
@@ -117,10 +113,8 @@ async function fetchProjectCatalogSnapshot(cacheTtlMs: number): Promise<ConvexPr
         cacheKey: "projects:getAllProjects",
       }
     );
-    return allProjects.slice(0, PROJECTS_CATALOG_MAX_ITEMS);
+    return allProjects;
   }
-
-  return rows.slice(0, PROJECTS_CATALOG_MAX_ITEMS);
 }
 
 type ProjectsContextValue = {
@@ -183,9 +177,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     try {
       const rows = await fetchProjectCatalogSnapshot(effectiveProjectsCacheTtlMs);
       setProjects(rows.map(adaptConvexProject));
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(PROJECTS_CACHE_KEY, JSON.stringify({ ts: Date.now(), rows }));
-      }
+      writeProjectsCache(rows);
     } catch (error) {
       console.error("[projects] failed loading projects", error);
       setProjects([]);

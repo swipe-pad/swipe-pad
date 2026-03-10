@@ -62,6 +62,7 @@ export const getFeedProjectsPage = query({
         github: project.github,
         farcaster: project.farcaster,
         linkedin: project.linkedin,
+        discord: project.discord,
       })),
       isDone: page.isDone,
       continueCursor: page.continueCursor,
@@ -165,6 +166,12 @@ export const upsertProject = mutation({
     source: v.string(),
     verifiedLevel: v.optional(v.number()),
     featured: v.optional(v.boolean()),
+    website: v.optional(v.string()),
+    twitter: v.optional(v.string()),
+    github: v.optional(v.string()),
+    farcaster: v.optional(v.string()),
+    linkedin: v.optional(v.string()),
+    discord: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     requireAdmin(args.adminKey, args.callerWallet);
@@ -184,6 +191,12 @@ export const upsertProject = mutation({
         source: args.source,
         verifiedLevel: args.verifiedLevel ?? existing.verifiedLevel,
         featured: args.featured ?? existing.featured,
+        website: args.website,
+        twitter: args.twitter,
+        github: args.github,
+        farcaster: args.farcaster,
+        linkedin: args.linkedin,
+        discord: args.discord,
         updatedAt: Date.now(),
       });
       await markDashboardStatsDirty(ctx);
@@ -206,9 +219,217 @@ export const upsertProject = mutation({
       featured: args.featured ?? false,
       active: true,
       createdAt: Date.now(),
+      website: args.website,
+      twitter: args.twitter,
+      github: args.github,
+      farcaster: args.farcaster,
+      linkedin: args.linkedin,
+      discord: args.discord,
     });
     await markDashboardStatsDirty(ctx);
     return inserted;
+  },
+});
+
+/** Import-safe upsert for normalized JSON datasets (admin) */
+export const upsertImportedProject = mutation({
+  args: {
+    adminKey: v.string(),
+    callerWallet: v.optional(v.string()),
+    projectId: v.string(),
+    title: v.string(),
+    description: v.string(),
+    imageUrl: v.string(),
+    category: v.string(),
+    rawCategory: v.optional(v.string()),
+    recipientWallet: v.string(),
+    chain: v.string(),
+    source: v.string(),
+    sourceDataset: v.optional(v.string()),
+    rawSourceId: v.optional(v.string()),
+    profileUrl: v.optional(v.string()),
+    network: v.optional(v.string()),
+    website: v.optional(v.string()),
+    twitter: v.optional(v.string()),
+    github: v.optional(v.string()),
+    farcaster: v.optional(v.string()),
+    linkedin: v.optional(v.string()),
+    discord: v.optional(v.string()),
+    verifiedLevel: v.optional(v.number()),
+    featured: v.optional(v.boolean()),
+    active: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    requireAdmin(args.adminKey, args.callerWallet);
+
+    const existing = await ctx.db
+      .query("projects")
+      .withIndex("by_projectId", (q) => q.eq("projectId", args.projectId))
+      .first();
+
+    const now = Date.now();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        title: args.title,
+        description: args.description,
+        imageUrl: args.imageUrl || existing.imageUrl,
+        category: args.category,
+        rawCategory: args.rawCategory,
+        recipientWallet: args.recipientWallet || existing.recipientWallet,
+        chain: args.chain,
+        source: args.source,
+        sourceDataset: args.sourceDataset,
+        rawSourceId: args.rawSourceId,
+        profileUrl: args.profileUrl,
+        network: args.network,
+        website: args.website,
+        twitter: args.twitter,
+        github: args.github,
+        farcaster: args.farcaster,
+        linkedin: args.linkedin,
+        discord: args.discord,
+        verifiedLevel: args.verifiedLevel ?? existing.verifiedLevel,
+        featured: args.featured ?? existing.featured,
+        active: args.active ?? existing.active,
+        importedAt: now,
+        updatedAt: now,
+      });
+      await markDashboardStatsDirty(ctx);
+      return { id: existing._id, created: false };
+    }
+
+    const routeId = await generateUniqueRouteId(ctx.db, args.projectId);
+
+    const inserted = await ctx.db.insert("projects", {
+      projectId: args.projectId,
+      routeId,
+      title: args.title,
+      description: args.description,
+      imageUrl: args.imageUrl || "/placeholder.svg",
+      category: args.category,
+      rawCategory: args.rawCategory,
+      recipientWallet: args.recipientWallet,
+      chain: args.chain,
+      source: args.source,
+      sourceDataset: args.sourceDataset,
+      rawSourceId: args.rawSourceId,
+      profileUrl: args.profileUrl,
+      network: args.network,
+      verifiedLevel: args.verifiedLevel ?? 0,
+      featured: args.featured ?? false,
+      active: args.active ?? true,
+      createdAt: now,
+      updatedAt: now,
+      importedAt: now,
+      website: args.website,
+      twitter: args.twitter,
+      github: args.github,
+      farcaster: args.farcaster,
+      linkedin: args.linkedin,
+      discord: args.discord,
+    });
+    await markDashboardStatsDirty(ctx);
+    return { id: inserted, created: true };
+  },
+});
+
+/** Dev-friendly import upsert without admin guard */
+export const upsertImportedProjectDev = mutation({
+  args: {
+    projectId: v.string(),
+    title: v.string(),
+    description: v.string(),
+    imageUrl: v.string(),
+    category: v.string(),
+    rawCategory: v.optional(v.string()),
+    recipientWallet: v.string(),
+    chain: v.string(),
+    source: v.string(),
+    sourceDataset: v.optional(v.string()),
+    rawSourceId: v.optional(v.string()),
+    profileUrl: v.optional(v.string()),
+    network: v.optional(v.string()),
+    website: v.optional(v.string()),
+    twitter: v.optional(v.string()),
+    github: v.optional(v.string()),
+    farcaster: v.optional(v.string()),
+    linkedin: v.optional(v.string()),
+    discord: v.optional(v.string()),
+    verifiedLevel: v.optional(v.number()),
+    featured: v.optional(v.boolean()),
+    active: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("projects")
+      .withIndex("by_projectId", (q) => q.eq("projectId", args.projectId))
+      .first();
+
+    const now = Date.now();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        title: args.title,
+        description: args.description,
+        imageUrl: args.imageUrl || existing.imageUrl,
+        category: args.category,
+        rawCategory: args.rawCategory,
+        recipientWallet: args.recipientWallet || existing.recipientWallet,
+        chain: args.chain,
+        source: args.source,
+        sourceDataset: args.sourceDataset,
+        rawSourceId: args.rawSourceId,
+        profileUrl: args.profileUrl,
+        network: args.network,
+        website: args.website,
+        twitter: args.twitter,
+        github: args.github,
+        farcaster: args.farcaster,
+        linkedin: args.linkedin,
+        discord: args.discord,
+        verifiedLevel: args.verifiedLevel ?? existing.verifiedLevel,
+        featured: args.featured ?? existing.featured,
+        active: args.active ?? existing.active,
+        importedAt: now,
+        updatedAt: now,
+      });
+      await markDashboardStatsDirty(ctx);
+      return { id: existing._id, created: false };
+    }
+
+    const routeId = await generateUniqueRouteId(ctx.db, args.projectId);
+
+    const inserted = await ctx.db.insert("projects", {
+      projectId: args.projectId,
+      routeId,
+      title: args.title,
+      description: args.description,
+      imageUrl: args.imageUrl || "/placeholder.svg",
+      category: args.category,
+      rawCategory: args.rawCategory,
+      recipientWallet: args.recipientWallet,
+      chain: args.chain,
+      source: args.source,
+      sourceDataset: args.sourceDataset,
+      rawSourceId: args.rawSourceId,
+      profileUrl: args.profileUrl,
+      network: args.network,
+      verifiedLevel: args.verifiedLevel ?? 0,
+      featured: args.featured ?? false,
+      active: args.active ?? true,
+      createdAt: now,
+      updatedAt: now,
+      importedAt: now,
+      website: args.website,
+      twitter: args.twitter,
+      github: args.github,
+      farcaster: args.farcaster,
+      linkedin: args.linkedin,
+      discord: args.discord,
+    });
+    await markDashboardStatsDirty(ctx);
+    return { id: inserted, created: true };
   },
 });
 

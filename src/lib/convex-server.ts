@@ -7,8 +7,6 @@ import { getProjectImageSrc, normalizeProjectCategory } from "@/lib/project-taxo
 
 const CONVEX_QUERY_TIMEOUT_MS = 8000
 const FEED_CANDIDATES_CACHE_TTL_MS = 5 * 60_000
-const FEED_CANDIDATES_PAGE_SIZE = 120
-const FEED_CANDIDATES_MAX_PAGES = 3
 const FEED_ALLOW_LEGACY_FALLBACK = process.env.CONVEX_FEED_ALLOW_LEGACY_FALLBACK !== "0"
 
 let feedCandidatesCache: {
@@ -91,12 +89,6 @@ type ConvexProject = {
   discord?: string
 }
 
-type FeedProjectsPage = {
-  page: ConvexProject[]
-  continueCursor: string | null
-  isDone: boolean
-}
-
 function toProject(project: ConvexProject): ServerProject {
   const category = normalizeProjectCategory({ category: project.category, source: project.source })
   const imageUrl = getProjectImageSrc(project.imageUrl, { category, source: project.source })
@@ -129,31 +121,12 @@ async function fetchFeedCandidates(): Promise<ConvexProject[]> {
     let normalized: ConvexProject[] = []
 
     try {
-      let cursor: string | null = null
-      let pageCount = 0
-
-      while (pageCount < FEED_CANDIDATES_MAX_PAGES) {
-        const page: FeedProjectsPage = await withTimeout(
-          client.query(api.projects.getFeedProjectsPage, {
-            paginationOpts: {
-              cursor,
-              numItems: FEED_CANDIDATES_PAGE_SIZE,
-            },
-          }),
-          CONVEX_QUERY_TIMEOUT_MS,
-          "feed candidates"
-        )
-
-        const rows = ((page?.page ?? []) as ConvexProject[]).filter((project) => project.active !== false)
-        normalized.push(...rows)
-        pageCount += 1
-
-        if (page?.isDone || !page?.continueCursor) {
-          break
-        }
-
-        cursor = page.continueCursor
-      }
+      const projects = await withTimeout(
+        client.query(api.projects.getAllProjects, {}),
+        CONVEX_QUERY_TIMEOUT_MS,
+        "feed candidates"
+      )
+      normalized = ((projects ?? []) as ConvexProject[]).filter((project) => project.active !== false)
     } catch (feedLightError) {
       if (!FEED_ALLOW_LEGACY_FALLBACK) {
         throw feedLightError
