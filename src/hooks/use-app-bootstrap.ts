@@ -8,6 +8,7 @@ import { useShallow } from "zustand/react/shallow"
 
 import { useApp } from "@/context/AppContext"
 import { getDevGuestProvisioningEnabled } from "@/lib/dev-guest-provisioning"
+import { getMiniAppContext, isInFarcasterMiniApp } from "@/lib/farcaster/client"
 import { api } from "../../convex/_generated/api"
 
 const GUEST_WALLET_STORAGE_KEY = "swipepad:guest-wallet"
@@ -55,6 +56,17 @@ export function useAppBootstrap() {
   })))
 
   const [allowGuestProvisioning, setAllowGuestProvisioning] = useState(false)
+
+  useEffect(() => {
+    isInFarcasterMiniApp()
+      .then((isMiniApp) => {
+        if (!isMiniApp) return null
+        return getMiniAppContext()
+      })
+      .catch((error) => {
+        console.error("[farcaster] bootstrap context failed", error)
+      })
+  }, [])
 
   useEffect(() => {
     const sync = () => setAllowGuestProvisioning(getDevGuestProvisioningEnabled())
