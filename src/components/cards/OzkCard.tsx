@@ -72,7 +72,7 @@ export function OzkCard({ project, onSwipeLeft, onSwipeRight, onUndo, onBoost }:
     <motion.div
       animate={isBoosting ? { scale: [1, 0.95, 1.05, 1], x: [0, -3, 3, -3, 3, 0] } : { scale: 1, x: 0 }}
       transition={{ duration: 0.2 }}
-      className={`relative mx-auto flex h-full w-full flex-col rounded-[26px] ${isTurboActive ? "p-[1px]" : "p-0"}`}
+      className={`relative mx-auto flex w-full flex-col rounded-[26px] ${isTurboActive ? "p-[1px]" : "p-0"}`}
     >
       {isTurboActive ? (
         <motion.div
@@ -98,7 +98,8 @@ export function OzkCard({ project, onSwipeLeft, onSwipeRight, onUndo, onBoost }:
         ) : null}
       </AnimatePresence>
 
-      <div className="relative z-10 flex h-full w-full select-none flex-col overflow-hidden rounded-[25px] bg-[#0D0D0D]">
+      <div className="relative z-10 flex w-full select-none flex-col overflow-hidden rounded-[25px] bg-[#0D0D0D]">
+        {/* Image section - fixed aspect ratio */}
         <div className="relative aspect-square w-full overflow-hidden rounded-t-[24px] border-b border-zinc-800/50 bg-black">
           <SafeImage
             src={imageSrc}
@@ -130,8 +131,10 @@ export function OzkCard({ project, onSwipeLeft, onSwipeRight, onUndo, onBoost }:
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col justify-between bg-[#0D0D0D] px-4 pb-2 pt-3">
-          <div className="min-h-[120px] space-y-1 overflow-hidden">
+        {/* Content section - fixed height for description, flexible space */}
+        <div className="flex flex-col bg-[#0D0D0D] px-4 pb-2 pt-3">
+          {/* Description area - fixed height showing exactly 2 lines */}
+          <div className="h-[72px] overflow-hidden">
             <div className="flex items-center gap-1.5">
               <h2 className="truncate text-lg leading-tight font-bold text-white">{project.name}</h2>
               {project.verifiedLevel && project.verifiedLevel > 0 ? <Zap className="size-4 fill-current text-[#FFD600]" /> : null}
@@ -145,6 +148,7 @@ export function OzkCard({ project, onSwipeLeft, onSwipeRight, onUndo, onBoost }:
             </div>
           </div>
 
+          {/* Buttons - fixed size */}
           <div className="mt-1 flex items-center gap-2 px-1 pb-2">
             <button onClick={onSwipeLeft} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-[24px] border border-zinc-700/50 bg-zinc-800 text-white">
               <X className="size-5" /> <span className="text-base">Skip</span>
