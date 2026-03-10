@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Nunito, Press_Start_2P } from "next/font/google"
 import { Providers } from "@/components/providers"
+import { cn } from "@/lib/utils"
 import "./globals.css"
 
 const bodyFont = Nunito({
@@ -17,6 +18,7 @@ const displayFont = Press_Start_2P({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://app.swipepad.xyz"),
   title: "SwipePad | Support Regenerative Projects",
   description: "Swipe to discover and fund the best regenerative projects and builders in web3.",
   keywords: ["SwipePad", "Celo", "ReFi", "Web3", "Donations", "Funding"],
@@ -63,15 +65,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`
-          ${bodyFont.variable}
-          ${displayFont.variable}
-          h-screen w-screen overflow-hidden text-white antialiased
-        `}
+        className={cn(
+          bodyFont.variable,
+          displayFont.variable,
+          "h-screen w-screen overflow-hidden text-white antialiased"
+        )}
       >
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
         {/* <Analytics /> */}
       </body>
     </html>
