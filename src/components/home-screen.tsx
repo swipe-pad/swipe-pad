@@ -173,10 +173,8 @@ export function HomeScreen({
     ? (selectedCategory as TopCategory)
     : "See All"
 
-  const sessionSeedRef = useRef(
-    initialSessionSeed ??
-      (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}`),
-  )
+  const [sessionSeed] = useState(() => initialSessionSeed || (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}`))
+  const sessionSeedRef = useRef<string>(sessionSeed)
   const requestCounterRef = useRef(0)
   const preloadedUrlsRef = useRef<Set<string>>(new Set())
   const preloadingUrlsRef = useRef<Map<string, Promise<void>>>(new Map())
@@ -587,22 +585,22 @@ export function HomeScreen({
                     key={category}
                     onClick={() => handleCategoryChange(category)}
                     className={`
-                                  shrink-0 rounded-full border px-3.5 py-1.5
-                                  text-xs font-semibold transition-colors
-                                  sm:px-4 sm:py-2 sm:text-sm
-                                  ${
+                      shrink-0 rounded-full border px-3.5 py-1.5 text-xs
+                      font-semibold transition-colors
+                      sm:px-4 sm:py-2 sm:text-sm
+                      ${
                                     active
                                       ? `
-                                          border-primary bg-primary
-                                          text-primary-foreground
-                                        `
+                                        border-primary bg-primary
+                                        text-primary-foreground
+                                      `
                                       : `
-                                          border-surface-border bg-[#171d2b]
-                                          text-gray-300
-                                          hover:bg-[#20293b]
-                                        `
+                                        border-surface-border bg-[#171d2b]
+                                        text-gray-300
+                                        hover:bg-[#20293b]
+                                      `
                                   }
-                                `}
+                    `}
                   >
                     {category}
                   </button>
@@ -612,7 +610,11 @@ export function HomeScreen({
         </div>
       </div>
 
-      <div className="pointer-events-none absolute top-9 left-0 z-50 flex w-full justify-center sm:top-12">
+      <div className="
+        pointer-events-none absolute top-9 left-0 z-50 flex w-full
+        justify-center
+        sm:top-12
+      ">
         <AnimatePresence>
           {showCategoryToast ? (
             <motion.div
@@ -620,9 +622,16 @@ export function HomeScreen({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.96 }}
               transition={{ type: "spring", stiffness: 420, damping: 25 }}
-              className="rounded-full border border-slate-200 bg-white/85 px-5 py-1.5 shadow-lg backdrop-blur-xl sm:px-7 sm:py-2.5"
+              className="
+                rounded-full border border-slate-200 bg-white/85 px-5 py-1.5
+                shadow-lg backdrop-blur-xl
+                sm:px-7 sm:py-2.5
+              "
             >
-              <span className="text-xs font-black tracking-widest text-slate-800 uppercase sm:text-sm">{activeCategory}</span>
+              <span className="
+                text-xs font-black tracking-widest text-slate-800 uppercase
+                sm:text-sm
+              ">{activeCategory}</span>
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -631,11 +640,20 @@ export function HomeScreen({
       <div className="mb-2 flex items-end justify-between">
         <div>
           <p className="text-[10px] font-medium tracking-wide text-gray-400">YOUR LEVEL</p>
-          <p className="font-display text-2xl leading-none tracking-wide text-white sm:text-3xl">LVL {level}</p>
+          <p className="
+            font-display text-2xl leading-none tracking-wide text-white
+            sm:text-3xl
+          ">LVL {level}</p>
         </div>
 
-        <div className="w-36 pb-1 sm:w-40">
-          <p className="mb-1 text-right text-[10px] text-gray-300 sm:text-xs">{xpInLevel} / 500 XP</p>
+        <div className="
+          w-36 pb-1
+          sm:w-40
+        ">
+          <p className="
+            mb-1 text-right text-[10px] text-gray-300
+            sm:text-xs
+          ">{xpInLevel} / 500 XP</p>
           <div className="h-1.5 overflow-hidden rounded-full bg-[#203150]">
             <div
               className="h-full bg-[#395079] transition-all duration-300"
@@ -645,13 +663,29 @@ export function HomeScreen({
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 items-center justify-center pt-1">
-        <div className="w-full sm:w-[min(100%,420px)] lg:w-[min(100%,480px)]">
+      <div className="flex min-h-0 flex-1 items-center justify-center pt-1 pb-4">
+        <div className="
+          relative size-full w-full
+          sm:w-[min(100%,420px)]
+          lg:w-[min(100%,480px)]
+        ">
           {shouldShowWarmup ? (
-            <div className="relative size-full overflow-hidden rounded-[28px] border border-surface-border bg-[#101a2f]">
-              <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_20%_20%,rgba(74,101,146,0.22),transparent_50%)]" />
-              <div className="absolute -left-1/3 top-0 h-full w-1/2 -skew-x-12 animate-[boost-sheen_3.2s_ease-in-out_infinite] bg-white/8 blur-xl" />
-              <div className="absolute inset-x-5 top-5 h-8 rounded-xl bg-white/10" />
+            <div className="
+              relative size-full overflow-hidden rounded-[28px] border
+              border-surface-border bg-[#101a2f]
+            ">
+              <div className="
+                absolute inset-0 animate-pulse
+                bg-[radial-gradient(circle_at_20%_20%,rgba(74,101,146,0.22),transparent_50%)]
+              " />
+              <div className="
+                absolute top-0 -left-1/3 h-full w-1/2 -skew-x-12
+                animate-[boost-sheen_3.2s_ease-in-out_infinite] bg-white/8
+                blur-xl
+              " />
+              <div className="
+                absolute inset-x-5 top-5 h-8 rounded-xl bg-white/10
+              " />
               <div className="absolute inset-x-5 bottom-5 space-y-2">
                 <div className="h-5 w-3/5 rounded-md bg-white/14" />
                 <div className="h-4 w-full rounded-md bg-white/10" />
@@ -666,7 +700,10 @@ export function HomeScreen({
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={0.4}
               onDragEnd={onDragDeckEnd}
-              className={`relative size-full transition-opacity duration-300 ${isFeedVisible ? "opacity-100" : "opacity-0"}`}
+              className={`
+                relative size-full transition-opacity duration-300
+                ${isFeedVisible ? `opacity-100` : `opacity-0`}
+              `}
             >
               <SwipeStack
                 ref={stackRef}
@@ -695,22 +732,26 @@ export function HomeScreen({
                 renderCard={(item, isTop) => {
                   if (activeCardDesign === "OZK_CARD_V1_NEON") {
                     return (
-                      <OzkCard
-                        project={item.data}
-                        onBoost={() => console.log("boost")}
-                        onSwipeLeft={() => {
-                          if (!isTop) return
-                          buttonSwipe("left")
-                        }}
-                        onSwipeRight={() => {
-                          if (!isTop) return
-                          buttonSwipe("right")
-                        }}
-                        onUndo={() => {
-                          if (!isTop) return
-                          handleUndo()
-                        }}
-                      />
+                      <div className="
+                        flex size-full flex-col items-center justify-center
+                      ">
+                        <OzkCard
+                          project={item.data}
+                          onBoost={() => console.log("boost")}
+                          onSwipeLeft={() => {
+                            if (!isTop) return
+                            buttonSwipe("left")
+                          }}
+                          onSwipeRight={() => {
+                            if (!isTop) return
+                            buttonSwipe("right")
+                          }}
+                          onUndo={() => {
+                            if (!isTop) return
+                            handleUndo()
+                          }}
+                        />
+                      </div>
                     )
                   }
 
@@ -742,12 +783,21 @@ export function HomeScreen({
               />
 
               {activeCardDesign === "SP_CARD_V2_STACK" ? (
-                <div className="pointer-events-none absolute inset-x-0 -bottom-16 z-40 flex items-center justify-center gap-5 min-[380px]:-bottom-18 sm:-bottom-20">
+                <div className="
+                  pointer-events-none absolute inset-x-0 bottom-4 z-40 flex
+                  items-center justify-center gap-5
+                ">
                 <motion.button
                   onClick={() => buttonSwipe("left")}
                   whileHover={{ scale: 1.08 }}
                   whileTap={{ scale: 0.92 }}
-                  className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-rose-100 bg-white/100 text-rose-500 opacity-100 shadow-[0_8px_20px_rgb(244,63,94,0.15)] transition-all hover:bg-rose-50"
+                  className="
+                    pointer-events-auto flex size-14 items-center justify-center
+                    rounded-full border border-rose-100 bg-white text-rose-500
+                    opacity-100 shadow-[0_8px_20px_rgb(244,63,94,0.15)]
+                    transition-all
+                    hover:bg-rose-50
+                  "
                 >
                   <X className="size-6" />
                 </motion.button>
@@ -756,7 +806,12 @@ export function HomeScreen({
                   disabled={!canUndo || isAdvancing}
                   whileHover={{ scale: 1.08 }}
                   whileTap={{ scale: 0.92 }}
-                  className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white/100 text-slate-500 opacity-100 shadow-md transition-all disabled:opacity-40"
+                  className="
+                    pointer-events-auto flex size-11 items-center justify-center
+                    rounded-full border border-slate-200 bg-white text-slate-500
+                    opacity-100 shadow-md transition-all
+                    disabled:opacity-40
+                  "
                 >
                   <RotateCcw className="size-5" />
                 </motion.button>
@@ -765,7 +820,14 @@ export function HomeScreen({
                   disabled={!canSwipe}
                   whileHover={{ scale: 1.08 }}
                   whileTap={{ scale: 0.92 }}
-                  className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border border-emerald-100 bg-white/100 text-emerald-500 opacity-100 shadow-[0_8px_20px_rgb(16,185,129,0.15)] transition-all hover:bg-emerald-50 disabled:opacity-40"
+                  className="
+                    pointer-events-auto flex size-14 items-center justify-center
+                    rounded-full border border-emerald-100 bg-white
+                    text-emerald-500 opacity-100
+                    shadow-[0_8px_20px_rgb(16,185,129,0.15)] transition-all
+                    hover:bg-emerald-50
+                    disabled:opacity-40
+                  "
                 >
                   <ThumbsUp className="size-6" />
                 </motion.button>
@@ -773,7 +835,10 @@ export function HomeScreen({
               ) : null}
             </motion.div>
           ) : (
-            <div className="surface-panel flex h-full items-center justify-center rounded-2xl text-sm text-muted-foreground">
+            <div className="
+              surface-panel flex h-full items-center justify-center rounded-2xl
+              text-sm text-muted-foreground
+            ">
               No projects available for this category.
             </div>
           )}
