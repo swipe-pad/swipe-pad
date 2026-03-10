@@ -34,6 +34,7 @@ interface ProjectCardProps {
   donationAmount?: DonationAmount
   donationCurrency?: StableCoin
   swipeControlMode?: "internal" | "external"
+  showShareButtonInSwipe?: boolean
 }
 
 function getCategoryBadgeClasses(category: string) {
@@ -130,6 +131,7 @@ export function ProjectCard({
   onDonate,
   onBoost,
   swipeControlMode = "internal",
+  showShareButtonInSwipe = false,
 }: ProjectCardProps) {
   type SwipeDirection = "left" | "right"
   const internalSwipeEnabled = viewMode === "swipe" && swipeControlMode === "internal"
@@ -589,13 +591,14 @@ export function ProjectCard({
             )}
 
             {/* Share Button */}
-            {viewMode === "category" && (
+            {(viewMode === "category" || showShareButtonInSwipe) && (
               <button
                 onClick={(e) => handleButtonClick(e, () => setShowShareModal(true))}
                 className="
                   flex items-center space-x-1 text-gray-400 transition-colors
                   hover:text-green-400
                 "
+                data-testid="project-card-share-trigger"
               >
                 <ExternalLink className="size-4" />
                 <span className="text-xs">Share</span>

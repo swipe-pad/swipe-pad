@@ -1,9 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { X, Share2, Copy, MessageSquare, Twitter } from "lucide-react"
 import type { Project } from "@/lib/useConvexData"
 import { openExternalUrl } from "@/lib/external-links"
+import { isInFarcasterMiniApp } from "@/lib/farcaster/client"
+import { type HostEnvironment, getHostEnvironmentSync } from "@/lib/farcaster/context"
+import { getCanonicalShareUrl, shareProjectInHost } from "@/lib/farcaster/share"
 import { getCategoryFallbackImage } from "@/lib/utils"
 
 // Add Telegram icon component
@@ -25,13 +28,23 @@ interface ShareModalProps {
 export function ShareModal({ project, projectPathId, isOpen, onClose }: ShareModalProps) {
   const [copied, setCopied] = useState(false)
   const [shareStatus, setShareStatus] = useState<string | null>(null)
+  const [hostEnvironment, setHostEnvironment] = useState<HostEnvironment>(() => getHostEnvironmentSync())
 
   // Generate share content
   const projectKey = projectPathId || project.routeId
-  const origin = typeof window !== "undefined" ? window.location.origin : "https://swipepad.app"
   const shareTitle = `Support ${project.name} on SwipePad`
   const shareText = `Check out ${project.name} on SwipePad and help support their work!`
-  const shareUrl = `${origin}/p/${encodeURIComponent(projectKey)}`
+  const shareUrl = getCanonicalShareUrl(projectKey)
+
+  useEffect(() => {
+    isInFarcasterMiniApp()
+      .then((isMiniApp) => {
+        if (isMiniApp) {
+          setHostEnvironment("farcaster-miniapp")
+        }
+      })
+      .catch(() => undefined)
+  }, [])
 
   // Handle copy to clipboard
   const handleCopyLink = () => {
@@ -85,6 +98,25 @@ export function ShareModal({ project, projectPathId, isOpen, onClose }: ShareMod
     }
   }
 
+  const handleFarcasterShare = async () => {
+    try {
+      const result = await shareProjectInHost({
+        hostEnvironment,
+        payload: {
+          text: shareText,
+          url: shareUrl,
+        },
+      })
+
+      if (result === "farcaster") {
+        setShareStatus("Opened Warpcast composer")
+      }
+    } catch (error) {
+      console.error("Error sharing in Farcaster:", error)
+      setShareStatus("Failed to share in Farcaster")
+    }
+  }
+
   // Handle MiniPay internal share
   const handleMiniPayShare = () => {
     try {
@@ -108,11 +140,11 @@ export function ShareModal({ project, projectPathId, isOpen, onClose }: ShareMod
   return (
     <div className="
       fixed inset-0 z-110 flex items-center justify-center bg-black/70 p-4
-    " onClick={onClose}>
+    " onClick={onClose} data-testid="share-modal-overlay">
       <div className="
         surface-panel-strong w-full max-w-md rounded-2xl border
         border-surface-border p-6 shadow-2xl
-      " onClick={(e) => e.stopPropagation()}>
+      " onClick={(e) => e.stopPropagation()} data-testid="share-modal">
         <div className="mb-4 flex items-start justify-between">
           <h3 className="text-xl font-bold">Share Project</h3>
           <button onClick={onClose} className="
@@ -139,21 +171,42 @@ export function ShareModal({ project, projectPathId, isOpen, onClose }: ShareMod
 
         <div className="space-y-4">
           <div>
-            <h4 className="mb-3 text-sm font-medium">Share inside MiniPay</h4>
-            <button
-              onClick={handleMiniPayShare}
-              className="
-                flex w-full items-center justify-center rounded-lg bg-[#677FEB]
-                py-3 font-medium text-white transition-colors
-                hover:bg-[#5A6FD3]
-              "
-            >
-              <MessageSquare className="mr-2 size-4" /> Share with MiniPay Contacts
-            </button>
+            {hostEnvironment === "farcaster-miniapp" ? (
+              <>
+                <h4 className="mb-3 text-sm font-medium">Share in Farcaster</h4>
+                <button
+                  onClick={() => void handleFarcasterShare()}
+                  className="
+                    flex w-full items-center justify-center rounded-lg bg-[#8A63FF]
+                    py-3 font-medium text-white transition-colors
+                    hover:bg-[#7652eb]
+                  "
+                  data-testid="share-modal-farcaster"
+                >
+                  <MessageSquare className="mr-2 size-4" /> Share to Warpcast
+                </button>
+              </>
+            ) : (
+              <>
+                <h4 className="mb-3 text-sm font-medium">Share inside MiniPay</h4>
+                <button
+                  onClick={handleMiniPayShare}
+                  className="
+                    flex w-full items-center justify-center rounded-lg bg-[#677FEB]
+                    py-3 font-medium text-white transition-colors
+                    hover:bg-[#5A6FD3]
+                  "
+                >
+                  <MessageSquare className="mr-2 size-4" /> Share with MiniPay Contacts
+                </button>
+              </>
+            )}
           </div>
 
           <div>
-            <h4 className="mb-3 text-sm font-medium">Share outside MiniPay</h4>
+            <h4 className="mb-3 text-sm font-medium">
+              {hostEnvironment === "farcaster-miniapp" ? "Other share options" : "Share outside MiniPay"}
+            </h4>
             <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => handleExternalShare("twitter")}
@@ -197,7 +250,7 @@ export function ShareModal({ project, projectPathId, isOpen, onClose }: ShareMod
               <div className="
                 flex-1 truncate rounded-l-lg bg-gray-800 px-3 py-2 text-sm
                 text-gray-300
-              ">{shareUrl}</div>
+              " data-testid="share-modal-url">{shareUrl}</div>
               <button
                 onClick={handleCopyLink}
                 className={`

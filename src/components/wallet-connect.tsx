@@ -1,11 +1,14 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { useConnect, useAccount as useWagmiAccount } from "wagmi"
 import { injected } from "wagmi/connectors"
 import { ConnectButton, useActiveAccount } from "thirdweb/react"
 import { inAppWallet, createWallet } from "thirdweb/wallets"
-import { isMiniPay, isFarcaster } from "@/lib/minipay-utils"
+import { getFarcasterConnector } from "@/lib/farcaster/wagmi-connector"
+import { getHostEnvironmentSync, type HostEnvironment } from "@/lib/farcaster/context"
+import { isInFarcasterMiniApp } from "@/lib/farcaster/client"
+import { isMiniPay } from "@/lib/minipay-utils"
 import { client } from "@/lib/thirdweb-client"
 import { celo } from "thirdweb/chains"
 
@@ -26,8 +29,8 @@ interface WalletConnectProps {
 }
 
 export function WalletConnect({ onConnect }: WalletConnectProps) {
-  const isInjectedEnv = useMemo(() => isMiniPay() || isFarcaster(), [])
   const [isConnecting, setIsConnecting] = useState(false)
+  const [hostEnvironment, setHostEnvironment] = useState<HostEnvironment>(() => getHostEnvironmentSync())
 
   // Wagmi hooks (for MiniPay / Farcaster)
   const { connect } = useConnect()
@@ -42,9 +45,25 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
     }
   }, [isWagmiConnected, thirdwebAccount, onConnect])
 
-  const handleInjectedConnect = () => {
+  useEffect(() => {
+    if (hostEnvironment !== "farcaster-miniapp") {
+      isInFarcasterMiniApp()
+        .then((isMiniApp) => {
+          if (isMiniApp) {
+            setHostEnvironment("farcaster-miniapp")
+          }
+        })
+        .catch(() => undefined)
+    }
+  }, [hostEnvironment])
+
+  const handleInjectedConnect = async () => {
     setIsConnecting(true)
-    connect({ connector: injected() }, {
+    const connector = hostEnvironment === "farcaster-miniapp"
+      ? await getFarcasterConnector()
+      : injected()
+
+    connect({ connector }, {
       onSuccess: () => {
         setIsConnecting(false)
       },
@@ -75,9 +94,9 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
         </p>
 
         <div className="w-full max-w-sm">
-          {isInjectedEnv ? (
+          {hostEnvironment !== "web" ? (
             <button
-              onClick={handleInjectedConnect}
+              onClick={() => void handleInjectedConnect()}
               disabled={isConnecting}
               className="
                 mb-4 flex w-full items-center justify-center gap-2 rounded-xl
@@ -155,6 +174,12 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
               By connecting, you agree to our Terms of Service and Privacy Policy. Your funds remain secure in your
               wallet at all times.
             </p>
+            {hostEnvironment === "farcaster-miniapp" ? (
+              <p className="mt-2 text-xs text-yellow-300/80">Farcaster Mini App wallet flow enabled.</p>
+            ) : null}
+            {hostEnvironment === "minipay" && isMiniPay() ? (
+              <p className="mt-2 text-xs text-blue-300/80">MiniPay injected wallet flow enabled.</p>
+            ) : null}
           </div>
         </div>
       </div>
