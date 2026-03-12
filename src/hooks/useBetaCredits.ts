@@ -7,6 +7,9 @@ import { client } from '@/lib/thirdweb-client'
 import { celo, base } from 'thirdweb/chains'
 import { betaDonationPoolAbi, BETA_POOL_ADDRESS } from '@/types/contracts'
 
+export const FREE_SWIPES = 5
+export const FREE_SWIPES_CREDITS = BigInt(FREE_SWIPES) * 10n ** 16n
+
 export interface BetaCredits {
   remaining: bigint
   max: bigint
@@ -22,7 +25,7 @@ export function useBetaCredits(chain: 'celo' | 'base' = 'celo'): BetaCredits {
   const account = useActiveAccount()
   const [credits, setCredits] = useState<BetaCredits>({
     remaining: 0n,
-    max: 25n * 10n ** 16n, // Default max
+    max: FREE_SWIPES_CREDITS, // Default max: 5 swipes
     isLoading: true,
     error: null,
     refetch: () => {},
@@ -64,8 +67,8 @@ export function useBetaCredits(chain: 'celo' | 'base' = 'celo'): BetaCredits {
     if (!isPoolDeployed) {
       // Pool not deployed, use mock credits for dev
       setCredits({
-        remaining: 25n * 10n ** 16n,
-        max: 25n * 10n ** 16n,
+        remaining: FREE_SWIPES_CREDITS,
+        max: FREE_SWIPES_CREDITS,
         isLoading: false,
         error: null,
         refetch: () => {},
@@ -75,7 +78,7 @@ export function useBetaCredits(chain: 'celo' | 'base' = 'celo'): BetaCredits {
 
     setCredits({
       remaining: (userCredits as bigint) ?? 0n,
-      max: (maxCredits as bigint) ?? 25n * 10n ** 16n,
+      max: (maxCredits as bigint) ?? FREE_SWIPES_CREDITS,
       isLoading,
       error: error as Error | null,
       refetch,
