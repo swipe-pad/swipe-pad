@@ -1,6 +1,7 @@
 "use client"
 
 import dynamic from "next/dynamic"
+import ZeroSwipesGuardrail from "@/components/layout/ZeroSwipesGuardrail"
 
 import type { ConfirmSwipes, DonationAmount, StableCoin } from "@/components/amount-selector"
 
@@ -21,6 +22,7 @@ interface AppOverlaysProps {
   showEditProfile: boolean
   showRegistrationForm: boolean
   showDonationSetup: boolean
+  showZeroSwipesGuardrail: boolean
   enableProjectRegistration: boolean
   cart: unknown[]
   successCategories: string[]
@@ -45,6 +47,8 @@ interface AppOverlaysProps {
   onSubmitRegistrationForm: (data: Record<string, unknown>) => void
   onCloseDonationSetup: () => void
   onSelectDonationSetup: (amount: DonationAmount, currency: StableCoin, swipes: ConfirmSwipes) => void
+  onCloseZeroSwipesGuardrail: () => void
+  onOpenDonationSetupFromGuardrail: () => void
 }
 
 export function AppOverlays({
@@ -56,6 +60,7 @@ export function AppOverlays({
   showEditProfile,
   showRegistrationForm,
   showDonationSetup,
+  showZeroSwipesGuardrail,
   enableProjectRegistration,
   cart,
   successCategories,
@@ -75,6 +80,8 @@ export function AppOverlays({
   onSubmitRegistrationForm,
   onCloseDonationSetup,
   onSelectDonationSetup,
+  onCloseZeroSwipesGuardrail,
+  onOpenDonationSetupFromGuardrail,
 }: AppOverlaysProps) {
   return (
     <>
@@ -119,6 +126,14 @@ export function AppOverlays({
           availableProjects={availableProjects}
         />
       ) : null}
+
+      {showZeroSwipesGuardrail ? (
+        <ZeroSwipesGuardrail
+          isOpen={showZeroSwipesGuardrail}
+          onClose={onCloseZeroSwipesGuardrail}
+          onTopUp={onOpenDonationSetupFromGuardrail}
+        />
+      ) : null}
     </>
-  )
+  );
 }

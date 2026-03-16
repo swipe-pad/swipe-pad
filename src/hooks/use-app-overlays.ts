@@ -45,6 +45,7 @@ export function useAppOverlays() {
   const [showEditProfile, setShowEditProfile] = useState(false)
   const [showRegistrationForm, setShowRegistrationForm] = useState(false)
   const [showDonationSetup, setShowDonationSetup] = useState(false)
+  const [showZeroSwipesGuardrail, setShowZeroSwipesGuardrail] = useState(false)
   const [checkoutSnapshot, setCheckoutSnapshot] = useState<CartCategoryItem[]>([])
 
   const categoriesFromCheckout = useMemo(() => {
@@ -109,6 +110,8 @@ export function useAppOverlays() {
     setShowRegistrationForm,
     showDonationSetup,
     setShowDonationSetup,
+    showZeroSwipesGuardrail,
+    setShowZeroSwipesGuardrail,
     categoriesFromCheckout,
     recentDonations,
     handleCheckout,
