@@ -1,13 +1,14 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useShallow } from "zustand/react/shallow"
 import { useRouter } from "next/navigation"
 import { useMutation } from "convex/react"
+import { useShallow } from "zustand/react/shallow"
 import { AnimatePresence, animate, motion, useMotionValue, useTransform, type PanInfo } from "framer-motion"
 import { RotateCcw, ThumbsUp, X } from "lucide-react"
 
 import { useApp } from "@/context/AppContext"
+import { useAppOverlays } from "@/hooks/use-app-overlays"
 import { OzkCard } from "@/components/cards/OzkCard"
 import { ShareModal } from "@/components/share-modal"
 import { ProjectCard } from "@/components/project-card"
@@ -119,6 +120,7 @@ export function HomeScreen({
   const [activeCardDesign, setActiveCardDesign] = useState<CardDesignId>("OZK_CARD_V1_NEON")
   const [freeModeEnabled, setFreeModeEnabled] = useState(false)
   const [showSharedEntryShare, setShowSharedEntryShare] = useState(false)
+  const overlays = useAppOverlays()
 
   useEffect(() => {
     const next = getStoredCardDesign()
@@ -401,9 +403,12 @@ export function HomeScreen({
 
   const buttonSwipe = useCallback((dir: "left" | "right") => {
     if (isAdvancing) return
-    if (dir === "right" && !canSwipe) return
+    if (dir === "right" && !canSwipe) {
+      overlays.setShowZeroSwipesGuardrail(true)
+      return
+    }
     stackRef.current?.swipe(dir)
-  }, [canSwipe, isAdvancing])
+  }, [canSwipe, isAdvancing, overlays])
 
   useEffect(() => {
     setShowCategoryToast(true)
