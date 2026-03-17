@@ -7,8 +7,6 @@ import { cn } from "@/lib/utils";
 
 const tabs = [
   { name: "Swipe", icon: Layers, href: "/" },
-  { name: "Discover", icon: Search, href: "/list" },
-  { name: "Rank", icon: Trophy, href: "/leaderboard" },
   { name: "Profile", icon: User, href: "/profile" },
 ];
 
