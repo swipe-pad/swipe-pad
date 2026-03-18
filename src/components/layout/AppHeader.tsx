@@ -3,28 +3,18 @@
 import { useRef, type MouseEvent } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Award, Flame } from "lucide-react"
+import { useShallow } from "zustand/react/shallow"
 
-import { CartIcon, ChevronDownIcon } from "@/components/icons"
+import { useApp } from "@/context/AppContext"
 import { FarcasterMiniAppPrompt } from "@/components/farcaster-miniapp-prompt"
+import { ChevronDownIcon } from "@/components/icons"
 
 interface AppHeaderProps {
   donationAmountLabel: string
-  cartCount: number
-  isTrendingActive: boolean
-  isLeaderboardActive: boolean
-  onOpenCart: () => void
   onOpenDonationSetup: () => void
 }
 
-export function AppHeader({
-  donationAmountLabel,
-  cartCount,
-  isTrendingActive,
-  isLeaderboardActive,
-  onOpenCart,
-  onOpenDonationSetup,
-}: AppHeaderProps) {
+export function AppHeader({ donationAmountLabel, onOpenDonationSetup }: AppHeaderProps) {
   const router = useRouter()
   const isDev = process.env.NODE_ENV !== "production"
   const logoClickTimestampsRef = useRef<number[]>([])
@@ -44,11 +34,22 @@ export function AppHeader({
     }
   }
 
+  const { walletConnected, creditsRemaining } = useApp(
+    useShallow((state) => ({
+      walletConnected: state.walletConnected,
+      creditsRemaining: state.creditsRemaining,
+    }))
+  )
+
   return (
     <header className="view-header bg-transparent">
       <div className="px-3 py-2">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-          <Link href="/" onClick={handleLogoClick} className="font-display text-xs font-bold tracking-wide text-white transition-colors hover:text-primary">
+          <Link
+            href="/"
+            onClick={handleLogoClick}
+            className="font-display text-xs font-bold tracking-wide text-white transition-colors hover:text-primary"
+          >
             SwipePad
           </Link>
 
@@ -59,46 +60,22 @@ export function AppHeader({
           >
             <span className="mr-1 inline-flex size-1.5 rounded-full bg-emerald-400" />
             <span className="mr-1 font-semibold text-white">{donationAmountLabel}</span>
-            <span className="text-muted-foreground"><ChevronDownIcon /></span>
+            <span className="text-muted-foreground">
+              <ChevronDownIcon />
+            </span>
           </button>
 
           <div className="ml-auto flex items-center gap-2">
-            <Link
-              aria-label="Open trending"
-              href="/trending"
-                className={`flex size-9 items-center justify-center rounded-full transition-all ${
-                  isTrendingActive
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-[#23314f] text-white hover:bg-[#2e4066]"
-                }`}
-              >
-                <Flame className="size-3.5" />
-              </Link>
-
-              <button
-                aria-label="Open cart"
-                className="relative flex size-9 items-center justify-center rounded-full bg-[#6a86ff] text-white transition-colors hover:brightness-110"
-                onClick={onOpenCart}
-              >
-                <span className="scale-90"><CartIcon /></span>
-                {cartCount > 0 ? (
-                  <span className="absolute -right-1 -top-1 flex size-3.5 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
-                    {cartCount}
-                  </span>
-                ) : null}
-              </button>
-
-            <Link
-              aria-label="Open leaderboard"
-              href="/leaderboard"
-                className={`flex size-9 items-center justify-center rounded-full transition-colors ${
-                  isLeaderboardActive
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-[#23314f] text-[#F9DE4B] hover:bg-[#2e4066]"
-                }`}
-              >
-                <Award className="size-3.5" />
-              </Link>
+            {walletConnected ? (
+              <>
+                <span className="text-xs text-muted-foreground">{creditsRemaining} swipes</span>
+                <button onClick={onOpenDonationSetup} className="btn-sm btn-ghost hover:bg-[#2b3a5a]">
+                  Add Funds
+                </button>
+              </>
+            ) : (
+              <span className="text-xs text-muted-foreground">Connect wallet to top up</span>
+            )}
           </div>
         </div>
 
