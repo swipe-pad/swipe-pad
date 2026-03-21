@@ -1,22 +1,15 @@
-.*
+.direnv
+.env*
+.next
+.opencode
+.vercel
+
+!.env.example
+
 *.tsbuildinfo
 next-env.d.ts
 node_modules
 
-# !.agents
-# !.agents/skills
-# .agents/skills/*
-# !.agents/skills/farcaster-miniapps
-# !.agents/skills/farcaster-miniapps/**
-# !.agents/skills/neynar-miniapps
-# !.agents/skills/neynar-miniapps/**
-# !.agent/rules
-# !.agent/workflows
-# !.env.example
-# !.vercelignore
-# !.vscode
-
+artifacts
 drafts
 ops
-artifacts
-tests
