@@ -47,6 +47,9 @@
             bun
             playwright
             chromium
+            sops
+            age
+            gitleaks
             # corepack to have pnpm/yarn if needed
             corepack_22
             # git in case it is not in the path
