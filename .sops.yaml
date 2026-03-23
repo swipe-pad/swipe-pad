@@ -1,0 +1,12 @@
+creation_rules:
+  # Dev: owner recipient now. Add dev agents as separate recipients.
+  - path_regex: secrets/dev\.env\.sops$
+    age: age1qwxrmv6nca0ju98rj6t9fuw8fssqad2pkw30hyegaqxglese9cpsns3kwm
+
+  # Preview: owner recipient now. Add partner preview recipient with limited provider keys.
+  - path_regex: secrets/preview\.env\.sops$
+    age: age1qwxrmv6nca0ju98rj6t9fuw8fssqad2pkw30hyegaqxglese9cpsns3kwm
+
+  # Production: owner break-glass recipient now. Add CI/deploy recipient before automation.
+  - path_regex: secrets/production\.env\.sops$
+    age: age1qwxrmv6nca0ju98rj6t9fuw8fssqad2pkw30hyegaqxglese9cpsns3kwm
