@@ -1,0 +1,49 @@
+#!/usr/bin/env sh
+# Git pre-commit hook
+# Runs fast checks: typecheck + lint
+# Skip with: git commit --no-verify
+
+set -eu
+
+START_TIME=$(date +%s)
+
+echo "🔍 Running pre-commit checks..."
+
+# Check if bun is available
+if ! command -v bun > /dev/null 2>&1; then
+    echo "⚠️  bun not found, skipping checks"
+    exit 0
+fi
+
+# Run typecheck
+echo "  📝 Type checking..."
+if ! bun run typecheck; then
+    echo "❌ Typecheck failed"
+    exit 1
+fi
+
+# Run lint
+echo "  🧹 Linting..."
+if ! bun run lint; then
+    echo "❌ Lint failed"
+    exit 1
+fi
+
+# Run CSS lint
+echo "  🎨 CSS linting..."
+if ! bun run lint:css; then
+    echo "❌ CSS lint failed"
+    exit 1
+fi
+
+# Run knip (dead code check)
+echo "  🔍 Dead code check..."
+if ! bun run knip; then
+    echo "❌ Knip failed (unused deps/exports)"
+    exit 1
+fi
+
+END_TIME=$(date +%s)
+ELAPSED=$((END_TIME - START_TIME))
+
+echo "✅ Pre-commit checks passed (${ELAPSED}s)"

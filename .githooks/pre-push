@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+# Git pre-push hook
+# Runs unit tests only (E2E runs in CI for speed)
+# Skip with: git push --no-verify
+
+set -eu
+
+START_TIME=$(date +%s)
+
+echo "🧪 Running pre-push checks..."
+
+# Check if bun is available
+if ! command -v bun > /dev/null 2>&1; then
+    echo "⚠️  bun not found, skipping checks"
+    exit 0
+fi
+
+# Run unit tests only (not E2E - those run in CI)
+echo "  ⚡ Running unit tests..."
+if ! bun run test; then
+    echo "❌ Unit tests failed"
+    exit 1
+fi
+
+END_TIME=$(date +%s)
+ELAPSED=$((END_TIME - START_TIME))
+
+echo "✅ Pre-push checks passed (${ELAPSED}s)"
+echo "   (E2E tests run in CI)"
