@@ -1,0 +1,6 @@
+# Keep governance and high-risk surfaces visible without slowing every PR.
+/.github/ @ottodevs
+/contracts/ @ottodevs
+/package.json @ottodevs
+/bun.lock @ottodevs
+/flake.lock @ottodevs
