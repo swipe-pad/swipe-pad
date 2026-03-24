@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+# Git commit-msg hook
+# Validates commit message follows conventional commits format
+# Skip with: git commit --no-verify
+
+set -eu
+
+COMMIT_MSG_FILE="$1"
+
+# Skip if no commit message file
+if [ -z "$COMMIT_MSG_FILE" ]; then
+    echo "⚠️  No commit message file, skipping validation"
+    exit 0
+fi
+
+# Read commit message (first line only)
+COMMIT_MSG=$(head -n 1 "$COMMIT_MSG_FILE")
+
+# Conventional commits pattern:
+# type(scope): subject
+# Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+# Examples:
+#   ✨ feat(feed): add infinite scroll
+#   🐛 fix(auth): wallet connection race
+#   🔧 chore(deps): bump wagmi
+
+PATTERN="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_-]+\))?!?: .+"
+
+if ! printf '%s\n' "$COMMIT_MSG" | grep -Eq "$PATTERN"; then
+    echo "❌ Invalid commit message format"
+    echo ""
+    echo "Expected: type(scope): subject"
+    echo "Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
+    echo ""
+    echo "Examples:"
+    echo "  ✨ feat(feed): add infinite scroll"
+    echo "  🐛 fix(auth): wallet connection race"
+    echo "  🔧 chore(deps): bump wagmi"
+    echo ""
+    echo "Your commit: $COMMIT_MSG"
+    exit 1
+fi
+
+echo "✅ Commit message format valid"
