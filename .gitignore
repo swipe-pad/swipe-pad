@@ -5,6 +5,7 @@
 .vercel
 
 !.env.example
+!.vscode
 
 *.tsbuildinfo
 next-env.d.ts
@@ -13,3 +14,11 @@ node_modules
 artifacts
 drafts
 ops
+
+# GitHub infrastructure
+!.github
+!.github/**
+
+# Local git hooks
+!.githooks
+!.githooks/**
