@@ -28,6 +28,21 @@ Next.js app (port 3030) with Convex backend, Foundry/Solidity contracts, and Web
 | Build | `bun run contracts:build` |
 | Test | `bun run contracts:test` |
 
+## Project Conventions
+
+### Auto-Generated Output
+
+All auto-generated files (build artifacts, test outputs, screenshots, etc.) go to `.cache/` subdirectories. Never commit them.
+
+```
+.cache/
+├── artifacts/    # Agent/browser screenshots and test artifacts
+├── next/        # Next.js build output (alternative to .next/)
+└── ...          # Other generated content
+```
+
+Keep the project root clean. Only committed source files and standard config should live there.
+
 ## Agent Setup
 
 If you need extended configuration (commands, skills, rules), run:

@@ -11,7 +11,10 @@
 next-env.d.ts
 node_modules
 
-artifacts
+# Auto-generated output goes to .cache/
+.cache
+
+# Draft and local data
 drafts
 ops
 
