@@ -1,0 +1,51 @@
+name: Vercel Prebuilt Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  workflow_dispatch:
+    inputs:
+      target:
+        type: choice
+        description: Deployment target
+        default: preview
+        options:
+          - preview
+          - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.22
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Set deployment target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERCEL_TARGET=${{ inputs.target }}" >> $GITHUB_ENV
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "VERCEL_TARGET=production" >> $GITHUB_ENV
+          else
+            echo "VERCEL_TARGET=preview" >> $GITHUB_ENV
+          fi
+
+      - name: Build (prebuilt)
+        run: bunx vercel build --token "$VERCEL_TOKEN" $([ "$VERCEL_TARGET" = "production" ] && echo "--prod")
+
+      - name: Deploy (prebuilt)
+        run: bunx vercel deploy --prebuilt --token "$VERCEL_TOKEN" $([ "$VERCEL_TARGET" = "production" ] && echo "--prod")
