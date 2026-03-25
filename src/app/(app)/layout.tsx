@@ -35,17 +35,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     useAppBootstrap()
 
     const renderPageContainer = (children: React.ReactNode) => {
-        return <div className="
-          relative flex h-screen w-full flex-col overflow-hidden
-        ">{children}</div>
+        return <div className="relative flex h-screen w-full flex-col overflow-hidden">{children}</div>
     }
 
     if (!hasLoadedOnboardingState) {
         return (
-            <main className="
-              relative flex min-h-screen flex-col items-center justify-center
-              overflow-hidden text-white
-            ">
+            <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden text-white">
                 {renderPageContainer(<div className="size-full" />)}
             </main>
         )
@@ -53,10 +48,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     if (!hasCompletedOnboarding) {
         return (
-            <main className="
-              relative flex min-h-screen flex-col items-center justify-center
-              overflow-hidden text-white
-            ">
+            <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden text-white">
                 {renderPageContainer(
                     <OnboardingWizard onComplete={() => setHasCompletedOnboarding(true)} />
                 )}
@@ -65,10 +57,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <main className="
-          relative flex min-h-screen flex-col items-center justify-center
-          overflow-hidden text-white
-        ">
+        <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden text-white">
             {renderPageContainer(
                 <>
                     <AppShell
