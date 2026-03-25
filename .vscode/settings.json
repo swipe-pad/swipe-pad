@@ -54,5 +54,8 @@
         "typescriptreact"
     ],
     "js/ts.tsdk.path": "./node_modules/typescript/lib",
-    "npm.packageManager": "bun"
+    "npm.packageManager": "bun",
+    "evenBetterToml.schema.associations": {
+        "bunfig.toml": "https://www.schemastore.org/bunfig.json"
+    }
 }
