@@ -9,7 +9,20 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        nixpkgsConfig = {
+          allowUnfree = false;
+          allowBroken = false;
+          permitInsecurePackages = [ ];
+          strictDepsByDefault = true;
+          checkMeta = true;
+          contentAddressedByDefault = true;
+        };
+
+        pkgs = import nixpkgs {
+          inherit system;
+          config = nixpkgsConfig;
+        };
+
         playwrightLibs = with pkgs; [
           glib
           nspr
@@ -42,6 +55,8 @@
       in
       {
         devShells.default = pkgs.mkShell {
+          inherit nixpkgsConfig;
+
           buildInputs = with pkgs; [
             nodejs_22
             bun
@@ -50,9 +65,7 @@
             sops
             age
             gitleaks
-            # corepack to have pnpm/yarn if needed
             corepack_22
-            # git in case it is not in the path
             git
           ] ++ playwrightLibs;
 

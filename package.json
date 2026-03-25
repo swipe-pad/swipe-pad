@@ -2,6 +2,7 @@
   "name": "swipe-pad-app",
   "version": "0.1.0",
   "private": true,
+  "trustedDependencies": [],
   "scripts": {
     "dev": "next dev --port 3030",
     "build": "next build",
