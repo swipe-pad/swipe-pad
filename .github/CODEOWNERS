@@ -1,6 +1,9 @@
 # Keep governance and high-risk surfaces visible without slowing every PR.
+# Security-critical files require security owner approval
 /.github/ @ottodevs
 /contracts/ @ottodevs
 /package.json @ottodevs
+/bunfig.toml @ottodevs
+/.npmrc @ottodevs
 /bun.lock @ottodevs
 /flake.lock @ottodevs
