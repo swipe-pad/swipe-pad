@@ -5,23 +5,8 @@
 .vercel
 
 !.env.example
-!.vscode
+!.envrc
 
 *.tsbuildinfo
 next-env.d.ts
 node_modules
-
-# Auto-generated output goes to .cache/
-.cache
-
-# Draft and local data
-drafts
-ops
-
-# GitHub infrastructure
-!.github
-!.github/**
-
-# Local git hooks
-!.githooks
-!.githooks/**
