@@ -65,10 +65,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             shellConfig.showHeader ? (
                                 <AppHeader
                                     donationAmountLabel={donationAmount ?? "0.01¢"}
-                                    cartCount={cart.length}
-                                    isTrendingActive={shellConfig.highlightTrending}
-                                    isLeaderboardActive={shellConfig.highlightLeaderboard}
-                                    onOpenCart={() => overlays.setShowCart(true)}
                                     onOpenDonationSetup={() => overlays.setShowDonationSetup(true)}
                                 />
                             ) : null
@@ -89,6 +85,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         showEditProfile={overlays.showEditProfile}
                         showRegistrationForm={overlays.showRegistrationForm}
                         showDonationSetup={overlays.showDonationSetup}
+                        showZeroSwipesGuardrail={overlays.showZeroSwipesGuardrail}
                         enableProjectRegistration={ENABLE_PROJECT_REGISTRATION}
                         cart={overlays.cart}
                         successCategories={overlays.categoriesFromCheckout}
@@ -108,6 +105,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         onSubmitRegistrationForm={(data) => console.log(data)}
                         onCloseDonationSetup={() => overlays.setShowDonationSetup(false)}
                         onSelectDonationSetup={overlays.handleDonationSetupSelect}
+                        onCloseZeroSwipesGuardrail={() => overlays.setShowZeroSwipesGuardrail(false)}
+                        onOpenDonationSetupFromGuardrail={() => overlays.setShowDonationSetup(true)}
                     />
                 </>
             )}
