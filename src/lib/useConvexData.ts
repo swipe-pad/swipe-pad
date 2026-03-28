@@ -39,6 +39,8 @@ export interface Project {
   likes?: number;
   comments?: number;
   boostAmount?: number;
+  boostStartsAt?: number;
+  boostExpiresAt?: number;
   userHasLiked?: boolean;
   userHasCommented?: boolean;
   isBookmarked?: boolean;

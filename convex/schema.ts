@@ -156,6 +156,11 @@ export default defineSchema({
     profileUrl: v.optional(v.string()),
     network: v.optional(v.string()),
     importedAt: v.optional(v.number()),
+
+    // === Temporal boost metadata ===
+    boostAmount: v.optional(v.number()),
+    boostStartsAt: v.optional(v.number()),
+    boostExpiresAt: v.optional(v.number()),
   })
     .index("by_chain", ["chain", "active"])
     .index("by_projectId", ["projectId"])
