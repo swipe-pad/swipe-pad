@@ -47,6 +47,7 @@ export type ServerProject = {
   verifiedLevel?: number
   featured?: boolean
   active?: boolean
+  createdAt: number
   website?: string
   twitter?: string
   github?: string
@@ -59,6 +60,8 @@ export type ServerProject = {
   likes?: number
   comments?: number
   boostAmount?: number
+  boostStartsAt?: number
+  boostExpiresAt?: number
   userHasLiked?: boolean
   userHasCommented?: boolean
   isBookmarked?: boolean
@@ -81,12 +84,16 @@ type ConvexProject = {
   verifiedLevel?: number
   featured?: boolean
   active?: boolean
+  createdAt: number
   website?: string
   twitter?: string
   github?: string
   farcaster?: string
   linkedin?: string
   discord?: string
+  boostAmount?: number
+  boostStartsAt?: number
+  boostExpiresAt?: number
 }
 
 function toProject(project: ConvexProject): ServerProject {

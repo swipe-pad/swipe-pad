@@ -63,6 +63,9 @@ export const getFeedProjectsPage = query({
         farcaster: project.farcaster,
         linkedin: project.linkedin,
         discord: project.discord,
+        boostAmount: project.boostAmount,
+        boostStartsAt: project.boostStartsAt,
+        boostExpiresAt: project.boostExpiresAt,
       })),
       isDone: page.isDone,
       continueCursor: page.continueCursor,
@@ -172,6 +175,9 @@ export const upsertProject = mutation({
     farcaster: v.optional(v.string()),
     linkedin: v.optional(v.string()),
     discord: v.optional(v.string()),
+    boostAmount: v.optional(v.number()),
+    boostStartsAt: v.optional(v.number()),
+    boostExpiresAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     requireAdmin(args.adminKey, args.callerWallet);
@@ -197,7 +203,9 @@ export const upsertProject = mutation({
         farcaster: args.farcaster,
         linkedin: args.linkedin,
         discord: args.discord,
-        updatedAt: Date.now(),
+        boostAmount: args.boostAmount,
+        boostStartsAt: args.boostStartsAt,
+        boostExpiresAt: args.boostExpiresAt,
       });
       await markDashboardStatsDirty(ctx);
       return existing._id;
@@ -258,6 +266,9 @@ export const upsertImportedProject = mutation({
     verifiedLevel: v.optional(v.number()),
     featured: v.optional(v.boolean()),
     active: v.optional(v.boolean()),
+    boostAmount: v.optional(v.number()),
+    boostStartsAt: v.optional(v.number()),
+    boostExpiresAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     requireAdmin(args.adminKey, args.callerWallet);
@@ -292,6 +303,9 @@ export const upsertImportedProject = mutation({
         verifiedLevel: args.verifiedLevel ?? existing.verifiedLevel,
         featured: args.featured ?? existing.featured,
         active: args.active ?? existing.active,
+        boostAmount: args.boostAmount ?? existing.boostAmount,
+        boostStartsAt: args.boostStartsAt ?? existing.boostStartsAt,
+        boostExpiresAt: args.boostExpiresAt ?? existing.boostExpiresAt,
         importedAt: now,
         updatedAt: now,
       });
@@ -328,6 +342,9 @@ export const upsertImportedProject = mutation({
       farcaster: args.farcaster,
       linkedin: args.linkedin,
       discord: args.discord,
+      boostAmount: args.boostAmount,
+      boostStartsAt: args.boostStartsAt,
+      boostExpiresAt: args.boostExpiresAt,
     });
     await markDashboardStatsDirty(ctx);
     return { id: inserted, created: true };
@@ -359,6 +376,9 @@ export const upsertImportedProjectDev = mutation({
     verifiedLevel: v.optional(v.number()),
     featured: v.optional(v.boolean()),
     active: v.optional(v.boolean()),
+    boostAmount: v.optional(v.number()),
+    boostStartsAt: v.optional(v.number()),
+    boostExpiresAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -391,6 +411,9 @@ export const upsertImportedProjectDev = mutation({
         verifiedLevel: args.verifiedLevel ?? existing.verifiedLevel,
         featured: args.featured ?? existing.featured,
         active: args.active ?? existing.active,
+        boostAmount: args.boostAmount ?? existing.boostAmount,
+        boostStartsAt: args.boostStartsAt ?? existing.boostStartsAt,
+        boostExpiresAt: args.boostExpiresAt ?? existing.boostExpiresAt,
         importedAt: now,
         updatedAt: now,
       });
@@ -427,6 +450,9 @@ export const upsertImportedProjectDev = mutation({
       farcaster: args.farcaster,
       linkedin: args.linkedin,
       discord: args.discord,
+      boostAmount: args.boostAmount,
+      boostStartsAt: args.boostStartsAt,
+      boostExpiresAt: args.boostExpiresAt,
     });
     await markDashboardStatsDirty(ctx);
     return { id: inserted, created: true };
