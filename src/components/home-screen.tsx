@@ -186,6 +186,7 @@ export function HomeScreen({
   const swipeIdRef = useRef(0)
   const hasHydratedCategoryRef = useRef(false)
   const deckProjectKeysRef = useRef<Set<string>>(new Set())
+  const [categoryShuffleNonce, setCategoryShuffleNonce] = useState(0)
 
   const consumeCredits = useMutation(api.waitlist.consumeCredits)
   const recordSwipe = useMutation(api.waitlist.recordSwipe)
@@ -228,7 +229,7 @@ export function HomeScreen({
 
     for (let attempt = 0; attempt < 6; attempt += 1) {
       requestCounterRef.current += 1
-      const requestSeed = `${sessionSeedRef.current}:${requestCounterRef.current}:${attempt}`
+      const requestSeed = `${sessionSeedRef.current}:${categoryShuffleNonce}:${requestCounterRef.current}:${attempt}`
       const url = new URL("/api/feed", window.location.origin)
 
       if (exclude) {
@@ -261,7 +262,7 @@ export function HomeScreen({
     }
 
     return null
-  }, [activeCategory])
+  }, [activeCategory, categoryShuffleNonce])
 
   const toSwipeItem = useCallback((project: Project): SwipeItem<Project> => {
     const absoluteIndex = swipeAbsoluteIndexRef.current
@@ -549,7 +550,7 @@ export function HomeScreen({
     return () => {
       cancelled = true
     }
-  }, [activeCategory, fetchFeedProject, mode, resetDeck, toSwipeItem])
+  }, [activeCategory, categoryShuffleNonce, fetchFeedProject, mode, resetDeck, toSwipeItem])
 
   useEffect(() => {
     const currentUrl = toPreloadUrl(currentProject)
@@ -574,6 +575,7 @@ export function HomeScreen({
   const handleCategoryChange = (category: string) => {
     if (mode === "shared-entry") return
     clearSwipeHistory()
+    setCategoryShuffleNonce((value) => value + 1)
     setSelectedCategory(category)
   }
 
