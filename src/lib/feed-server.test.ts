@@ -72,16 +72,16 @@ describe("feed shuffle weighting", () => {
   })
 
   test("groups projects by top-level category", () => {
-    const builders = makeProject({ category: "DeFi", source: "json" })
-    const climate = makeProject({ category: "ReFi", source: "json" })
-    const anotherBuilders = makeProject({ category: "Infrastructure", source: "json" })
+    const builders = makeProject({ category: "Builder", source: "talent" })
+    const eco = makeProject({ category: "Climate", source: "json" })
+    const anotherBuilders = makeProject({ category: "Open Source", source: "talent" })
 
-    const groups = groupProjectsByCategory([builders, climate, anotherBuilders])
+    const groups = groupProjectsByCategory([builders, eco, anotherBuilders])
 
     expect(groups.has("Builders")).toBe(true)
-    expect(groups.has("Climate")).toBe(true)
+    expect(groups.has("Eco Projects")).toBe(true)
     expect(groups.get("Builders")?.length).toBe(2)
-    expect(groups.get("Climate")?.length).toBe(1)
+    expect(groups.get("Eco Projects")?.length).toBe(1)
   })
 
   test("picks category uniformly with random", () => {
