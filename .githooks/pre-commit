@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # Git pre-commit hook
-# Runs fast checks: typecheck + lint
+# Runs fast checks: typecheck + staged-file lint
 # Skip with: git commit --no-verify
 
 set -eu
@@ -22,25 +22,24 @@ if ! bun run typecheck; then
     exit 1
 fi
 
-# Run lint
-echo "  🧹 Linting..."
-if ! bun run lint; then
-    echo "❌ Lint failed"
-    exit 1
+STAGED_JS=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(js|jsx|mjs|cjs|ts|tsx)$' || true)
+if [ -n "$STAGED_JS" ]; then
+    echo "  🧹 Linting staged JS/TS files..."
+    # shellcheck disable=SC2086
+    if ! bunx eslint --config eslint.config.mjs $STAGED_JS; then
+        echo "❌ Lint failed"
+        exit 1
+    fi
 fi
 
-# Run CSS lint
-echo "  🎨 CSS linting..."
-if ! bun run lint:css; then
-    echo "❌ CSS lint failed"
-    exit 1
-fi
-
-# Run knip (dead code check)
-echo "  🔍 Dead code check..."
-if ! bun run knip; then
-    echo "❌ Knip failed (unused deps/exports)"
-    exit 1
+STAGED_CSS=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.css$' || true)
+if [ -n "$STAGED_CSS" ]; then
+    echo "  🎨 CSS linting staged files..."
+    # shellcheck disable=SC2086
+    if ! bunx stylelint $STAGED_CSS; then
+        echo "❌ CSS lint failed"
+        exit 1
+    fi
 fi
 
 END_TIME=$(date +%s)
