@@ -16,6 +16,10 @@ type SessionSlice = Pick<
   | "setCreditsRemaining"
   | "creditsMax"
   | "setCreditsMax"
+  | "accessState"
+  | "setAccessState"
+  | "accessReason"
+  | "setAccessReason"
 >
 
 export const createSessionSlice: AppSliceCreator<SessionSlice> = (set) => ({
@@ -25,6 +29,8 @@ export const createSessionSlice: AppSliceCreator<SessionSlice> = (set) => ({
   betaStatus: null,
   creditsRemaining: 0,
   creditsMax: 0,
+  accessState: null,
+  accessReason: null,
   setWalletConnected: (next) =>
     set((state) => ({ walletConnected: resolveUpdater(next, state.walletConnected) })),
   setWalletAddress: (next) =>
@@ -37,4 +43,8 @@ export const createSessionSlice: AppSliceCreator<SessionSlice> = (set) => ({
     set((state) => ({ creditsRemaining: resolveUpdater(next, state.creditsRemaining) })),
   setCreditsMax: (next) =>
     set((state) => ({ creditsMax: resolveUpdater(next, state.creditsMax) })),
+  setAccessState: (next) =>
+    set((state) => ({ accessState: resolveUpdater(next, state.accessState) })),
+  setAccessReason: (next) =>
+    set((state) => ({ accessReason: resolveUpdater(next, state.accessReason) })),
 })

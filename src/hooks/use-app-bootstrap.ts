@@ -9,6 +9,7 @@ import { useShallow } from "zustand/react/shallow"
 import { useApp } from "@/context/AppContext"
 import { getDevGuestProvisioningEnabled } from "@/lib/dev-guest-provisioning"
 import { getMiniAppContext, isInFarcasterMiniApp } from "@/lib/farcaster/client"
+import { useGatedAccess } from "@/features/gated-access"
 import { api } from "../../convex/_generated/api"
 
 const GUEST_WALLET_STORAGE_KEY = "swipepad:guest-wallet"
@@ -93,6 +94,9 @@ export function useAppBootstrap() {
     setWalletConnected(Boolean(nextAddress))
     setWalletAddress(nextAddress)
   }, [allowGuestProvisioning, thirdwebAccount?.address, wagmiAddress, setWalletAddress, setWalletConnected])
+
+  // Gated access integration (additive - only activates when feature flag is enabled)
+  useGatedAccess()
 
   useEffect(() => {
     const hasConnectedWallet = Boolean(thirdwebAccount?.address ?? wagmiAddress)
