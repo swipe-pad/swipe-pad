@@ -34,6 +34,19 @@ if [ "$STAGED_LINES" -gt "$MAX_LINES" ]; then
     exit 1
 fi
 
+# ── Dependency version guard ──
+# Enforce pinned versions in package.json (no ^ or ~ ranges)
+# Dependencies must be managed via bun commands which respect bunfig.toml
+if git diff --cached --name-only | grep -q "package.json"; then
+    echo "  🔒 Checking dependency versions..."
+    if git diff --cached -- package.json | grep -E '^\+.*".*":\s*"[\^~]' > /dev/null 2>&1; then
+        echo "❌ Found unpinned dependency versions (^ or ~) in package.json"
+        echo "   Use 'bun add <pkg>@<version>' instead of editing manually."
+        echo "   Bun will respect exact=true from bunfig.toml."
+        exit 1
+    fi
+fi
+
 # Run typecheck
 echo "  📝 Type checking..."
 if ! bun run typecheck; then
