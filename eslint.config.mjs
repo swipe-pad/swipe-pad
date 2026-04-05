@@ -56,6 +56,8 @@ const eslintConfig = defineConfig([
     "convex/**",
     "v0-readonly/**",
     "ops/**",
+    // Build output folders:
+    ".vercel/**",
   ]),
 ]);
 
