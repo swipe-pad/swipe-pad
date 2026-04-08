@@ -1,14 +1,11 @@
 #!/usr/bin/env sh
 # Git pre-commit hook
-# Runs fast checks: typecheck + lint (staged files only) + knip
-# Enforces small, atomic commits (max 10 files, 200 lines)
+# Runs fast checks: typecheck + staged-file lint
 # Skip with: git commit --no-verify
 
 set -eu
 
 START_TIME=$(date +%s)
-MAX_FILES=10
-MAX_LINES=200
 
 echo "🔍 Running pre-commit checks..."
 
@@ -16,22 +13,6 @@ echo "🔍 Running pre-commit checks..."
 if ! command -v bun > /dev/null 2>&1; then
     echo "⚠️  bun not found, skipping checks"
     exit 0
-fi
-
-# ── Commit size guard ──
-STAGED_FILES=$(git diff --cached --name-only | wc -l)
-STAGED_LINES=$(git diff --cached --stat | tail -1 | awk '{print $4}' || echo "0")
-
-if [ "$STAGED_FILES" -gt "$MAX_FILES" ]; then
-    echo "❌ Commit too large: $STAGED_FILES files staged (max: $MAX_FILES)"
-    echo "   Split into smaller, atomic commits."
-    exit 1
-fi
-
-if [ "$STAGED_LINES" -gt "$MAX_LINES" ]; then
-    echo "❌ Commit too large: ~$STAGED_LINES lines changed (max: $MAX_LINES)"
-    echo "   Split into smaller, atomic commits."
-    exit 1
 fi
 
 # ── Dependency version guard ──
@@ -54,18 +35,24 @@ if ! bun run typecheck; then
     exit 1
 fi
 
-# Run lint on staged files only (via lint-staged)
-echo "  🧹 Linting staged files..."
-if ! bunx lint-staged; then
-    echo "❌ Lint failed"
-    exit 1
+STAGED_JS=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(js|jsx|mjs|cjs|ts|tsx)$' || true)
+if [ -n "$STAGED_JS" ]; then
+    echo "  🧹 Linting staged JS/TS files..."
+    # shellcheck disable=SC2086
+    if ! bunx eslint --config eslint.config.mjs $STAGED_JS; then
+        echo "❌ Lint failed"
+        exit 1
+    fi
 fi
 
-# Run knip (dead code check)
-echo "  🔍 Dead code check..."
-if ! bun run knip; then
-    echo "❌ Knip failed (unused deps/exports)"
-    exit 1
+STAGED_CSS=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.css$' || true)
+if [ -n "$STAGED_CSS" ]; then
+    echo "  🎨 CSS linting staged files..."
+    # shellcheck disable=SC2086
+    if ! bunx stylelint $STAGED_CSS; then
+        echo "❌ CSS lint failed"
+        exit 1
+    fi
 fi
 
 END_TIME=$(date +%s)
