@@ -1,10 +1,11 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useShallow } from "zustand/react/shallow"
 
 import { useApp } from "@/context/AppContext"
 import { useProjects } from "@/lib/useConvexData"
+import { TOP_UP_DIALOG_EVENT, type TopUpDialogDetail } from "@/lib/top-up-dialog"
 import type { ConfirmSwipes, DonationAmount, StableCoin } from "@/components/amount-selector"
 
 type CartCategoryItem = {
@@ -25,6 +26,9 @@ export function useAppOverlays() {
     setDonationCurrency,
     setConfirmSwipes,
     setSwipeCount,
+    walletAddress,
+    creditsRemaining,
+    creditsMax,
   } = useApp(useShallow((state) => ({
     cart: state.cart,
     setCart: state.setCart,
@@ -35,6 +39,9 @@ export function useAppOverlays() {
     setDonationCurrency: state.setDonationCurrency,
     setConfirmSwipes: state.setConfirmSwipes,
     setSwipeCount: state.setSwipeCount,
+    walletAddress: state.walletAddress,
+    creditsRemaining: state.creditsRemaining,
+    creditsMax: state.creditsMax,
   })))
 
   const [showCart, setShowCart] = useState(false)
@@ -45,8 +52,23 @@ export function useAppOverlays() {
   const [showEditProfile, setShowEditProfile] = useState(false)
   const [showRegistrationForm, setShowRegistrationForm] = useState(false)
   const [showDonationSetup, setShowDonationSetup] = useState(false)
+  const [showTopUp, setShowTopUp] = useState(false)
+  const [topUpReason, setTopUpReason] = useState<string | undefined>()
+  const [topUpDefaultPlanId, setTopUpDefaultPlanId] = useState<string | undefined>()
   const [showZeroSwipesGuardrail, setShowZeroSwipesGuardrail] = useState(false)
   const [checkoutSnapshot, setCheckoutSnapshot] = useState<CartCategoryItem[]>([])
+
+  useEffect(() => {
+    const handleOpenTopUp = (event: Event) => {
+      const detail = (event as CustomEvent<TopUpDialogDetail>).detail
+      setTopUpReason(detail?.reason)
+      setTopUpDefaultPlanId(detail?.defaultPlanId)
+      setShowTopUp(true)
+    }
+
+    window.addEventListener(TOP_UP_DIALOG_EVENT, handleOpenTopUp)
+    return () => window.removeEventListener(TOP_UP_DIALOG_EVENT, handleOpenTopUp)
+  }, [])
 
   const categoriesFromCheckout = useMemo(() => {
     return [
@@ -90,10 +112,17 @@ export function useAppOverlays() {
     setSwipeCount(0)
   }
 
+  const handleTopUpSuccess = () => {
+    setShowTopUp(false)
+  }
+
   return {
     projects,
     userStats,
     userProfile,
+    walletAddress,
+    creditsRemaining,
+    creditsMax,
     cart,
     showCart,
     setShowCart,
@@ -110,6 +139,11 @@ export function useAppOverlays() {
     setShowRegistrationForm,
     showDonationSetup,
     setShowDonationSetup,
+    showTopUp,
+    setShowTopUp,
+    topUpReason,
+    setTopUpReason,
+    topUpDefaultPlanId,
     showZeroSwipesGuardrail,
     setShowZeroSwipesGuardrail,
     categoriesFromCheckout,
@@ -117,5 +151,6 @@ export function useAppOverlays() {
     handleCheckout,
     handleSaveProfile,
     handleDonationSetupSelect,
+    handleTopUpSuccess,
   }
 }
