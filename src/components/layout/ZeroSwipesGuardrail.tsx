@@ -30,7 +30,7 @@ export function ZeroSwipesGuardrail({ isOpen, onClose, onTopUp }: ZeroSwipesGuar
 
         <div className="space-y-6 px-4 pt-6 pb-8">
           <p className="text-sm text-white">
-            You don&apos;t have swipes available right now. Add funds to keep swiping and donating.
+            You don&apos;t have swipes available right now. Recharge to keep discovering projects and directing donations.
           </p>
 
           <div className="flex w-full flex-col gap-2 sm:flex-row">
@@ -38,7 +38,7 @@ export function ZeroSwipesGuardrail({ isOpen, onClose, onTopUp }: ZeroSwipesGuar
               onClick={onTopUp}
               className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              Add Funds
+              Recharge swipes
             </button>
             <button
               onClick={onClose}
