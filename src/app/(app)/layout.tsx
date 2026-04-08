@@ -20,12 +20,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         hasLoadedOnboardingState,
         cart,
         donationAmount,
+        walletAddress,
+        creditsRemaining,
+        creditsMax,
     } = useApp(useShallow((state) => ({
         hasCompletedOnboarding: state.hasCompletedOnboarding,
         setHasCompletedOnboarding: state.setHasCompletedOnboarding,
         hasLoadedOnboardingState: state.hasLoadedOnboardingState,
         cart: state.cart,
         donationAmount: state.donationAmount,
+        walletAddress: state.walletAddress,
+        creditsRemaining: state.creditsRemaining,
+        creditsMax: state.creditsMax,
     })))
     const shellConfig = useAppShellConfig(pathname)
     const overlays = useAppOverlays()
@@ -85,6 +91,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         showEditProfile={overlays.showEditProfile}
                         showRegistrationForm={overlays.showRegistrationForm}
                         showDonationSetup={overlays.showDonationSetup}
+                        showTopUp={overlays.showTopUp}
+                        topUpReason={overlays.topUpReason}
+                        topUpDefaultPlanId={overlays.topUpDefaultPlanId}
                         showZeroSwipesGuardrail={overlays.showZeroSwipesGuardrail}
                         enableProjectRegistration={ENABLE_PROJECT_REGISTRATION}
                         cart={overlays.cart}
@@ -94,6 +103,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         availableProjects={overlays.projects.length}
                         recentDonations={overlays.recentDonations}
                         userProfile={overlays.userProfile}
+                        walletAddress={walletAddress}
+                        creditsRemaining={creditsRemaining}
+                        creditsMax={creditsMax}
                         onCloseCart={() => overlays.setShowCart(false)}
                         onCheckout={overlays.handleCheckout}
                         onCloseSuccess={() => overlays.setShowSuccess(false)}
@@ -105,8 +117,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         onSubmitRegistrationForm={(data) => console.log(data)}
                         onCloseDonationSetup={() => overlays.setShowDonationSetup(false)}
                         onSelectDonationSetup={overlays.handleDonationSetupSelect}
+                        onCloseTopUp={() => overlays.setShowTopUp(false)}
+                        onTopUpSuccess={overlays.handleTopUpSuccess}
                         onCloseZeroSwipesGuardrail={() => overlays.setShowZeroSwipesGuardrail(false)}
-                        onOpenDonationSetupFromGuardrail={() => overlays.setShowDonationSetup(true)}
+                        onOpenTopUpFromGuardrail={() => {
+                            overlays.setTopUpReason("zero-swipes")
+                            overlays.setShowTopUp(true)
+                        }}
                     />
                 </>
             )}
