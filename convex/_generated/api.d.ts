@@ -8,8 +8,11 @@
  * @module
  */
 
+import type * as access from "../access.js";
+import type * as accesslib from "../accesslib.js";
 import type * as admin from "../admin.js";
 import type * as donations from "../donations.js";
+import type * as inviteCodes from "../inviteCodes.js";
 import type * as projects from "../projects.js";
 import type * as routeId from "../routeId.js";
 import type * as syncAll from "../syncAll.js";
@@ -26,8 +29,11 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  access: typeof access;
+  accesslib: typeof accesslib;
   admin: typeof admin;
   donations: typeof donations;
+  inviteCodes: typeof inviteCodes;
   projects: typeof projects;
   routeId: typeof routeId;
   syncAll: typeof syncAll;

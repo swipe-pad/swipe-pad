@@ -1,0 +1,5 @@
+export { AccessGate } from "./components/AccessGate"
+export { InviteCodeDialog } from "./components/InviteCodeDialog"
+export { AccessDeniedState } from "./components/AccessDeniedState"
+export { useGatedAccess } from "./hooks/use-gated-access"
+export type { AccessState, AccessResult } from "../../../convex/access"

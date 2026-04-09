@@ -11,6 +11,7 @@ import { AppOverlays } from "@/components/layout/AppOverlays"
 import { useAppBootstrap } from "@/hooks/use-app-bootstrap"
 import { useAppOverlays } from "@/hooks/use-app-overlays"
 import { useAppShellConfig } from "@/hooks/use-app-shell-config"
+import { AccessGate } from "@/features/gated-access"
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
@@ -18,7 +19,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         hasCompletedOnboarding,
         setHasCompletedOnboarding,
         hasLoadedOnboardingState,
-        cart,
         donationAmount,
         walletAddress,
         creditsRemaining,
@@ -27,7 +27,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         hasCompletedOnboarding: state.hasCompletedOnboarding,
         setHasCompletedOnboarding: state.setHasCompletedOnboarding,
         hasLoadedOnboardingState: state.hasLoadedOnboardingState,
-        cart: state.cart,
         donationAmount: state.donationAmount,
         walletAddress: state.walletAddress,
         creditsRemaining: state.creditsRemaining,
@@ -66,6 +65,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden text-white">
             {renderPageContainer(
                 <>
+                    <AccessGate />
                     <AppShell
                         header={
                             shellConfig.showHeader ? (
