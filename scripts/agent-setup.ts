@@ -31,7 +31,6 @@ interface ToolConfig {
     commands?: (content: string, filename: string) => string
     rules?: (content: string, filename: string) => string
     skills?: (content: string, filename: string) => string
-    agentsMd?: (content: string) => string
   }
   extraFiles?: Array<{ path: string; content: string }>
 }
@@ -53,7 +52,6 @@ const opencodeTransforms: ToolConfig['transforms'] = {
   },
   skills: (content) => content, // Skills already have frontmatter
   rules: (content) => content, // Rules are just markdown in opencode
-  agentsMd: (content) => content,
 }
 
 /**
@@ -66,7 +64,6 @@ const cursorTransforms: ToolConfig['transforms'] = {
     const name = basename(filename, '.md')
     return `---\ndescription: ${name} rule\nglobs: *\n---\n${content}`
   },
-  agentsMd: (content) => content,
 }
 
 /**
@@ -76,7 +73,6 @@ const claudeTransforms: ToolConfig['transforms'] = {
   commands: undefined,
   skills: (content) => content, // Skills are compatible
   rules: (content) => content,
-  agentsMd: (content) => content,
 }
 
 /**
@@ -86,7 +82,6 @@ const codexTransforms: ToolConfig['transforms'] = {
   commands: undefined,
   skills: undefined,
   rules: undefined,
-  agentsMd: (content) => content,
 }
 
 /**
@@ -96,7 +91,6 @@ const geminiTransforms: ToolConfig['transforms'] = {
   commands: undefined,
   skills: undefined,
   rules: undefined,
-  agentsMd: (content) => content,
 }
 
 const toolConfigs: Record<string, ToolConfig> = {
@@ -192,31 +186,6 @@ function generateTool(tool: string): void {
     console.log(`  Created: ${config.targetDir}/`)
   }
 
-  // Copy AGENTS.md
-  const agentsMdPath = join(SOURCE_DIR, 'AGENTS.md')
-  if (existsSync(agentsMdPath)) {
-    const content = readFileSync(agentsMdPath, 'utf-8')
-    const transformed = config.transforms.agentsMd
-      ? config.transforms.agentsMd(content)
-      : content
-
-    if (tool === 'codex') {
-      writeFileSync('AGENTS.md', transformed)
-      console.log(`  Created: AGENTS.md (root)`)
-    } else if (tool === 'gemini') {
-      // Gemini uses settings.json pointing to AGENTS.md
-      // AGENTS.md should already exist at root
-      if (!existsSync('AGENTS.md')) {
-        writeFileSync('AGENTS.md', transformed)
-        console.log(`  Created: AGENTS.md (root)`)
-      }
-    } else {
-      const targetPath = join(config.targetDir, 'AGENTS.md')
-      writeFileSync(targetPath, transformed)
-      console.log(`  Created: ${targetPath}`)
-    }
-  }
-
   // Copy commands
   if (config.transforms.commands) {
     copyWithTransforms('commands', config.targetDir, config.transforms.commands)
@@ -281,10 +250,10 @@ Usage:
   bun run scripts/agent-setup.ts clean
 
 Tools:
-  opencode    Generate .opencode/ (commands, skills, rules, AGENTS.md)
+  opencode    Generate .opencode/ (commands, skills, rules)
   cursor      Generate .cursor/ (rules with .mdc frontmatter)
   claude      Generate .claude/ (skills and rules)
-  codex       Copy AGENTS.md to root
+  codex       No-op (AGENTS.md already at root)
   gemini      Generate .gemini/ (settings.json)
   all         Generate all configurations
   clean       Remove all generated artifacts
