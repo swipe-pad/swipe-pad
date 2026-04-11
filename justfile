@@ -83,3 +83,13 @@ snapshot-caddy n="5":
 
 snapshot-remote host="ghost3" n="5":
   ssh {{host}} 'echo "target,run,status,dns,connect,ttfb,total"; for i in $(seq 1 {{n}}); do curl -k -s -o /dev/null -w "remote-home,$i,%{http_code},%{time_namelookup},%{time_connect},%{time_starttransfer},%{time_total}\n" "https://swipe.lady/"; done; for i in $(seq 1 {{n}}); do curl -k -s -o /dev/null -w "remote-feed,$i,%{http_code},%{time_namelookup},%{time_connect},%{time_starttransfer},%{time_total}\n" "https://swipe.lady/api/feed?seed=remote-$i"; done; for i in $(seq 1 {{n}}); do curl --max-time 20 -k -s -o /dev/null -w "remote-img,$i,%{http_code},%{time_namelookup},%{time_connect},%{time_starttransfer},%{time_total}\n" "https://swipe.lady/api/img?u=https%3A%2F%2Fimagedelivery.net%2FBXluQx4ige9GuW0Ia56BHw%2F64c851c0-2036-4629-ead7-ae60bfc62500%2Foriginal&w=1080&q=75"; done'
+
+# Agent setup and management
+agent-setup tool="opencode":
+  bun run scripts/agent-setup.ts {{tool}}
+
+agent-clean:
+  bun run scripts/agent-setup.ts clean
+
+agent-list:
+  bun run scripts/agent-setup.ts --help
