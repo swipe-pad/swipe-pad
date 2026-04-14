@@ -6,8 +6,14 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import nixpkgs { inherit system; };
       in
@@ -18,6 +24,7 @@
             sops
             age
             gitleaks
+            nixd
           ];
 
           shellHook = ''
@@ -26,10 +33,12 @@
             echo "│  🚀 Swipe-pad dev env loaded                    │"
             echo "├─────────────────────────────────────────────────┤"
             printf "│  🍞 Bun: %-38s │\n" "$(bun --version)"
+            printf "│  🔧 nixd: %-36s │\n" "$(nixd --version 2>/dev/null || echo 'not found')"
             echo "│  🛠️  Use 'bun dev' to start                      │"
             echo "└─────────────────────────────────────────────────┘"
             echo ""
           '';
         };
-      });
+      }
+    );
 }
