@@ -1,18 +1,105 @@
+# ============================================================================
+# SwipePad Dependabot Configuration
+# ============================================================================
+# Hardening aligned with security policy in `bunfig.toml`:
+#   - minimumReleaseAge: 604800 (7 days)
+#   - exact versions only, frozen lockfile
+#
+# Dependabot `cooldown` ensures PRs are only opened once a package
+# version is at least N days old, matching the bun policy and
+# protecting against typosquatting / rushed malicious releases.
+#
+# See: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#cooldown
+# ============================================================================
 version: 2
+
+# Global defaults: applied to all ecosystems unless overridden
+enable-beta-ecosystems: false
+
 updates:
-  - package-ecosystem: npm
-    directory: /
+  # --------------------------------------------------------------------------
+  # npm / bun: production + dev dependencies
+  # --------------------------------------------------------------------------
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
-      interval: weekly
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Madrid"
+    # Cap open PRs so we don't drown in noise
     open-pull-requests-limit: 5
+    # Allow up to 10 minor/patch updates per PR
+    versioning-strategy: increase
+    # Cooldown: respect minimumReleaseAge from bunfig.toml
+    cooldown:
+      default-days: 7
+      # Semver majors deserve a longer window
+      semver-major-days: 14
+      # Exclude well-known stable projects from cooldown to keep them flowing
+      exclude:
+        - "typescript"
+        - "@types/node"
     groups:
       production-dependencies:
-        dependency-type: production
+        dependency-type: "production"
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@swipepad/*"
       development-dependencies:
-        dependency-type: development
+        dependency-type: "development"
+        patterns:
+          - "*"
+    # Conventional Commits + scope matching the rest of the repo
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    # Tag PRs so the new auto-labeling workflow picks them up
+    labels:
+      - "deps"
+      - "automated"
+    assignees:
+      - "ottodevs"
+    # Don't open PRs that would touch sensitive paths without review
+    # (CODEOWNERS already gates main, this is belt-and-suspenders)
+    # ignore:
+    #   - dependency-name: "eslint"
+    #     versions: ["10.x"]
+    #     # Reason: ESLint 10 is a major rewrite, wait for v10.1+
 
-  - package-ecosystem: github-actions
-    directory: /
+  # --------------------------------------------------------------------------
+  # GitHub Actions
+  # --------------------------------------------------------------------------
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Madrid"
+    open-pull-requests-limit: 3
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "ci"
+      - "automated"
+    assignees:
+      - "ottodevs"
+    groups:
+      actions-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      actions-major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
