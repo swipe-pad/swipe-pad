@@ -1,5 +1,32 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Local GitHub Actions
+
+Run workflows locally with `act` over rootless Podman. Tools are optional and come from the flake.
+
+```bash
+nix develop .#actions
+bun run actions:lint
+bun run actions:checks
+```
+
+Run any workflow/job directly:
+
+```bash
+nix run .#gha-local -- -W .github/workflows/ci.yml -j build
+nix run .#gha-local -- -W .github/workflows/ci.yml -j contracts
+```
+
+First run pulls the local runner image. Generated logs and artifacts stay under `.cache/actions/`.
+
+For secret-backed workflows, put local secrets in `.cache/actions/secrets` and pass them explicitly:
+
+```bash
+nix run .#gha-local -- -W .github/workflows/vercel-prebuilt.yml --secret-file .cache/actions/secrets
+```
+
+Never commit `.cache/` or local secrets.
+
 ## Getting Started
 
 First, run the development server:
