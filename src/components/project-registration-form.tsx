@@ -9,14 +9,32 @@ import { SafeExternalLink } from "@/components/ui/safe-external-link"
 interface ProjectRegistrationFormProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (formData: any) => void
+  onSubmit: (formData: ProjectFormData) => void
+}
+
+export interface ProjectFormData {
+  projectName: string
+  representativeName: string
+  projectType: "project" | "independent"
+  twitterProject: string
+  description: string
+  teamTwitterAccounts: string
+  representativeContact: string
+  socialLinks: string[]
+  community: string
+  category: string
+  website: string
+  walletType: "wallet" | "ens" | "multisig"
+  walletAddress: string
+  previousWork: string
+  discord: string
 }
 
 export function ProjectRegistrationForm({ isOpen, onClose, onSubmit }: ProjectRegistrationFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProjectFormData>({
     projectName: "",
     representativeName: "",
-    projectType: "project", // "project" or "independent"
+    projectType: "project",
     twitterProject: "",
     description: "",
     teamTwitterAccounts: "",
@@ -25,7 +43,7 @@ export function ProjectRegistrationForm({ isOpen, onClose, onSubmit }: ProjectRe
     community: "",
     category: "",
     website: "",
-    walletType: "wallet", // "wallet", "ens", or "multisig"
+    walletType: "wallet",
     walletAddress: "",
     previousWork: "",
     discord: "",
