@@ -52,6 +52,16 @@ export function useSwipeAnimation(cardIndex: number = 0): SwipeAnimationResult {
     showSuperLikeEmoji: false,
   });
 
+  const resetAnimationState = () => {
+    setAnimationState({
+      showRightEmoji: false,
+      showLeftEmoji: false,
+      showUpEmoji: false,
+      showDownEmoji: false,
+      showSuperLikeEmoji: false,
+    });
+  };
+
   useEffect(() => {
     if (Object.values(animationState).some(Boolean)) {
       const timer = setTimeout(() => {
@@ -84,16 +94,6 @@ export function useSwipeAnimation(cardIndex: number = 0): SwipeAnimationResult {
       showUpEmoji: direction === "up",
       showDownEmoji: direction === "down",
     }));
-  };
-
-  const resetAnimationState = () => {
-    setAnimationState({
-      showRightEmoji: false,
-      showLeftEmoji: false,
-      showUpEmoji: false,
-      showDownEmoji: false,
-      showSuperLikeEmoji: false,
-    });
   };
 
   return {
