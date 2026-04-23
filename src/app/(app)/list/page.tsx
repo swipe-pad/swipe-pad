@@ -3,7 +3,7 @@
 import { useApp } from "@/context/AppContext"
 import { ToggleMenu } from "@/components/toggle-menu"
 import { CategorySection } from "@/components/category-section"
-import { useProjects, useCategories } from "@/lib/useConvexData"
+import { useProjects, useCategories, type Project } from "@/lib/useConvexData"
 import { useRouter } from "next/navigation"
 import { useMutation } from "convex/react"
 import { useShallow } from "zustand/react/shallow"
@@ -27,16 +27,16 @@ export default function ListPage() {
     const consumeCredits = useMutation(api.waitlist.consumeCredits)
 
     const projectsByCategory = categories.reduce(
-        (acc: any, category: string) => {
+        (acc: Record<string, Project[]>, category: string) => {
             const categoryProjects = projects.filter((project) => project.category === category)
             if (categoryProjects.length > 0) acc[category] = categoryProjects
             return acc
-        }, {} as Record<string, typeof projects>
+        }, {} as Record<string, Project[]>
     )
 
     const canDonate = (betaStatus === "active" || betaStatus === "guest") && creditsRemaining > 0
 
-    const handleDonate = async (project: any, amount = 5) => {
+    const handleDonate = async (project: Project, amount = 5) => {
         if (!canDonate || !betaUserId) return
         try {
             const result = await consumeCredits({
@@ -50,7 +50,7 @@ export default function ListPage() {
             return
         }
         setCart([...cart, { project, amount, currency: "cUSD" }])
-        setUserStats((prev: any) => ({
+        setUserStats((prev) => ({
             ...prev,
             totalDonations: prev.totalDonations + 1,
             lastDonation: new Date(),
@@ -79,7 +79,7 @@ export default function ListPage() {
                     <CategorySection
                         key={category}
                         category={category}
-                        projects={categoryProjects as any}
+                        projects={categoryProjects}
                         onDonate={handleDonate}
                     />
                 ))}

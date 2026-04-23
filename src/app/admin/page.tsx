@@ -59,7 +59,7 @@ export default function AdminDashboardPage() {
   const loadDashboard = useCallback(async () => {
     setIsLoading(true)
     try {
-      const result = await fetchConvexQuery<{}, DashboardData>(
+      const result = await fetchConvexQuery<object, DashboardData>(
         "waitlist:getAdminDashboard",
         {},
         { cacheTtlMs: 120_000 }
