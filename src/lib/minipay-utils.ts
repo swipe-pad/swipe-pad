@@ -8,13 +8,7 @@ export function isFarcaster(): boolean {
   return getHostEnvironmentSync() === "farcaster-miniapp"
 }
 
-export function getMiniPayProvider() {
+export function getMiniPayProvider(): unknown {
   if (typeof window === "undefined") return null
-  return isMiniPay() ? window.ethereum : null
-}
-
-declare global {
-  interface Window {
-    ethereum?: any
-  }
+  return isMiniPay() ? (window as unknown as { ethereum?: unknown }).ethereum : null
 }
