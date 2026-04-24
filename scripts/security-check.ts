@@ -20,6 +20,21 @@ interface CheckResult {
   remediation?: string;
 }
 
+interface BunfigInstall {
+  frozenLockfile?: unknown;
+  exact?: unknown;
+  saveTextLockfile?: unknown;
+  linker?: unknown;
+  auto?: unknown;
+  minimumReleaseAge?: unknown;
+}
+
+interface BunfigConfig {
+  telemetry?: unknown;
+  env?: unknown;
+  install?: BunfigInstall;
+}
+
 const ROOT = process.cwd();
 const STRICT = process.argv.includes("--strict");
 
@@ -27,22 +42,22 @@ function log(color: string, icon: string, message: string) {
   console.log(`${color}${icon} ${message}\x1b[0m`);
 }
 
-function parseToml(content: string): Record<string, any> {
-  const result: Record<string, any> = {};
+function parseToml(content: string): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
   const lines = content.split("\n");
-  let currentSection = result;
-  
+  let currentSection: Record<string, unknown> = result;
+
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith("#")) continue;
-    
+
     if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
       const section = trimmed.slice(1, -1);
       const parts = section.split(".");
-      let target = result;
+      let target: Record<string, unknown> = result;
       for (const part of parts) {
-        if (!target[part]) target[part] = {};
-        target = target[part];
+        if (!target[part]) target[part] = {} as Record<string, unknown>;
+        target = target[part] as Record<string, unknown>;
       }
       currentSection = target;
       continue;
@@ -84,7 +99,7 @@ function checkBunfig(): CheckResult[] {
   }
   
   const content = readFileSync(bunfigPath, "utf-8");
-  const config = parseToml(content);
+  const config = parseToml(content) as BunfigConfig;
   
   // Check telemetry disabled
   results.push({

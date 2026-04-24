@@ -26,14 +26,7 @@ export function FeedbackForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  // This will work once Convex is initialized
-  // For now, we'll handle gracefully if it's not available
-  let submitFeedback: any = null
-  try {
-    submitFeedback = useMutation(api.waitlist.submitFeedback)
-  } catch {
-    // Convex not initialized yet
-  }
+  const submitFeedback = useMutation(api.waitlist.submitFeedback)
 
   const handleSubmit = async () => {
     if (rating === 0 || !text.trim()) return
@@ -41,7 +34,7 @@ export function FeedbackForm({
     setIsSubmitting(true)
 
     try {
-      if (submitFeedback && userId) {
+      if (userId) {
         await submitFeedback({
           userId,
           rating,
@@ -49,7 +42,6 @@ export function FeedbackForm({
           context,
         })
       } else {
-        // Dev mode - log to console
         console.log('[DEV] Feedback submitted:', { rating, text, context })
       }
 

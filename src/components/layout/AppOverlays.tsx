@@ -4,6 +4,8 @@ import dynamic from "next/dynamic"
 import ZeroSwipesGuardrail from "@/components/layout/ZeroSwipesGuardrail"
 
 import type { ConfirmSwipes, DonationAmount, StableCoin } from "@/components/amount-selector"
+import type { EditProfileFormData } from "@/components/edit-profile"
+import type { ProjectFormData } from "@/components/project-registration-form"
 
 const Cart = dynamic(() => import("@/components/cart").then((mod) => mod.Cart))
 const SuccessScreen = dynamic(() => import("@/components/success-screen").then((mod) => mod.SuccessScreen))
@@ -49,9 +51,9 @@ interface AppOverlaysProps {
   onCloseBadgeNotification: () => void
   onCloseProfileQuickView: () => void
   onCloseEditProfile: () => void
-  onSaveProfile: (data: Record<string, unknown>) => void
+  onSaveProfile: (data: EditProfileFormData) => void
   onCloseRegistrationForm: () => void
-  onSubmitRegistrationForm: (data: Record<string, unknown>) => void
+  onSubmitRegistrationForm: (data: ProjectFormData) => void
   onCloseDonationSetup: () => void
   onSelectDonationSetup: (amount: DonationAmount, currency: StableCoin, swipes: ConfirmSwipes) => void
   onCloseTopUp: () => void
