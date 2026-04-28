@@ -95,7 +95,7 @@ function writeProjectsCache(rows: ConvexProjectShape[]) {
 
 async function fetchProjectCatalogSnapshot(cacheTtlMs: number): Promise<ConvexProjectShape[]> {
   try {
-    return await fetchConvexQuery<{}, ConvexProjectShape[]>(
+    return await fetchConvexQuery<object, ConvexProjectShape[]>(
       "projects:getAllProjects",
       {},
       {
@@ -107,7 +107,7 @@ async function fetchProjectCatalogSnapshot(cacheTtlMs: number): Promise<ConvexPr
     if (!isMissingFeedPageFunctionError(error)) throw error;
 
     console.warn("[projects] fallback to projects:getAllProjects because getFeedProjectsPage is missing");
-    const allProjects = await fetchConvexQuery<{}, ConvexProjectShape[]>(
+    const allProjects = await fetchConvexQuery<object, ConvexProjectShape[]>(
       "projects:getAllProjects",
       {},
       {

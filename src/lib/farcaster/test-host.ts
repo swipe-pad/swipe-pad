@@ -119,7 +119,7 @@ export function installFarcasterTestHost(): FarcasterTestHostState | null {
   context.client.added = getInitialAddedState()
   const provider = createMockEthereumProvider()
 
-  window.ethereum = provider
+  ;(window as unknown as { ethereum: typeof provider }).ethereum = provider
   window.__SWIPEPAD_FARCASTER_TEST_HOST__ = {
     enabled: true,
     context,
