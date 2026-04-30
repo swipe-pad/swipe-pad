@@ -189,7 +189,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   }, [effectiveProjectsCacheTtlMs, shouldLoadProjects]);
 
   useEffect(() => {
-    loadProjects();
+    queueMicrotask(() => loadProjects());
   }, [loadProjects]);
 
   const value = useMemo(
