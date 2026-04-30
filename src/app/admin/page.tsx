@@ -96,7 +96,7 @@ export default function AdminDashboardPage() {
   }, [])
 
   useEffect(() => {
-    loadDashboard()
+    queueMicrotask(() => loadDashboard())
   }, [loadDashboard])
 
   if (!data) {

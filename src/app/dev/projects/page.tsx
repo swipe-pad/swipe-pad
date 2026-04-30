@@ -77,7 +77,7 @@ export default function DevProjectsPage() {
   }, [search])
 
   useEffect(() => {
-    loadProjects(false)
+    queueMicrotask(() => loadProjects(false))
   }, [loadProjects])
 
   useEffect(() => {
