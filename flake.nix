@@ -80,6 +80,7 @@
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             bun
+            gh
             sops
             age
             gitleaks
@@ -104,6 +105,7 @@
             act
             actionlint
             bun
+            gh
             podman
           ];
 

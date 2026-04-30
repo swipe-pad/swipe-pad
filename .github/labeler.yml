@@ -1,0 +1,81 @@
+# Labeler configuration
+# Maps file patterns to labels
+# See: https://github.com/actions/labeler
+
+area:ci:
+  - changed-files:
+      - any-glob-to-any-file: '.github/**/*'
+      - any-glob-to-any-file: '*.yml'
+      - any-glob-to-any-file: '*.yaml'
+
+area:deps:
+  - changed-files:
+      - any-glob-to-any-file: 'package.json'
+      - any-glob-to-any-file: 'bun.lock'
+      - any-glob-to-any-file: '.npmrc'
+      - any-glob-to-any-file: 'bunfig.toml'
+
+area:contracts:
+  - changed-files:
+      - any-glob-to-any-file: 'contracts/**/*'
+
+area:web3:
+  - changed-files:
+      - any-glob-to-any-file: 'src/lib/farcaster/**/*'
+      - any-glob-to-any-file: 'src/lib/minipay*.ts'
+      - any-glob-to-any-file: 'src/types/contracts.ts'
+      - any-glob-to-any-file: 'wagmi*.ts'
+
+area:ui:
+  - changed-files:
+      - any-glob-to-any-file: 'src/components/**/*'
+      - any-glob-to-any-file: 'src/app/**/*.tsx'
+      - any-glob-to-any-file: 'src/app/**/*.css'
+
+area:docs:
+  - changed-files:
+      - any-glob-to-any-file: '**/*.md'
+      - any-glob-to-any-file: 'docs/**/*'
+
+area:security:
+  - changed-files:
+      - any-glob-to-any-file: '.sops.yaml'
+      - any-glob-to-any-file: 'secrets/**/*'
+      - any-glob-to-any-file: '.githooks/**/*'
+
+area:release:
+  - changed-files:
+      - any-glob-to-any-file: 'CHANGELOG.md'
+      - any-glob-to-any-file: 'CHANGELOG-unreleased.md'
+      - any-glob-to-any-file: '.release-please-config.json'
+
+risk:low:
+  - changed-files:
+      - all-globs-to-all-files:
+          - '**/*.md'
+          - '**/*.css'
+          - 'src/components/ui/**/*'
+
+risk:medium:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/components/**/*.tsx'
+          - 'src/app/**/*.tsx'
+
+risk:high:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package.json'
+          - 'bun.lock'
+          - '.github/workflows/**/*'
+          - 'contracts/**/*'
+          - 'src/lib/farcaster/**/*'
+          - 'src/lib/minipay*.ts'
+
+risk:critical:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.sops.yaml'
+          - 'secrets/**/*'
+          - '.gitmodules'
+          - 'wagmi-cli.config.ts'
