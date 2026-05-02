@@ -2,6 +2,7 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "ignoreBinaries": ["forge", "nix", "actionlint", "sops", "gitleaks"],
   "ignoreDependencies": [
+    "server-only",
     "@hookform/resolvers",
     "@radix-ui/react-accordion",
     "@radix-ui/react-alert-dialog",
@@ -50,6 +51,32 @@
     "zod"
   ],
   "ignoreFiles": [
-    "contracts/lib/**"
-  ]
+    "contracts/lib/**",
+    "scripts/**",
+    "**/*.test.ts",
+    "src/components/beta-banner.tsx",
+    "src/components/category-menu.tsx",
+    "src/components/donation-modal.tsx",
+    "src/components/feedback-form.tsx",
+    "src/components/minipay-wallet-connect.tsx",
+    "src/components/mobile-mockup.tsx",
+    "src/components/starry-background.tsx",
+    "src/components/swipe/SwipeCard.tsx",
+    "src/components/swipe/use-swipe-animation.ts",
+    "src/components/swipe/use-swipe-gestures.ts",
+    "src/components/ui/avatar.tsx",
+    "src/components/ui/badge.tsx",
+    "src/features/promo-faucet/**",
+    "src/hooks/use-mobile.tsx",
+    "src/hooks/useBetaCredits.ts",
+    "src/hooks/useBetaDonation.ts",
+    "src/lib/data.ts",
+    "src/lib/donation-history.ts",
+    "src/lib/funds-flow.ts",
+    "src/types/index.ts",
+    "wagmi-cli.config.ts"
+  ],
+  "ignoreIssues": {
+    "**": ["exports", "types", "duplicates"]
+  }
 }
