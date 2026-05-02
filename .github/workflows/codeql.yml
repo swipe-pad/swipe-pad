@@ -47,7 +47,6 @@ jobs:
         uses: github/codeql-action@v4.35.5
         with:
           languages: javascript
-          queries: security-extended
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action@v4.35.5
