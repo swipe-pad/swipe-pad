@@ -44,20 +44,20 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init-action@v3
+        uses: github/codeql-action/init-action@v4
         with:
           languages: javascript
           queries: security-extended
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze-action@v3
+        uses: github/codeql-action/analyze-action@v4
         with:
           category: "/language:javascript"
           upload: true
           output: codeql-results.sarif
 
       - name: Upload Security Dashboard
-        uses: github/codeql-action/upload-action@v3
+        uses: github/codeql-action/upload-action@v4
         with:
           sarif_file: codeql-results.sarif
           category: codeql
