@@ -4,12 +4,11 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     groups:
-      production-dependencies:
-        dependency-type: production
-      development-dependencies:
-        dependency-type: development
+      # Disable grouping - each dep gets its own PR
+      # Use patterns for small logical groups if needed
+    versioning-strategy: increase
 
   - package-ecosystem: github-actions
     directory: /
