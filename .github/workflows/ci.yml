@@ -71,8 +71,17 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Install Playwright browsers
-        run: bunx playwright install --with-deps chromium
+      - name: Install Playwright browsers (only if test:e2e uses Playwright)
+        # The current e2e test uses bun test + fetch only (no browser).
+        # Uncomment if you add Playwright-based UI tests.
+        # For local runs, use `bun run test:ui:e2e` (needs chromium from Nix devShell).
+        # For CI on GitHub, this step is fast on the real runner.
+        run: |
+          if grep -q "from \"playwright" src/test/*.test.ts 2>/dev/null; then
+            bunx playwright install --with-deps chromium-headless-shell
+          else
+            echo "No Playwright usage in e2e tests, skipping browser install"
+          fi
 
       - name: Run E2E tests
         run: bun run test:e2e
