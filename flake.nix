@@ -107,10 +107,14 @@
             bun
             gh
             podman
+            # Chromium build from Nixpkgs (no Google telemetry, no Playwright CDN).
+            # For UI tests via `bun run test:ui:e2e` (which uses playwright test).
+            chromium
           ];
 
           shellHook = ''
             echo "GitHub Actions sandbox: use 'nix run .#gha-local -- -W .github/workflows/ci.yml -j checks'"
+            echo "Chromium (Nixpkgs, no Google telemetry): ${pkgs.chromium}/bin/chromium"
           '';
         };
       }
