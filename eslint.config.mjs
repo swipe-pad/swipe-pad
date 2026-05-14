@@ -52,10 +52,15 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     // Legacy and generated folders:
+    ".cache/**",
+    ".vercel/**",
     ".old/**",
+    "contracts/lib/**",
     "convex/**",
     "v0-readonly/**",
     "ops/**",
+    // Build output folders:
+    ".vercel/**",
   ]),
 ]);
 

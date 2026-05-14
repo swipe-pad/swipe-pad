@@ -78,6 +78,15 @@ export default defineSchema({
     email: v.optional(v.string()),
     inviteCode: v.optional(v.string()),
     referredBy: v.optional(v.id("waitlistUsers")),
+    // Gated access fields (optional, additive)
+    accessSource: v.optional(
+      v.union(
+        v.literal("open"),
+        v.literal("invite_code"),
+        v.literal("allowlist")
+      )
+    ),
+    inviteCodeId: v.optional(v.id("inviteCodes")),
     status: v.union(
       v.literal("pending"),
       v.literal("approved"),
@@ -92,7 +101,41 @@ export default defineSchema({
     .index("by_fid", ["farcasterFid"])
     .index("by_status", ["status"])
     .index("by_createdAt", ["createdAt"])
-    .index("by_status_createdAt", ["status", "createdAt"]),
+    .index("by_status_createdAt", ["status", "createdAt"])
+    .index("by_inviteCodeId", ["inviteCodeId"])
+    .index("by_accessSource", ["accessSource"]),
+
+  /** Invite codes for gated access */
+  inviteCodes: defineTable({
+    codeHash: v.string(),
+    label: v.string(),
+    active: v.boolean(),
+    maxUses: v.number(),
+    uses: v.number(),
+    expiresAt: v.optional(v.number()),
+    createdAt: v.number(),
+    createdBy: v.optional(v.string()),
+    notes: v.optional(v.string()),
+  })
+    .index("by_codeHash", ["codeHash"])
+    .index("by_active", ["active"])
+    .index("by_createdAt", ["createdAt"]),
+
+  /** Invite code redemptions */
+  inviteCodeRedemptions: defineTable({
+    inviteCodeId: v.id("inviteCodes"),
+    userId: v.id("waitlistUsers"),
+    wallet: v.string(),
+    redeemedAt: v.number(),
+    status: v.union(
+      v.literal("accepted"),
+      v.literal("rejected"),
+      v.literal("duplicate")
+    ),
+  })
+    .index("by_inviteCode", ["inviteCodeId"])
+    .index("by_user", ["userId"])
+    .index("by_wallet", ["wallet"]),
 
   /** Swipe credits per user per chain */
   credits: defineTable({
@@ -156,6 +199,11 @@ export default defineSchema({
     profileUrl: v.optional(v.string()),
     network: v.optional(v.string()),
     importedAt: v.optional(v.number()),
+
+    // === Temporal boost metadata ===
+    boostAmount: v.optional(v.number()),
+    boostStartsAt: v.optional(v.number()),
+    boostExpiresAt: v.optional(v.number()),
   })
     .index("by_chain", ["chain", "active"])
     .index("by_projectId", ["projectId"])

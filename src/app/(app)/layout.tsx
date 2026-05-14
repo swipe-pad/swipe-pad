@@ -11,6 +11,7 @@ import { AppOverlays } from "@/components/layout/AppOverlays"
 import { useAppBootstrap } from "@/hooks/use-app-bootstrap"
 import { useAppOverlays } from "@/hooks/use-app-overlays"
 import { useAppShellConfig } from "@/hooks/use-app-shell-config"
+import { AccessGate } from "@/features/gated-access"
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
@@ -18,14 +19,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         hasCompletedOnboarding,
         setHasCompletedOnboarding,
         hasLoadedOnboardingState,
-        cart,
         donationAmount,
+        walletAddress,
+        creditsRemaining,
+        creditsMax,
     } = useApp(useShallow((state) => ({
         hasCompletedOnboarding: state.hasCompletedOnboarding,
         setHasCompletedOnboarding: state.setHasCompletedOnboarding,
         hasLoadedOnboardingState: state.hasLoadedOnboardingState,
-        cart: state.cart,
         donationAmount: state.donationAmount,
+        walletAddress: state.walletAddress,
+        creditsRemaining: state.creditsRemaining,
+        creditsMax: state.creditsMax,
     })))
     const shellConfig = useAppShellConfig(pathname)
     const overlays = useAppOverlays()
@@ -35,17 +40,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     useAppBootstrap()
 
     const renderPageContainer = (children: React.ReactNode) => {
-        return <div className="
-          relative flex h-screen w-full flex-col overflow-hidden
-        ">{children}</div>
+        return <div className="relative flex h-screen w-full flex-col overflow-hidden">{children}</div>
     }
 
     if (!hasLoadedOnboardingState) {
         return (
-            <main className="
-              relative flex min-h-screen flex-col items-center justify-center
-              overflow-hidden text-white
-            ">
+            <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden text-white">
                 {renderPageContainer(<div className="size-full" />)}
             </main>
         )
@@ -53,10 +53,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     if (!hasCompletedOnboarding) {
         return (
-            <main className="
-              relative flex min-h-screen flex-col items-center justify-center
-              overflow-hidden text-white
-            ">
+            <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden text-white">
                 {renderPageContainer(
                     <OnboardingWizard onComplete={() => setHasCompletedOnboarding(true)} />
                 )}
@@ -65,21 +62,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <main className="
-          relative flex min-h-screen flex-col items-center justify-center
-          overflow-hidden text-white
-        ">
+        <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden text-white">
             {renderPageContainer(
                 <>
+                    <AccessGate />
                     <AppShell
                         header={
                             shellConfig.showHeader ? (
                                 <AppHeader
                                     donationAmountLabel={donationAmount ?? "0.01¢"}
-                                    cartCount={cart.length}
-                                    isTrendingActive={shellConfig.highlightTrending}
-                                    isLeaderboardActive={shellConfig.highlightLeaderboard}
-                                    onOpenCart={() => overlays.setShowCart(true)}
                                     onOpenDonationSetup={() => overlays.setShowDonationSetup(true)}
                                 />
                             ) : null
@@ -100,6 +91,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         showEditProfile={overlays.showEditProfile}
                         showRegistrationForm={overlays.showRegistrationForm}
                         showDonationSetup={overlays.showDonationSetup}
+                        showTopUp={overlays.showTopUp}
+                        topUpReason={overlays.topUpReason}
+                        topUpDefaultPlanId={overlays.topUpDefaultPlanId}
+                        showZeroSwipesGuardrail={overlays.showZeroSwipesGuardrail}
                         enableProjectRegistration={ENABLE_PROJECT_REGISTRATION}
                         cart={overlays.cart}
                         successCategories={overlays.categoriesFromCheckout}
@@ -108,6 +103,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         availableProjects={overlays.projects.length}
                         recentDonations={overlays.recentDonations}
                         userProfile={overlays.userProfile}
+                        walletAddress={walletAddress}
+                        creditsRemaining={creditsRemaining}
+                        creditsMax={creditsMax}
                         onCloseCart={() => overlays.setShowCart(false)}
                         onCheckout={overlays.handleCheckout}
                         onCloseSuccess={() => overlays.setShowSuccess(false)}
@@ -119,6 +117,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         onSubmitRegistrationForm={(data) => console.log(data)}
                         onCloseDonationSetup={() => overlays.setShowDonationSetup(false)}
                         onSelectDonationSetup={overlays.handleDonationSetupSelect}
+                        onCloseTopUp={() => overlays.setShowTopUp(false)}
+                        onTopUpSuccess={overlays.handleTopUpSuccess}
+                        onCloseZeroSwipesGuardrail={() => overlays.setShowZeroSwipesGuardrail(false)}
+                        onOpenTopUpFromGuardrail={() => {
+                            overlays.setTopUpReason("zero-swipes")
+                            overlays.setShowTopUp(true)
+                        }}
                     />
                 </>
             )}

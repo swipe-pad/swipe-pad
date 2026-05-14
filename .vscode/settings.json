@@ -7,8 +7,8 @@
     ],
     "files.associations": {
         "*.css": "tailwindcss",
-        ".env.*.local": "env",
-        ".env.local": "env",
+        ".env.*.local": "dotenv",
+        ".env.local": "dotenv",
         ".npmrc": "ini"
     },
     "search.exclude": {
@@ -53,19 +53,9 @@
         "typescript",
         "typescriptreact"
     ],
-    "github.copilot.enable": {
-        "env": false
-    },
-    "supermaven.enable": {
-        ".env*": false
-    },
-    "cody.autocomplete.languages": {
-        ".env*": false
-    },
-    "cursor.cpp.disabledLanguages": [
-        "env"
-    ],
-    "typescript.tsdk": "./node_modules/typescript/lib",
-    "solidity.compileUsingRemoteVersion": "v0.8.20+commit.a1b79de6",
-    "npm.packageManager": "bun"
+    "js/ts.tsdk.path": "./node_modules/typescript/lib",
+    "npm.packageManager": "bun",
+    "evenBetterToml.schema.associations": {
+        "bunfig.toml": "https://www.schemastore.org/bunfig.json"
+    }
 }

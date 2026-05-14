@@ -1,2 +1,93 @@
+# ============================================================================
+# SwipePad Security Hardening Configuration
+# ============================================================================
+# This file enforces strict supply-chain security for the SwipePad project.
+#
+# Key protections:
+# - No lifecycle scripts execute (.npmrc: ignore-scripts=true)
+# - Lockfile is immutable (frozenLockfile)
+# - Exact versions only (exact)
+# - Text lockfile for git diff visibility (saveTextLockfile)
+# - Isolated linker prevents dependency confusion (linker)
+# - 7-day waiting period for new packages (minimumReleaseAge)
+# - Auto-install disabled (auto = disable)
+# - Disable telemetry (telemetry)
+# - Disable automatic .env loading (env)
+#
+# IMPORTANT: Any changes to this file require approval from a security owner.
+# See CODEOWNERS for the security team.
+# ============================================================================
+
+# Disable telemetry and crash reporting
+telemetry = false
+
+# Disable automatic .env file loading to prevent accidental env exposure
+env = false
+
 [install]
+# Exact versions only - no caret ranges (^)
 exact = true
+
+# Lockfile is immutable - bun install fails if package.json differs
+frozenLockfile = true
+
+# Text-based lockfile for git diff visibility and auditability
+saveTextLockfile = true
+
+# Isolated linker prevents dependency confusion attacks
+linker = "isolated"
+
+# Default npm registry (can be overridden for private registries)
+registry = "https://registry.npmjs.org"
+
+# Disable auto-installation - prevents on-the-fly package downloads
+auto = "disable"
+
+# Minimum age: 7 days (604800 seconds)
+# Only accept package versions published at least 7 days ago
+# This prevents typosquatting and rushed malicious releases
+minimumReleaseAge = 604800
+
+# No packages are exempt from the minimumReleaseAge requirement
+minimumReleaseAgeExcludes = []
+
+[install.cache]
+# Don't disable manifest resolution - always check registry for latest
+# This prevents stale cache poisoning
+disableManifest = false
+
+[install.lockfile]
+# Always save lockfile
+save = true
+
+[run]
+# Use system shell instead of bun's shell for broader compatibility
+shell = "system"
+
+# Auto-alias node to bun (prevents accidental node execution)
+bun = true
+
+# Suppress command reporting (reduces information leakage)
+silent = true
+
+[test]
+# Run tests in random order to catch interdependencies
+randomize = true
+
+# Set seed for reproducible randomization when debugging
+# seed = 12345
+
+# Retry failed tests to catch flaky behavior
+retry = 1
+
+# Default timeout for tests (milliseconds)
+timeout = 10000
+
+# Enable coverage reporting
+coverage = false
+
+# Skip test files in coverage
+coverageSkipTestFiles = true
+
+# Coverage reporters
+coverageReporter = ["text"]

@@ -1,0 +1,61 @@
+#!/usr/bin/env sh
+# Git pre-commit hook
+# Runs fast checks: typecheck + staged-file lint
+# Skip with: git commit --no-verify
+
+set -eu
+
+START_TIME=$(date +%s)
+
+echo "🔍 Running pre-commit checks..."
+
+# Check if bun is available
+if ! command -v bun > /dev/null 2>&1; then
+    echo "⚠️  bun not found, skipping checks"
+    exit 0
+fi
+
+# ── Dependency version guard ──
+# Enforce pinned versions in package.json (no ^ or ~ ranges)
+# Dependencies must be managed via bun commands which respect bunfig.toml
+if git diff --cached --name-only | grep -q "package.json"; then
+    echo "  🔒 Checking dependency versions..."
+    if git diff --cached -- package.json | grep -E '^\+.*".*":\s*"[\^~]' > /dev/null 2>&1; then
+        echo "❌ Found unpinned dependency versions (^ or ~) in package.json"
+        echo "   Use 'bun add <pkg>@<version>' instead of editing manually."
+        echo "   Bun will respect exact=true from bunfig.toml."
+        exit 1
+    fi
+fi
+
+# Run typecheck
+echo "  📝 Type checking..."
+if ! bun run typecheck; then
+    echo "❌ Typecheck failed"
+    exit 1
+fi
+
+STAGED_JS=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(js|jsx|mjs|cjs|ts|tsx)$' || true)
+if [ -n "$STAGED_JS" ]; then
+    echo "  🧹 Linting staged JS/TS files..."
+    # shellcheck disable=SC2086
+    if ! bunx eslint --config eslint.config.mjs $STAGED_JS; then
+        echo "❌ Lint failed"
+        exit 1
+    fi
+fi
+
+STAGED_CSS=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.css$' || true)
+if [ -n "$STAGED_CSS" ]; then
+    echo "  🎨 CSS linting staged files..."
+    # shellcheck disable=SC2086
+    if ! bunx stylelint $STAGED_CSS; then
+        echo "❌ CSS lint failed"
+        exit 1
+    fi
+fi
+
+END_TIME=$(date +%s)
+ELAPSED=$((END_TIME - START_TIME))
+
+echo "✅ Pre-commit checks passed (${ELAPSED}s)"

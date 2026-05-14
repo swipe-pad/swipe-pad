@@ -1,13 +1,14 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useShallow } from "zustand/react/shallow"
 import { useRouter } from "next/navigation"
 import { useMutation } from "convex/react"
+import { useShallow } from "zustand/react/shallow"
 import { AnimatePresence, animate, motion, useMotionValue, useTransform, type PanInfo } from "framer-motion"
 import { RotateCcw, ThumbsUp, X } from "lucide-react"
 
 import { useApp } from "@/context/AppContext"
+import { useAppOverlays } from "@/hooks/use-app-overlays"
 import { OzkCard } from "@/components/cards/OzkCard"
 import { ShareModal } from "@/components/share-modal"
 import { ProjectCard } from "@/components/project-card"
@@ -119,6 +120,7 @@ export function HomeScreen({
   const [activeCardDesign, setActiveCardDesign] = useState<CardDesignId>("OZK_CARD_V1_NEON")
   const [freeModeEnabled, setFreeModeEnabled] = useState(false)
   const [showSharedEntryShare, setShowSharedEntryShare] = useState(false)
+  const overlays = useAppOverlays()
 
   useEffect(() => {
     const next = getStoredCardDesign()
@@ -184,6 +186,7 @@ export function HomeScreen({
   const swipeIdRef = useRef(0)
   const hasHydratedCategoryRef = useRef(false)
   const deckProjectKeysRef = useRef<Set<string>>(new Set())
+  const [categoryShuffleNonce, setCategoryShuffleNonce] = useState(0)
 
   const consumeCredits = useMutation(api.waitlist.consumeCredits)
   const recordSwipe = useMutation(api.waitlist.recordSwipe)
@@ -226,7 +229,7 @@ export function HomeScreen({
 
     for (let attempt = 0; attempt < 6; attempt += 1) {
       requestCounterRef.current += 1
-      const requestSeed = `${sessionSeedRef.current}:${requestCounterRef.current}:${attempt}`
+      const requestSeed = `${sessionSeedRef.current}:${categoryShuffleNonce}:${requestCounterRef.current}:${attempt}`
       const url = new URL("/api/feed", window.location.origin)
 
       if (exclude) {
@@ -259,7 +262,7 @@ export function HomeScreen({
     }
 
     return null
-  }, [activeCategory])
+  }, [activeCategory, categoryShuffleNonce])
 
   const toSwipeItem = useCallback((project: Project): SwipeItem<Project> => {
     const absoluteIndex = swipeAbsoluteIndexRef.current
@@ -401,9 +404,12 @@ export function HomeScreen({
 
   const buttonSwipe = useCallback((dir: "left" | "right") => {
     if (isAdvancing) return
-    if (dir === "right" && !canSwipe) return
+    if (dir === "right" && !canSwipe) {
+      overlays.setShowZeroSwipesGuardrail(true)
+      return
+    }
     stackRef.current?.swipe(dir)
-  }, [canSwipe, isAdvancing])
+  }, [canSwipe, isAdvancing, overlays])
 
   useEffect(() => {
     setShowCategoryToast(true)
@@ -544,7 +550,7 @@ export function HomeScreen({
     return () => {
       cancelled = true
     }
-  }, [activeCategory, fetchFeedProject, mode, resetDeck, toSwipeItem])
+  }, [activeCategory, categoryShuffleNonce, fetchFeedProject, mode, resetDeck, toSwipeItem])
 
   useEffect(() => {
     const currentUrl = toPreloadUrl(currentProject)
@@ -569,6 +575,7 @@ export function HomeScreen({
   const handleCategoryChange = (category: string) => {
     if (mode === "shared-entry") return
     clearSwipeHistory()
+    setCategoryShuffleNonce((value) => value + 1)
     setSelectedCategory(category)
   }
 

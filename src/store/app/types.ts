@@ -41,6 +41,8 @@ export type AppStateUpdater<T> = T | ((previous: T) => T)
 
 export type Setter<T> = (next: AppStateUpdater<T>) => void
 
+export type AccessState = "checking" | "denied" | "allowed" | "invite_required" | null
+
 export type AppState = {
   userProfile: UserProfile
   userStats: UserStats
@@ -60,6 +62,8 @@ export type AppState = {
   creditsMax: number
   hasCompletedOnboarding: boolean
   hasLoadedOnboardingState: boolean
+  accessState: AccessState
+  accessReason: string | null
 }
 
 export type AppActions = {
@@ -81,6 +85,8 @@ export type AppActions = {
   setCreditsMax: Setter<number>
   setHasCompletedOnboarding: Setter<boolean>
   hydrateOnboardingState: () => void
+  setAccessState: Setter<AccessState>
+  setAccessReason: Setter<string | null>
 }
 
 export type AppStore = AppState & AppActions

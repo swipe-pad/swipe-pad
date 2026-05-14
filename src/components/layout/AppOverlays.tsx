@@ -1,6 +1,7 @@
 "use client"
 
 import dynamic from "next/dynamic"
+import ZeroSwipesGuardrail from "@/components/layout/ZeroSwipesGuardrail"
 
 import type { ConfirmSwipes, DonationAmount, StableCoin } from "@/components/amount-selector"
 
@@ -11,6 +12,7 @@ const ProfileQuickView = dynamic(() => import("@/components/profile-quick-view")
 const EditProfile = dynamic(() => import("@/components/edit-profile").then((mod) => mod.EditProfile))
 const ProjectRegistrationForm = dynamic(() => import("@/components/project-registration-form").then((mod) => mod.ProjectRegistrationForm))
 const DonationSetupDialog = dynamic(() => import("@/components/layout/DonationSetupDialog").then((mod) => mod.DonationSetupDialog))
+const TopUpDialog = dynamic(() => import("@/components/layout/TopUpDialog").then((mod) => mod.TopUpDialog))
 
 interface AppOverlaysProps {
   showCart: boolean
@@ -21,6 +23,10 @@ interface AppOverlaysProps {
   showEditProfile: boolean
   showRegistrationForm: boolean
   showDonationSetup: boolean
+  showTopUp: boolean
+  topUpReason?: string
+  topUpDefaultPlanId?: string
+  showZeroSwipesGuardrail: boolean
   enableProjectRegistration: boolean
   cart: unknown[]
   successCategories: string[]
@@ -34,6 +40,9 @@ interface AppOverlaysProps {
   availableProjects: number
   recentDonations: unknown[]
   userProfile: Record<string, unknown>
+  walletAddress: string | null
+  creditsRemaining: number
+  creditsMax: number
   onCloseCart: () => void
   onCheckout: () => void
   onCloseSuccess: () => void
@@ -45,6 +54,10 @@ interface AppOverlaysProps {
   onSubmitRegistrationForm: (data: Record<string, unknown>) => void
   onCloseDonationSetup: () => void
   onSelectDonationSetup: (amount: DonationAmount, currency: StableCoin, swipes: ConfirmSwipes) => void
+  onCloseTopUp: () => void
+  onTopUpSuccess: (result: { planId: string; swipesGranted: number; txHash?: string }) => void
+  onCloseZeroSwipesGuardrail: () => void
+  onOpenTopUpFromGuardrail: () => void
 }
 
 export function AppOverlays({
@@ -56,6 +69,10 @@ export function AppOverlays({
   showEditProfile,
   showRegistrationForm,
   showDonationSetup,
+  showTopUp,
+  topUpReason,
+  topUpDefaultPlanId,
+  showZeroSwipesGuardrail,
   enableProjectRegistration,
   cart,
   successCategories,
@@ -64,6 +81,9 @@ export function AppOverlays({
   availableProjects,
   recentDonations,
   userProfile,
+  walletAddress,
+  creditsRemaining,
+  creditsMax,
   onCloseCart,
   onCheckout,
   onCloseSuccess,
@@ -75,6 +95,10 @@ export function AppOverlays({
   onSubmitRegistrationForm,
   onCloseDonationSetup,
   onSelectDonationSetup,
+  onCloseTopUp,
+  onTopUpSuccess,
+  onCloseZeroSwipesGuardrail,
+  onOpenTopUpFromGuardrail,
 }: AppOverlaysProps) {
   return (
     <>
@@ -119,6 +143,27 @@ export function AppOverlays({
           availableProjects={availableProjects}
         />
       ) : null}
+
+      {showTopUp ? (
+        <TopUpDialog
+          isOpen={showTopUp}
+          reason={topUpReason}
+          defaultPlanId={topUpDefaultPlanId}
+          walletAddress={walletAddress}
+          creditsRemaining={creditsRemaining}
+          creditsMax={creditsMax}
+          onClose={onCloseTopUp}
+          onSuccess={onTopUpSuccess}
+        />
+      ) : null}
+
+      {showZeroSwipesGuardrail ? (
+        <ZeroSwipesGuardrail
+          isOpen={showZeroSwipesGuardrail}
+          onClose={onCloseZeroSwipesGuardrail}
+          onTopUp={onOpenTopUpFromGuardrail}
+        />
+      ) : null}
     </>
-  )
+  );
 }
