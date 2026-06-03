@@ -67,12 +67,14 @@ export default function DevUsersPage() {
   }, [search])
 
   useEffect(() => {
-    loadUsers(false)
+    queueMicrotask(() => loadUsers(false))
   }, [loadUsers])
 
   useEffect(() => {
-    setCursor(null)
-    setCursorStack([])
+    queueMicrotask(() => {
+      setCursor(null)
+      setCursorStack([])
+    })
   }, [search, status])
 
   const visibleRows = result?.rows ?? []

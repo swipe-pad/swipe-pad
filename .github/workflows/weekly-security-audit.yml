@@ -1,0 +1,134 @@
+name: "Weekly Security Audit"
+
+on:
+  schedule:
+    # Run weekly on Monday at 08:00 UTC
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force run even if checks pass'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    name: Org Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.22
+
+      - name: Check gh availability
+        run: |
+          if ! command -v gh > /dev/null 2>&1; then
+            echo "gh not available in this runner"
+            exit 1
+          fi
+          gh auth status
+
+      - name: Run security audit
+        id: audit
+        run: |
+          ORG="swipe-pad"
+          REPO="swipe-pad"
+
+          echo "=== SwipePad Weekly Security Audit ===" > audit-report.md
+          echo "Date: $(date -u +%Y-%m-%d)" >> audit-report.md
+          echo "" >> audit-report.md
+
+          echo "## Org Settings" >> audit-report.md
+          gh api "orgs/${ORG}" --jq '{two_factor_requirement_enabled, default_repository_permission, members_can_create_repositories, members_can_create_public_repositories}' >> audit-report.md
+          echo "" >> audit-report.md
+
+          echo "## Repo Branch Protection" >> audit-report.md
+          for repo in $(gh repo list "${ORG}" --limit 50 --json name --jq '.[].name'); do
+            branch=$(gh repo view "${ORG}/${repo}" --json defaultBranchRef --jq '.defaultBranchRef.name')
+            if gh api "repos/${ORG}/${repo}/branches/${branch}/protection" >/dev/null 2>&1; then
+              echo "- ${repo}:${branch} — PROTECTED" >> audit-report.md
+            else
+              echo "- ${repo}:${branch} — UNPROTECTED ⚠️" >> audit-report.md
+            fi
+          done
+          echo "" >> audit-report.md
+
+          echo "## Repo Security Analysis" >> audit-report.md
+          for repo in $(gh repo list "${ORG}" --limit 50 --json name --jq '.[].name'); do
+            ss=$(gh api "repos/${ORG}/${repo}" --jq '.security_and_analysis.secret_scanning.status // "not set"')
+            ds=$(gh api "repos/${ORG}/${repo}" --jq '.security_and_analysis.dependabot_security_updates.status // "not set"')
+            echo "- ${repo}: secret_scanning=${ss}, dependabot=${ds}" >> audit-report.md
+          done
+          echo "" >> audit-report.md
+
+          echo "## Recent Releases" >> audit-report.md
+          gh release list --repo "${ORG}/${REPO}" --limit 5 >> audit-report.md 2>&1 || echo "No releases found" >> audit-report.md
+          echo "" >> audit-report.md
+
+          echo "## Actions Permissions" >> audit-report.md
+          gh api "repos/${ORG}/${REPO}/actions/permissions" --jq '{allowed_actions, sha_pinning_required}' >> audit-report.md
+          echo "" >> audit-report.md
+
+          echo "Report generated."
+          cat audit-report.md
+
+      - name: Find previous audit issue
+        id: find-issue
+        run: |
+          ISSUE_NUMBER=$(gh issue list \
+            --repo swipe-pad/swipe-pad \
+            --label "area:security" \
+            --label "audit" \
+            --state open \
+            --limit 1 \
+            --json number \
+            --jq '.[0].number' 2>/dev/null || echo "")
+
+          if [ -n "$ISSUE_NUMBER" ]; then
+            echo "Found existing audit issue: #${ISSUE_NUMBER}"
+            echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
+          else
+            echo "issue_number=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create or update audit issue
+        if: steps.find-issue.outputs.issue_number == ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('audit-report.md', 'utf8');
+            const title = `Weekly Security Audit - ${new Date().toISOString().split('T')[0]}`;
+
+            github.rest.issues.create({
+              owner: 'swipe-pad',
+              repo: 'swipe-pad',
+              title,
+              body: report,
+              labels: ['area:security', 'audit', 'needs:triage']
+            });
+
+      - name: Comment on existing audit issue
+        if: steps.find-issue.outputs.issue_number != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('audit-report.md', 'utf8');
+            const issueNumber = parseInt('${{ steps.find-issue.outputs.issue_number }}');
+
+            github.rest.issues.createComment({
+              owner: 'swipe-pad',
+              repo: 'swipe-pad',
+              issue_number: issueNumber,
+              body: `## Weekly Audit Update\n\n${report}`
+            });

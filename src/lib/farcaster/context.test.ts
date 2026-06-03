@@ -29,7 +29,7 @@ describe("host environment detection", () => {
       ethereum: {
         isMiniPay: true,
       },
-    } as typeof window
+    } as unknown as typeof window
 
     expect(getHostEnvironmentSync()).toBe("minipay")
   })

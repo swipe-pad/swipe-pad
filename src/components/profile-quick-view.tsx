@@ -370,7 +370,7 @@ export function ProfileQuickView({
                           rounded-full bg-[#677FEB]/20 px-2 py-1 text-xs
                           text-[#677FEB]
                         ">
-                          {Math.floor(Math.random() * 5) + 1} projects
+                          {(index + 1) * 3} projects
                         </span>
                       </div>
                       <div className="mb-1 h-2 w-full rounded-full bg-gray-700">

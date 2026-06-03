@@ -1,9 +1,44 @@
 # Keep governance and high-risk surfaces visible without slowing every PR.
-# Security-critical files require security owner approval
+# Security-critical files require security owner approval.
+
+# Global - maintainers own everything
+* @ottodevs
+
+# GitHub governance and CI/CD - owner only
 /.github/ @ottodevs
-/contracts/ @ottodevs
+/.github/workflows/ @ottodevs
+/.github/CODEOWNERS @ottodevs
+/.github/dependabot.yml @ottodevs
+
+# Dependency management - owner only
 /package.json @ottodevs
+/bun.lock @ottodevs
 /bunfig.toml @ottodevs
 /.npmrc @ottodevs
-/bun.lock @ottodevs
+
+# Nix and infrastructure
+/flake.nix @ottodevs
 /flake.lock @ottodevs
+
+# Smart contracts and protocol - owner only
+/contracts/ @ottodevs
+/.gitmodules @ottodevs
+
+# Secrets and SOPS configuration - owner only
+/.sops.yaml @ottodevs
+
+# Web3 and wallet integrations - owner only
+/src/lib/farcaster/ @ottodevs
+/src/lib/minipay-utils.ts @ottodevs
+/src/types/contracts.ts @ottodevs
+/wagmi-cli.config.ts @ottodevs
+
+# CTO review for product, design, and release readiness
+/src/app/ @ottodevs @ozkite
+/src/components/ @ottodevs @ozkite
+/src/features/ @ottodevs @ozkite
+
+# Docs and community - shared review
+/docs/ @ottodevs @ozkite
+README.md @ottodevs @ozkite
+CONTRIBUTING.md @ottodevs @ozkite

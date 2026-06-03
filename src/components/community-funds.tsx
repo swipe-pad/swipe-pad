@@ -1,8 +1,20 @@
 "use client"
 import { Users } from "lucide-react"
+import type { Project } from "@/lib/useConvexData"
+
+interface MockFund {
+  id: string
+  name: string
+  description: string
+  category: string
+  imageUrl: string
+  goal: number
+  current: number
+  walletAddress: string
+}
 
 interface CommunityFundsProps {
-  onDonate: (project: any, amount?: number) => void
+  onDonate: (project: Record<string, unknown>, amount?: number) => void
 }
 
 export function CommunityFunds({ onDonate }: CommunityFundsProps) {

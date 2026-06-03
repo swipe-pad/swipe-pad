@@ -1,8 +1,9 @@
 ---
-name: 🐛 Bug Report
+name: "\U0001F41B Bug Report"
 description: Report something that isn't working as expected.
-labels: ['bug', 'needs-triage']
+labels: ['bug', 'needs:triage']
 assignees: ''
+title: "[Bug] "
 ---
 
 **Describe the Bug**
@@ -30,6 +31,10 @@ If applicable, add screenshots or GIFs to help explain your problem.
 - OS:
 - Browser / MiniPay version (if applicable):
 - SwipePad version (commit SHA if dev):
+
+**Impact**
+
+How does this bug affect you or users? (Low / Medium / High / Critical)
 
 **Additional Context**
 Add any other context about the problem here.

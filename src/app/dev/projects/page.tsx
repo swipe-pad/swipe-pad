@@ -77,12 +77,14 @@ export default function DevProjectsPage() {
   }, [search])
 
   useEffect(() => {
-    loadProjects(false)
+    queueMicrotask(() => loadProjects(false))
   }, [loadProjects])
 
   useEffect(() => {
-    setCursor(null)
-    setCursorStack([])
+    queueMicrotask(() => {
+      setCursor(null)
+      setCursorStack([])
+    })
   }, [search, includeInactive, quickFilter])
 
   const visibleRows = result?.rows ?? []

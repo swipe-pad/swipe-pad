@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useReducer, useState } from "react"
 import { ExternalLink } from "lucide-react"
 
 import { getExternalHostname, isUnsafeExternalUrl, openExternalUrl } from "@/lib/external-links"
@@ -20,21 +20,48 @@ type LinkPreview = {
   fallbackImage: string | null
 }
 
+type PreviewState = {
+  preview: LinkPreview | null
+  previewImageSrc: string | null
+  hasTriedFallbackImage: boolean
+  isLoadingPreview: boolean
+}
+
+type PreviewAction =
+  | { type: 'reset' }
+  | { type: 'loadSuccess'; data: LinkPreview; imageSrc: string | null }
+  | { type: 'loadError' }
+  | { type: 'setLoading'; value: boolean }
+
+function previewReducer(state: PreviewState, action: PreviewAction): PreviewState {
+  switch (action.type) {
+    case 'reset':
+      return { preview: null, previewImageSrc: null, hasTriedFallbackImage: false, isLoadingPreview: true }
+    case 'loadSuccess':
+      return { ...state, preview: action.data, previewImageSrc: action.imageSrc, isLoadingPreview: false }
+    case 'loadError':
+      return { ...state, preview: null, isLoadingPreview: false }
+    case 'setLoading':
+      return { ...state, isLoadingPreview: action.value }
+    default:
+      return state
+  }
+}
+
 export function ExternalLinkDialog({ isOpen, onClose, url, label }: ExternalLinkDialogProps) {
-  const [preview, setPreview] = useState<LinkPreview | null>(null)
-  const [isLoadingPreview, setIsLoadingPreview] = useState(false)
-  const [previewImageSrc, setPreviewImageSrc] = useState<string | null>(null)
-  const [hasTriedFallbackImage, setHasTriedFallbackImage] = useState(false)
+  const [previewState, dispatch] = useReducer(previewReducer, {
+    preview: null,
+    previewImageSrc: null,
+    hasTriedFallbackImage: false,
+    isLoadingPreview: false,
+  })
 
   useEffect(() => {
     if (!isOpen) return
 
     const controller = new AbortController()
 
-    setPreview(null)
-    setPreviewImageSrc(null)
-    setHasTriedFallbackImage(false)
-    setIsLoadingPreview(true)
+    dispatch({ type: 'reset' })
 
     fetch(`/api/link-preview?url=${encodeURIComponent(url)}`, { signal: controller.signal })
       .then(async (response) => {
@@ -42,16 +69,10 @@ export function ExternalLinkDialog({ isOpen, onClose, url, label }: ExternalLink
           throw new Error("Failed to load preview")
         }
         const data = (await response.json()) as LinkPreview
-        setPreview(data)
-        setPreviewImageSrc(data.image ?? data.fallbackImage)
+        dispatch({ type: 'loadSuccess', data, imageSrc: data.image ?? data.fallbackImage })
       })
       .catch(() => {
-        setPreview(null)
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) {
-          setIsLoadingPreview(false)
-        }
+        dispatch({ type: 'loadError' })
       })
 
     return () => controller.abort()
@@ -61,7 +82,7 @@ export function ExternalLinkDialog({ isOpen, onClose, url, label }: ExternalLink
 
   const host = getExternalHostname(url)
   const isUnsafe = isUnsafeExternalUrl(url)
-  const displayUrl = preview?.url || url
+  const displayUrl = previewState.preview?.url || url
 
   return (
     <div className="
@@ -91,7 +112,7 @@ export function ExternalLinkDialog({ isOpen, onClose, url, label }: ExternalLink
           mt-3 h-[172px] overflow-hidden rounded-xl border border-surface-border
           bg-surface-2
         ">
-          {isLoadingPreview ? (
+          {previewState.isLoadingPreview ? (
             <div className="flex h-full animate-pulse gap-3 p-3">
               <div className="size-16 shrink-0 rounded-md bg-white/10" />
               <div className="min-w-0 flex-1">
@@ -101,25 +122,24 @@ export function ExternalLinkDialog({ isOpen, onClose, url, label }: ExternalLink
                 <div className="mt-1 h-3 w-4/6 rounded-sm bg-white/10" />
               </div>
             </div>
-          ) : preview ? (
+          ) : previewState.preview ? (
             <div className="flex h-full gap-3 p-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={previewImageSrc ?? "/placeholder.svg"}
-                alt={preview.title}
+                src={previewState.previewImageSrc ?? "/placeholder.svg"}
+                alt={previewState.preview.title}
                 className="size-16 shrink-0 rounded-md object-cover"
                 onError={() => {
-                  if (!hasTriedFallbackImage && preview?.fallbackImage && previewImageSrc !== preview.fallbackImage) {
-                    setHasTriedFallbackImage(true)
-                    setPreviewImageSrc(preview.fallbackImage)
+                  if (!previewState.hasTriedFallbackImage && previewState.preview?.fallbackImage && previewState.previewImageSrc !== previewState.preview.fallbackImage) {
+                    dispatch({ type: 'setLoading', value: false })
                     return
                   }
-                  setPreviewImageSrc("/placeholder.svg")
+                  dispatch({ type: 'loadError' })
                 }}
               />
               <div className="min-w-0 flex-1">
-                <p className="line-clamp-2 text-sm font-semibold text-white">{preview.title}</p>
-                <p className="mt-1 line-clamp-3 text-xs text-gray-300">{preview.description}</p>
+                <p className="line-clamp-2 text-sm font-semibold text-white">{previewState.preview.title}</p>
+                <p className="mt-1 line-clamp-3 text-xs text-gray-300">{previewState.preview.description}</p>
               </div>
             </div>
           ) : (

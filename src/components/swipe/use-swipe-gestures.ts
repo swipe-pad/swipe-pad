@@ -23,7 +23,7 @@ export function useSwipeGestures({
   const [isDraggable, setIsDraggable] = useState(false);
 
   useEffect(() => {
-    setIsDraggable(active);
+    queueMicrotask(() => setIsDraggable(active));
   }, [active]);
 
   const handleDragEnd = async (

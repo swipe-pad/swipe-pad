@@ -78,8 +78,9 @@ export async function addMiniApp(): Promise<void> {
 
 export async function getMiniAppEthereumProvider() {
   const testHost = getTestHostState()
-  if (testHost?.enabled && typeof window !== "undefined" && window.ethereum) {
-    return window.ethereum
+  if (testHost?.enabled && typeof window !== "undefined") {
+    const ethereum = (window as unknown as { ethereum?: unknown }).ethereum
+    if (ethereum) return ethereum
   }
 
   try {
