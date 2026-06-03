@@ -1,0 +1,62 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'lib/**'
+      - 'app/**'
+      - 'components/**'
+      - 'hooks/**'
+      - 'context/**'
+      - 'features/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'lib/**'
+      - 'app/**'
+      - 'components/**'
+      - 'hooks/**'
+      - 'context/**'
+      - 'features/**'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.22
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action@v4.35.5
+        with:
+          languages: javascript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action@v4.35.5
+        with:
+          category: "/language:javascript"
+          upload: true
+          output: codeql-results.sarif
+
+      - name: Upload Security Dashboard
+        uses: github/codeql-action@v4.35.5
+        with:
+          sarif_file: codeql-results.sarif
+          category: codeql

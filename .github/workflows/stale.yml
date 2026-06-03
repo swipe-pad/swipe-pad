@@ -1,0 +1,35 @@
+name: "Stale Management"
+
+on:
+  schedule:
+    # Run weekly on Monday at 09:00 UTC
+    - cron: '0 9 * * 1'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Mark Stale
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Mark stale issues
+        uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-stale: 60
+          days-before-close: 14
+          stale-issue-label: 'stale'
+          close-issue-message: |
+            This issue has been marked stale due to inactivity. If this is still relevant, please comment or the issue will be closed soon.
+          stale-pr-label: 'stale'
+          close-pr-message: |
+            This PR has been marked stale due to inactivity. Please update or the PR will be closed soon.
+          # Do not mark these as stale
+          exempt-issue-labels: 'needs:triage,security-review,blocked'
+          exempt-pr-labels: 'needs:triage,security-review,blocked,work-in-progress'
+          only-labels: ''
+          operations-per-run: 100

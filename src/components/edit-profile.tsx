@@ -8,10 +8,22 @@ import { useDisconnect as useThirdwebDisconnect, useActiveWallet } from "thirdwe
 import { useDisconnect as useWagmiDisconnect } from "wagmi"
 import { useApp } from "@/context/AppContext"
 
+export interface EditProfileFormData {
+  name: string
+  image: string
+  bio: string
+  farcaster: string
+  twitter: string
+  zora: string
+  discord: string
+  lens: string
+  ens: string
+}
+
 interface EditProfileProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (profileData: any) => void
+  onSave: (profileData: EditProfileFormData) => void
   currentProfile: {
     name: string
     image: string

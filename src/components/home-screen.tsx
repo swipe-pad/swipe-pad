@@ -124,14 +124,14 @@ export function HomeScreen({
 
   useEffect(() => {
     const next = getStoredCardDesign()
-    if (next) {
-      // Migrate users with old card designs to OZK by default
-      if (next === "SP_CARD_V2_STACK" || next === "SP_CARD_V2_INLINE") {
-        setStoredCardDesign("OZK_CARD_V1_NEON")
-        setActiveCardDesign("OZK_CARD_V1_NEON")
-      } else {
-        setActiveCardDesign(next)
-      }
+    const newDesign = (next === "SP_CARD_V2_STACK" || next === "SP_CARD_V2_INLINE")
+      ? "OZK_CARD_V1_NEON"
+      : (next ?? "OZK_CARD_V1_NEON")
+    if (next && newDesign !== next) {
+      setStoredCardDesign(newDesign)
+    }
+    if (newDesign !== "OZK_CARD_V1_NEON") {
+      queueMicrotask(() => setActiveCardDesign(newDesign))
     }
 
     const onStorage = (event: StorageEvent) => {
@@ -282,8 +282,12 @@ export function HomeScreen({
 
   const initialDeckItems = useMemo(() => {
     if (!initialProject) return []
-    return [toSwipeItem(initialProject as Project)]
-  }, [initialProject, toSwipeItem])
+    return [{
+      id: `initial-${(initialProject as Project).projectId || (initialProject as Project).routeId || "project"}`,
+      data: initialProject as Project,
+      absoluteIndex: 0,
+    }]
+  }, [initialProject])
 
   const refillDeck = useCallback(async (need: number) => {
     if (mode !== "discover") return []
@@ -412,7 +416,7 @@ export function HomeScreen({
   }, [canSwipe, isAdvancing, overlays])
 
   useEffect(() => {
-    setShowCategoryToast(true)
+    queueMicrotask(() => setShowCategoryToast(true))
     const timer = window.setTimeout(() => setShowCategoryToast(false), 1200)
     return () => window.clearTimeout(timer)
   }, [activeCategory])
@@ -557,7 +561,7 @@ export function HomeScreen({
     const nextUrl = toPreloadUrl(nextProject)
 
     if (!currentUrl && !nextUrl) {
-      setIsFeedVisible(Boolean(currentProject))
+      queueMicrotask(() => setIsFeedVisible(Boolean(currentProject)))
       return
     }
 
@@ -568,7 +572,7 @@ export function HomeScreen({
       void queueImagePreload(nextUrl)
     }
 
-    setIsFeedVisible(true)
+    queueMicrotask(() => setIsFeedVisible(true))
     return undefined
   }, [currentProject, nextProject])
 

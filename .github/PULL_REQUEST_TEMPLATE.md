@@ -21,6 +21,16 @@
 - [ ] This does not introduce secrets, credentials, or private keys.
 - [ ] User-facing, contract, or security-sensitive behavior is described above.
 
+## Risk Self-Assessment
+
+- [ ] This PR touches only low-risk areas (docs, UI styles, isolated tests).
+- [ ] This PR touches CI, dependencies, or configuration.
+- [ ] This PR touches wallet, contracts, payment, or web3 integrations.
+- [ ] This PR modifies `.github/`, `contracts/`, `.sops.yaml`, or secrets.
+- [ ] This PR adds or removes dependencies.
+- [ ] This PR introduces binary files or generated artifacts.
+- [ ] This PR contains obfuscated, minified, or non-obvious code.
+
 ## Checklist
 
 - [ ] My commit messages follow the [Conventional Commits](https://www.conventionalcommits.org/) format.

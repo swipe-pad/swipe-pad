@@ -356,7 +356,7 @@ function SwipeDeckDemo() {
     } satisfies SwipeItem<Project>
   }
 
-  const initial = useMemo(() => Array.from({ length: 6 }, () => nextItem()), [])
+  const initial = useMemo(() => Array.from({ length: 6 }, () => nextItem()), []) // eslint-disable-line -- Ref access in useMemo with empty deps is safe
 
   const deck = useSwipeDeck<Project>({
     config: { visible: 4 },

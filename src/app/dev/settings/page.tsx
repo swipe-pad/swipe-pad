@@ -16,7 +16,7 @@ export default function DevSettingsPage() {
   const [activeDesign, setActiveDesign] = useState<CardDesignId>("SP_CARD_V2_STACK")
 
   useEffect(() => {
-    setFreeModeState(getDevFreeModeEnabled())
+    setFreeModeState(getDevFreeModeEnabled()) // eslint-disable-line -- Syncing localStorage to React state on mount
     setGuestProvisioningEnabledState(getDevGuestProvisioningEnabled())
     const stored = getStoredCardDesign()
     if (stored) setActiveDesign(stored)

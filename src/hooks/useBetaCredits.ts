@@ -65,23 +65,26 @@ export function useBetaCredits(chain: 'celo' | 'base' = 'celo'): BetaCredits {
 
   useEffect(() => {
     if (!isPoolDeployed) {
-      // Pool not deployed, use mock credits for dev
-      setCredits({
-        remaining: FREE_SWIPES_CREDITS,
-        max: FREE_SWIPES_CREDITS,
-        isLoading: false,
-        error: null,
-        refetch: () => {},
+      queueMicrotask(() => {
+        setCredits({
+          remaining: FREE_SWIPES_CREDITS,
+          max: FREE_SWIPES_CREDITS,
+          isLoading: false,
+          error: null,
+          refetch: () => {},
+        })
       })
       return
     }
 
-    setCredits({
-      remaining: (userCredits as bigint) ?? 0n,
-      max: (maxCredits as bigint) ?? FREE_SWIPES_CREDITS,
-      isLoading,
-      error: error as Error | null,
-      refetch,
+    queueMicrotask(() => {
+      setCredits({
+        remaining: (userCredits as bigint) ?? 0n,
+        max: (maxCredits as bigint) ?? FREE_SWIPES_CREDITS,
+        isLoading,
+        error: error as Error | null,
+        refetch,
+      })
     })
   }, [userCredits, maxCredits, isLoading, error, isPoolDeployed, refetch])
 

@@ -37,15 +37,25 @@ jobs:
       - name: Set deployment target
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "VERCEL_TARGET=${{ inputs.target }}" >> $GITHUB_ENV
+            echo "VERCEL_TARGET=${{ inputs.target }}" >> "$GITHUB_ENV"
           elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "VERCEL_TARGET=production" >> $GITHUB_ENV
+            echo "VERCEL_TARGET=production" >> "$GITHUB_ENV"
           else
-            echo "VERCEL_TARGET=preview" >> $GITHUB_ENV
+            echo "VERCEL_TARGET=preview" >> "$GITHUB_ENV"
           fi
 
       - name: Build (prebuilt)
-        run: bunx vercel build --token "$VERCEL_TOKEN" $([ "$VERCEL_TARGET" = "production" ] && echo "--prod")
+        run: |
+          if [ "$VERCEL_TARGET" = "production" ]; then
+            bunx vercel build --token "$VERCEL_TOKEN" --prod
+          else
+            bunx vercel build --token "$VERCEL_TOKEN"
+          fi
 
       - name: Deploy (prebuilt)
-        run: bunx vercel deploy --prebuilt --token "$VERCEL_TOKEN" $([ "$VERCEL_TARGET" = "production" ] && echo "--prod")
+        run: |
+          if [ "$VERCEL_TARGET" = "production" ]; then
+            bunx vercel deploy --prebuilt --token "$VERCEL_TOKEN" --prod
+          else
+            bunx vercel deploy --prebuilt --token "$VERCEL_TOKEN"
+          fi

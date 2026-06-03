@@ -1,17 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Gift } from "lucide-react"
-import { useProjects } from "@/lib/useConvexData"
+import { useProjects, type Project } from "@/lib/useConvexData"
 
 interface WeeklyDropProps {
-  onDonate: (project: any, amount?: number) => void
+  onDonate: (project: Project, amount?: number) => void
 }
 
 export function WeeklyDrop({ onDonate }: WeeklyDropProps) {
   const projects = useProjects()
-  // Get 5 random projects for the weekly drop
-  const weeklyProjects = [...projects].sort(() => 0.5 - Math.random()).slice(0, 5)
+  const [randomSeed] = useState(() => Math.random())
+  const weeklyProjects = useMemo(() => {
+    return [...projects].sort(() => 0.5 - randomSeed).slice(0, 5)
+  }, [projects, randomSeed])
 
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -25,7 +27,7 @@ export function WeeklyDrop({ onDonate }: WeeklyDropProps) {
 
       <div className="rounded-lg bg-gray-900 p-4">
         <p className="mb-4 text-sm text-gray-300">
-          Support 5 curated projects with a single donation. This week's theme:{" "}
+          Support 5 curated projects with a single donation. This week&apos;s theme:{" "}
           <span className="text-[#FFD600]">Positive Impact</span>
         </p>
 

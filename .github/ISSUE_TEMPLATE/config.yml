@@ -1,1 +1,8 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability
+    url: https://github.com/swipe-pad/swipe-pad/security/advisories/new
+    about: Report security issues privately here.
+  - name: Discussions
+    url: https://github.com/swipe-pad/swipe-pad/discussions
+    about: Ask questions and share ideas in Discussions.

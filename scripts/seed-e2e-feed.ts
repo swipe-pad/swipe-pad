@@ -48,6 +48,7 @@ const seedProjects: SeedProject[] = [
 
 async function seed() {
   for (const project of seedProjects) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await client.mutation("projects:upsertProject" as any, {
       adminKey,
       callerWallet,
@@ -63,6 +64,7 @@ async function seed() {
       featured: project.featured,
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await client.mutation("projects:setProjectActive" as any, {
       adminKey,
       callerWallet,

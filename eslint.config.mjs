@@ -1,13 +1,11 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
-import betterTailwind from "eslint-plugin-better-tailwindcss";
 import boundaries from "eslint-plugin-boundaries";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  betterTailwind.configs.recommended,
   boundaries.configs.recommended,
   {
     plugins: { boundaries },
@@ -23,13 +21,6 @@ const eslintConfig = defineConfig([
       "boundaries/ignore": ["**/*.test.*"]
     },
     rules: {
-      "better-tailwindcss/no-unknown-classes": "off",
-      "better-tailwindcss/enforce-consistent-class-order": [
-        "warn",
-        {
-          entryPoint: "./src/app/globals.css",
-        },
-      ],
       "boundaries/element-types": [
         "warn",
         {
@@ -45,23 +36,25 @@ const eslintConfig = defineConfig([
       ]
     },
   },
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-    // Legacy and generated folders:
-    ".cache/**",
-    ".vercel/**",
-    ".old/**",
-    "contracts/lib/**",
-    "convex/**",
-    "v0-readonly/**",
-    "ops/**",
-    // Build output folders:
-    ".vercel/**",
-  ]),
+    globalIgnores([
+      // Default ignores of eslint-config-next:
+      ".next/**",
+      "out/**",
+      "build/**",
+      "next-env.d.ts",
+      // Legacy and generated folders:
+      ".cache/**",
+      ".vercel/**",
+      ".old/**",
+      "contracts/lib/**",
+      "convex/**",
+      "v0-readonly/**",
+      "ops/**",
+      // Build output folders:
+      ".vercel/**",
+      // Scripts using CommonJS or Node builtins:
+      "scripts/*.cjs",
+    ]),
 ]);
 
 export default eslintConfig;

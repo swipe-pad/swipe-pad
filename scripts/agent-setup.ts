@@ -20,7 +20,8 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from 'fs'
-import { join, dirname, relative, basename, extname } from 'path'
+import { join, dirname, relative, basename } from 'path'
+import { execSync } from 'child_process'
 
 const SOURCE_DIR = 'configs/agents'
 const SUPPORTED_TOOLS = ['opencode', 'cursor', 'claude', 'codex', 'gemini']
@@ -225,10 +226,10 @@ function cleanArtifacts(): void {
   const dirs = ['.opencode', '.cursor', '.claude', '.gemini', '.kilocode', '.agent', '.agents']
 
   for (const dir of dirs) {
-    if (existsSync(dir)) {
-      require('child_process').execSync(`rm -rf ${dir}`)
-      console.log(`  Removed: ${dir}/`)
-    }
+      if (existsSync(dir)) {
+        execSync(`rm -rf ${dir}`)
+        console.log(`  Removed: ${dir}/`)
+      }
   }
 
   console.log('Done. Run `bun run scripts/agent-setup.ts [tool]` to regenerate.')

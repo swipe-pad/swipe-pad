@@ -1,0 +1,132 @@
+name: "Diff Policy"
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  diff-policy:
+    name: Diff Policy Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Diff Policy Check
+        id: diff-check
+        run: |
+          echo "=== Diff Policy Check ==="
+
+          # Get list of changed files
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} HEAD --)
+          else
+            FILES=$(git diff --name-only HEAD^ HEAD --)
+          fi
+
+          echo "Changed files:"
+          echo "$FILES"
+          echo "---"
+
+          # Check for sensitive files
+          SENSITIVE_FILES=""
+          for f in $FILES; do
+            case "$f" in
+              .github/CODEOWNERS | .github/dependabot.yml | .sops.yaml | .gitmodules)
+                SENSITIVE_FILES="$SENSITIVE_FILES $f"
+                ;;
+            esac
+          done
+
+          # Count changed files
+          FILE_COUNT=$(echo "$FILES" | wc -w)
+          echo "Total files changed: $FILE_COUNT"
+
+          # Detect file additions
+          ADDED_COUNT=$(git diff --name-only --diff-filter=A ${{ github.event.pull_request.base.sha }} HEAD -- | wc -w)
+          echo "Files added: $ADDED_COUNT"
+
+          # Check for binary files
+          BINARY_COUNT=$(echo "$FILES" | xargs -I{} file {} 2>/dev/null | grep -c "binary" || true)
+          echo "Binary files: $BINARY_COUNT"
+
+          # Check for generated/cache files
+          GENERATED=$(echo "$FILES" | grep -E '\.(min\.|bundle\.|dist|cache|\.next)' || true)
+          if [ -n "$GENERATED" ]; then
+            echo "Generated files detected:"
+            echo "$GENERATED"
+          fi
+
+          # Sensitive areas changed
+          SENSITIVE_AREAS=0
+          for f in $FILES; do
+            case "$f" in
+              contracts/*|.sops.yaml|secrets/*|.gitmodules|src/lib/farcaster/*|src/lib/minipay*.ts|wagmi*.ts|src/types/contracts.ts)
+                SENSITIVE_AREAS=$((SENSITIVE_AREAS + 1))
+                ;;
+            esac
+          done
+          echo "Sensitive areas touched: $SENSITIVE_AREAS"
+
+          # Set outputs
+          echo "file_count=$FILE_COUNT" >> $GITHUB_OUTPUT
+          echo "sensitive_files=$SENSITIVE_FILES" >> $GITHUB_OUTPUT
+          echo "sensitive_areas=$SENSITIVE_AREAS" >> $GITHUB_OUTPUT
+          echo "binary_count=$BINARY_COUNT" >> $GITHUB_OUTPUT
+          echo "generated_files=$GENERATED" >> $GITHUB_OUTPUT
+
+      - name: Post results as PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fileCount = ${{ steps.diff-check.outputs.file_count }};
+            const sensitiveFiles = '${{ steps.diff-check.outputs.sensitive_files }}'.trim();
+            const sensitiveAreas = ${{ steps.diff-check.outputs.sensitive_areas }};
+            const binaryCount = ${{ steps.diff-check.outputs.binary_count }};
+
+            const lines = [];
+            lines.push('### Diff Policy Report');
+            lines.push(`| Metric | Value |`);
+            lines.push(`|---|---|`);
+            lines.push(`| Files changed | ${fileCount} |`);
+            lines.push(`| Sensitive areas | ${sensitiveAreas} |`);
+            lines.push(`| Binary files | ${binaryCount} |`);
+
+            if (sensitiveAreas > 2 || fileCount > 20) {
+              lines.push('');
+              lines.push('**Warning**: This PR touches many files or multiple sensitive areas. Please ensure changes are split if possible.');
+              github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                labels: ['oversized']
+              });
+            }
+
+            if (sensitiveFiles) {
+              lines.push('');
+              lines.push(`**Sensitive files**: ${sensitiveFiles}`);
+              lines.push('');
+              lines.push('These files require maintainer review.');
+              github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                labels: ['needs:maintainer-review']
+              });
+            }
+
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: lines.join('\n')
+            });

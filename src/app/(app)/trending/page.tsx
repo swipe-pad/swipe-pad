@@ -9,6 +9,7 @@ import { useMutation } from "convex/react"
 import { useShallow } from "zustand/react/shallow"
 import { api } from "../../../../convex/_generated/api"
 import type { Id } from "../../../../convex/_generated/dataModel"
+import type { Project } from "@/lib/useConvexData"
 
 export default function TrendingPage() {
     const router = useRouter()
@@ -26,7 +27,7 @@ export default function TrendingPage() {
 
     const canDonate = (betaStatus === "active" || betaStatus === "guest") && creditsRemaining > 0
 
-    const handleDonate = async (project: any, amount = 5) => {
+    const handleDonate = async (project: Project, amount = 5) => {
         if (!canDonate || !betaUserId) return
         try {
             const result = await consumeCredits({
@@ -40,11 +41,15 @@ export default function TrendingPage() {
             return
         }
         setCart([...cart, { project, amount, currency: "cUSD" }])
-        setUserStats((prev: any) => ({
+        setUserStats((prev) => ({
             ...prev,
             totalDonations: prev.totalDonations + 1,
             lastDonation: new Date(),
         }))
+    }
+
+    const handleMockDonate = async (_project: Record<string, unknown>, _amount?: number) => {
+        console.log("Mock donation:", _project, _amount)
     }
 
     return (
@@ -62,7 +67,7 @@ export default function TrendingPage() {
                 </div>
             )}
             <TrendingSection onDonate={handleDonate} />
-            <CommunityFunds onDonate={handleDonate} />
+            <CommunityFunds onDonate={handleMockDonate} />
             <WeeklyDrop onDonate={handleDonate} />
             <button
                 onClick={() => router.push('/')}

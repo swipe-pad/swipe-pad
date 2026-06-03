@@ -1,9 +1,9 @@
 "use client"
 import { Flame } from "lucide-react"
-import { useProjects } from "@/lib/useConvexData"
+import { useProjects, type Project } from "@/lib/useConvexData"
 
 interface TrendingSectionProps {
-  onDonate: (project: any, amount?: number) => void
+  onDonate: (project: Project, amount?: number) => void
 }
 
 export function TrendingSection({ onDonate }: TrendingSectionProps) {

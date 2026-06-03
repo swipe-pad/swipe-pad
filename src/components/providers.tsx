@@ -11,7 +11,8 @@ import { AppProvider } from "@/context/AppContext"
 import { FarcasterBootstrap } from "@/components/farcaster-bootstrap"
 import { ProjectsProvider } from "@/lib/useConvexData"
 
-const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL || "https://placeholder.convex.cloud"
+const convex = new ConvexReactClient(CONVEX_URL)
 
 export function Providers({ children }: { children: React.ReactNode }) {
     const [queryClient] = useState(() => new QueryClient({

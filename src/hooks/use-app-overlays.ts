@@ -7,6 +7,7 @@ import { useApp } from "@/context/AppContext"
 import { useProjects } from "@/lib/useConvexData"
 import { TOP_UP_DIALOG_EVENT, type TopUpDialogDetail } from "@/lib/top-up-dialog"
 import type { ConfirmSwipes, DonationAmount, StableCoin } from "@/components/amount-selector"
+import type { EditProfileFormData } from "@/components/edit-profile"
 
 type CartCategoryItem = {
   project?: {
@@ -91,7 +92,7 @@ export function useAppOverlays() {
     setCart([])
   }
 
-  const handleSaveProfile = (data: Record<string, unknown>) => {
+  const handleSaveProfile = (data: EditProfileFormData) => {
     setUserProfile((prev) => ({ ...prev, ...data }))
   }
 

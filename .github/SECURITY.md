@@ -2,8 +2,6 @@
 
 ## Supported Versions
 
-We release patches for security vulnerabilities. Which versions are eligible for receiving such patches depends on the CVSS v3.0 Rating:
-
 | Version | Supported          |
 | ------- | ------------------ |
 | 1.0.x   | :white_check_mark: |
@@ -11,16 +9,15 @@ We release patches for security vulnerabilities. Which versions are eligible for
 
 ## Reporting a Vulnerability
 
-We take the security of SwipePad seriously. If you believe you have found a security vulnerability, please report it to us as described below.
+If you believe you have found a security vulnerability, please report it responsibly.
 
-**Please do not report security vulnerabilities through public GitHub issues.**
+**Do not report security vulnerabilities through public GitHub issues.**
 
-Instead, please report them via email to [security@refi-starter.xyz](mailto:security@refi-starter.xyz) (replace with your actual security email).
+Send a private report to the maintainers:
+- Open a [Security Advisories](https://github.com/swipe-pad/swipe-pad/security/advisories/new) report, OR
+- Email maintainers directly if you have contact details
 
-You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
-
-Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
-
+Please include:
 - Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
 - Full paths of source file(s) related to the manifestation of the issue
 - The location of the affected source code (tag/branch/commit or direct URL)
@@ -28,16 +25,6 @@ Please include the requested information listed below (as much as you can provid
 - Step-by-step instructions to reproduce the issue
 - Proof-of-concept or exploit code (if possible)
 - Impact of the issue, including how an attacker might exploit it
-
-This information will help us triage your report more quickly.
-
-## Preferred Languages
-
-We prefer all communications to be in English.
-
-## Bug Bounty Program
-
-We don't currently have a bug bounty program, but we are grateful to the security research community for helping us identify potential vulnerabilities.
 
 ## Safe Harbor
 
@@ -49,6 +36,10 @@ We support safe harbor for security researchers who:
 - Give us reasonable time to respond to your report before making any information public
 - Don't submit a high volume of low-quality reports
 
+## Bug Bounty
+
+We do not currently have a bug bounty program, but we are grateful to the security research community for helping us identify potential vulnerabilities.
+
 ## Attribution
 
-We will publicly acknowledge your responsible disclosure, if you wish. We also welcome your suggestions for improving our security.
+We will publicly acknowledge your responsible disclosure, if you wish.

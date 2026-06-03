@@ -1,0 +1,48 @@
+name: "Labeler"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/labeler.yml'
+  workflow_dispatch:
+    inputs:
+      labels:
+        description: 'JSON array of labels to add to PR'
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    name: Label PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Label PR
+        uses: actions/labeler@v5
+        with:
+          config-path: .github/labeler.yml
+          sync-labels: false
+
+      - name: Comment on sensitive PRs
+        if: contains(github.event.pull_request.labels.*.name, 'risk:high') || contains(github.event.pull_request.labels.*.name, 'risk:critical')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            prBody = pr.body || '';
+            const warning = `\n\n---\n**Security Review Required**: This PR touches sensitive areas. Maintainer review is required before merge.`;
+            if (!prBody.includes('Security Review Required')) {
+              github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                labels: ['needs:maintainer-review']
+              });
+            }

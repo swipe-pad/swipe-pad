@@ -1,62 +1,60 @@
-@import "tailwindcss";
+@import url("tailwindcss");
 
 :root {
-  --background: hsl(220 23% 99%);
-  --foreground: hsl(223 34% 14%);
-  --card: hsl(0 0% 100% / 0.9);
-  --card-foreground: hsl(223 34% 14%);
-  --popover: hsl(0 0% 100% / 0.96);
-  --popover-foreground: hsl(223 34% 14%);
-  --primary: hsl(48 100% 50%);         /* #FFD600 vibrant yellow */
-  --primary-foreground: hsl(0 0% 0%);
-  --secondary: hsl(222 32% 94%);
-  --secondary-foreground: hsl(223 35% 17%);
-  --muted: hsl(222 32% 94%);
-  --muted-foreground: hsl(220 13% 42%);
-  --accent: hsl(231 77% 67%);
-  --accent-foreground: hsl(0 0% 100%);
-  --destructive: hsl(0 72% 52%);
-  --destructive-foreground: hsl(210 40% 98%);
-  --border: hsl(224 20% 88%);
-  --input: hsl(224 20% 88%);
-  --ring: hsl(49 100% 50%);
+  --background: hsl(220deg 23% 99%);
+  --foreground: hsl(223deg 34% 14%);
+  --card: hsl(0deg 0% 100% / 90%);
+  --card-foreground: hsl(223deg 34% 14%);
+  --popover: hsl(0deg 0% 100% / 96%);
+  --popover-foreground: hsl(223deg 34% 14%);
+  --primary: hsl(48deg 100% 50%);         /* #FFD600 vibrant yellow */
+  --primary-foreground: hsl(0deg 0% 0%);
+  --secondary: hsl(222deg 32% 94%);
+  --secondary-foreground: hsl(223deg 35% 17%);
+  --muted: hsl(222deg 32% 94%);
+  --muted-foreground: hsl(220deg 13% 42%);
+  --accent: hsl(231deg 77% 67%);
+  --accent-foreground: hsl(0deg 0% 100%);
+  --destructive: hsl(0deg 72% 52%);
+  --destructive-foreground: hsl(210deg 40% 98%);
+  --border: hsl(224deg 20% 88%);
+  --input: hsl(224deg 20% 88%);
+  --ring: hsl(49deg 100% 50%);
   --radius: 0.85rem;
-
-  --brand-yellow: hsl(49 100% 50%);
-  --brand-indigo: hsl(229 77% 67%);
-  --surface-1: hsl(225 25% 16% / 0.78);
-  --surface-2: hsl(225 24% 22% / 0.74);
-  --surface-3: hsl(225 19% 30% / 0.58);
-  --surface-border: hsl(223 24% 100% / 0.11);
-  --success: hsl(144 64% 46%);
-  --warning: hsl(40 96% 56%);
+  --brand-yellow: hsl(49deg 100% 50%);
+  --brand-indigo: hsl(229deg 77% 67%);
+  --surface-1: hsl(225deg 25% 16% / 78%);
+  --surface-2: hsl(225deg 24% 22% / 74%);
+  --surface-3: hsl(225deg 19% 30% / 58%);
+  --surface-border: hsl(223deg 24% 100% / 11%);
+  --success: hsl(144deg 64% 46%);
+  --warning: hsl(40deg 96% 56%);
 }
 
 .dark {
-  --background: hsl(226 45% 6%);
-  --foreground: hsl(218 33% 96%);
-  --card: hsl(228 31% 12% / 0.82);
-  --card-foreground: hsl(218 33% 96%);
-  --popover: hsl(228 36% 10% / 0.95);
-  --popover-foreground: hsl(218 33% 96%);
-  --primary: hsl(48 100% 50%);
-  --primary-foreground: hsl(0 0% 0%);
-  --secondary: hsl(227 26% 18%);
-  --secondary-foreground: hsl(218 33% 96%);
-  --muted: hsl(227 23% 20%);
-  --muted-foreground: hsl(218 13% 74%);
-  --accent: hsl(229 77% 67%);
-  --accent-foreground: hsl(0 0% 100%);
-  --destructive: hsl(0 65% 42%);
-  --destructive-foreground: hsl(210 40% 98%);
-  --border: hsl(225 20% 24%);
-  --input: hsl(225 20% 24%);
-  --ring: hsl(49 100% 50%);
-
-  --surface-1: hsl(225 25% 16% / 0.78);
-  --surface-2: hsl(225 24% 22% / 0.74);
-  --surface-3: hsl(225 19% 30% / 0.58);
-  --surface-border: hsl(223 24% 100% / 0.11);
+  --background: hsl(226deg 45% 6%);
+  --foreground: hsl(218deg 33% 96%);
+  --card: hsl(228deg 31% 12% / 82%);
+  --card-foreground: hsl(218deg 33% 96%);
+  --popover: hsl(228deg 36% 10% / 95%);
+  --popover-foreground: hsl(218deg 33% 96%);
+  --primary: hsl(48deg 100% 50%);
+  --primary-foreground: hsl(0deg 0% 0%);
+  --secondary: hsl(227deg 26% 18%);
+  --secondary-foreground: hsl(218deg 33% 96%);
+  --muted: hsl(227deg 23% 20%);
+  --muted-foreground: hsl(218deg 13% 74%);
+  --accent: hsl(229deg 77% 67%);
+  --accent-foreground: hsl(0deg 0% 100%);
+  --destructive: hsl(0deg 65% 42%);
+  --destructive-foreground: hsl(210deg 40% 98%);
+  --border: hsl(225deg 20% 24%);
+  --input: hsl(225deg 20% 24%);
+  --ring: hsl(49deg 100% 50%);
+  --surface-1: hsl(225deg 25% 16% / 78%);
+  --surface-2: hsl(225deg 24% 22% / 74%);
+  --surface-3: hsl(225deg 19% 30% / 58%);
+  --surface-border: hsl(223deg 24% 100% / 11%);
 }
 
 @theme inline {
@@ -87,12 +85,10 @@
   --color-surface-border: var(--surface-border);
   --color-success: var(--success);
   --color-warning: var(--warning);
-
   --radius-sm: calc(var(--radius) - 0.25rem);
   --radius-md: calc(var(--radius) - 0.125rem);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 0.25rem);
-
   --font-sans: var(--font-body);
 }
 
@@ -107,9 +103,9 @@ body {
 
 body {
   background:
-    radial-gradient(circle at 12% 20%, hsl(228 79% 56% / 0.14) 0%, transparent 30%),
-    radial-gradient(circle at 90% 8%, hsl(49 100% 50% / 0.08) 0%, transparent 22%),
-    linear-gradient(150deg, hsl(230 46% 5%) 0%, hsl(228 36% 8%) 48%, hsl(221 42% 6%) 100%);
+    radial-gradient(circle at 12% 20%, hsl(228deg 79% 56% / 14%) 0%, transparent 30%),
+    radial-gradient(circle at 90% 8%, hsl(49deg 100% 50% / 8%) 0%, transparent 22%),
+    linear-gradient(150deg, hsl(230deg 46% 5%) 0%, hsl(228deg 36% 8%) 48%, hsl(221deg 42% 6%) 100%);
   color: var(--foreground);
   font-family: var(--font-body), "Segoe UI", sans-serif;
   min-height: 100vh;
@@ -133,7 +129,7 @@ body {
 
 .focus-ring {
   outline: none;
-  box-shadow: 0 0 0 2px hsl(var(--color-primary) / 0.55);
+  box-shadow: 0 0 0 2px hsl(var(--color-primary) / 55%);
 }
 
 .scrollbar-hide {
@@ -150,17 +146,17 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: hsl(225 20% 24% / 0.8);
+  background: hsl(225deg 20% 24% / 80%);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: hsl(226 16% 46%);
+  background: hsl(226deg 16% 46%);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: hsl(227 18% 60%);
+  background: hsl(227deg 18% 60%);
 }
 
 @view-transition {
@@ -234,6 +230,7 @@ canvas {
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-8px);
   }
@@ -248,13 +245,16 @@ canvas {
     transform: translateX(-160%) skewX(-20deg);
     opacity: 0;
   }
+
   14% {
     opacity: 0.32;
   }
+
   34% {
     transform: translateX(320%) skewX(-20deg);
     opacity: 0;
   }
+
   100% {
     transform: translateX(320%) skewX(-20deg);
     opacity: 0;

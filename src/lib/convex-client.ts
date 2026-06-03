@@ -29,6 +29,10 @@ function getClient(): ConvexHttpClient {
   return cachedClient
 }
 
+type ConvexQueryMethod = ConvexHttpClient["query"]
+type ConvexActionMethod = ConvexHttpClient["action"]
+type ConvexMutationMethod = ConvexHttpClient["mutation"]
+
 export async function fetchConvexQuery<Args extends object, Result>(
   functionName: string,
   args: Args,
@@ -51,7 +55,11 @@ export async function fetchConvexQuery<Args extends object, Result>(
   }
 
   const client = getClient()
-  const task = (async () => await client.query(functionName as any, args) as Result)()
+  const task = (async () => {
+    const query = client.query.bind(client) as unknown as ConvexQueryMethod
+    const result = await query(functionName as unknown as Parameters<ConvexQueryMethod>[0], args as unknown as Parameters<ConvexQueryMethod>[1])
+    return result as Result
+  })()
 
   if (cacheTtlMs > 0) {
     queryCache.set(cacheKey, {
@@ -84,7 +92,9 @@ export async function fetchConvexAction<Args extends object, Result>(
   args: Args
 ): Promise<Result> {
   const client = getClient()
-  return await client.action(functionName as any, args) as Result
+  const action = client.action.bind(client) as unknown as ConvexActionMethod
+  const result = await action(functionName as unknown as Parameters<ConvexActionMethod>[0], args as unknown as Parameters<ConvexActionMethod>[1])
+  return result as Result
 }
 
 export async function fetchConvexMutation<Args extends object, Result>(
@@ -92,5 +102,7 @@ export async function fetchConvexMutation<Args extends object, Result>(
   args: Args
 ): Promise<Result> {
   const client = getClient()
-  return await client.mutation(functionName as any, args) as Result
+  const mutation = client.mutation.bind(client) as unknown as ConvexMutationMethod
+  const result = await mutation(functionName as unknown as Parameters<ConvexMutationMethod>[0], args as unknown as Parameters<ConvexMutationMethod>[1])
+  return result as Result
 }

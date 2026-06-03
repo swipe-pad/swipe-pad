@@ -16,7 +16,6 @@ export type FarcasterTestHostState = {
 
 declare global {
   interface Window {
-    ethereum?: any
     __SWIPEPAD_FARCASTER_TEST_HOST__?: FarcasterTestHostState
     __SWIPEPAD_LAST_COMPOSE_CAST__?: {
       text?: string
@@ -38,12 +37,14 @@ export function hasFarcasterTestHost(): boolean {
 
 export function hasMiniPayProvider(): boolean {
   if (typeof window === "undefined") return false
-  return Boolean(window.ethereum?.isMiniPay)
+  const ethereum = (window as unknown as { ethereum?: { isMiniPay?: boolean } }).ethereum
+  return Boolean(ethereum?.isMiniPay)
 }
 
 export function hasFarcasterProviderSignal(): boolean {
   if (typeof window === "undefined") return false
-  return Boolean(window.ethereum?.isFarcaster)
+  const ethereum = (window as unknown as { ethereum?: { isFarcaster?: boolean } }).ethereum
+  return Boolean(ethereum?.isFarcaster)
 }
 
 export function getHostEnvironmentSync(): HostEnvironment {
