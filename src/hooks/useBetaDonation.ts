@@ -6,6 +6,7 @@ import { getContract, prepareContractCall } from 'thirdweb'
 import { client } from '@/lib/thirdweb-client'
 import { celo, base } from 'thirdweb/chains'
 import { betaDonationPoolAbi, BETA_POOL_ADDRESS } from '@/types/contracts'
+import { buildBatchDonationParams } from '@/lib/beta-donation-batch'
 import type { Project } from '@/lib/useConvexData'
 
 export interface DonationItem {
@@ -70,21 +71,8 @@ export function useBetaDonation(chain: 'celo' | 'base' = 'celo'): UseBetaDonatio
           abi: betaDonationPoolAbi,
         })
 
-        // Convert items to contract format
-        // Each project needs a recipient wallet address
-        const recipients = items.map((item) => {
-          const wallet = item.project.recipientWallet as string
-          if (!wallet) {
-            throw new Error(`Project ${item.project.name} has no wallet address`)
-          }
-          return wallet as `0x${string}`
-        })
-
-        // Convert dollar amounts to wei (1e18 for 18 decimals, but amounts are in dollars)
-        // $0.01 = 1e16 wei (assuming 18 decimal token)
-        const amounts = items.map((item) => {
-          return BigInt(Math.floor(item.amount * 1e18))
-        })
+        // Convert items to contract format (recipients + wei amounts, precision-safe)
+        const { recipients, amounts } = buildBatchDonationParams(items)
 
         // Prepare the batchDonate call
         const tx = prepareContractCall({

@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import type { Project } from "@/lib/useConvexData"
 import type { StableCoin } from "@/components/amount-selector"
+import { useBetaDonation } from "@/hooks/useBetaDonation"
 
 interface CartItem {
   project: Project
@@ -18,6 +19,7 @@ interface CartProps {
 
 export function Cart({ items, onClose, onCheckout }: CartProps) {
   const [isProcessing, setIsProcessing] = useState(false)
+  const { donate } = useBetaDonation("celo")
 
   const totals = useMemo(() => {
     const result: Record<StableCoin, number> = {
@@ -40,11 +42,19 @@ export function Cart({ items, onClose, onCheckout }: CartProps) {
 
     setIsProcessing(true)
 
-    // Simulate transaction processing with MiniPay
-    setTimeout(() => {
-      setIsProcessing(false)
-      onCheckout()
-    }, 2000)
+    // Real on-chain interaction: BetaDonationPool.batchDonate via the connected
+    // wallet (Option B, SP-1003). Best-effort — Convex stays the source of truth
+    // for credits/cart state, so a failed or reverted tx (pool not deployed yet
+    // for this env, wallet not connected, or no on-chain credits granted to this
+    // address) must not block the existing checkout UX. donate() already catches
+    // its own errors and returns null on failure, never throws.
+    const txHash = await donate(items)
+    if (txHash) {
+      console.log("[BetaDonation] batchDonate confirmed:", txHash)
+    }
+
+    setIsProcessing(false)
+    onCheckout()
   }
 
   return (

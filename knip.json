@@ -69,10 +69,8 @@
     "src/features/promo-faucet/**",
     "src/hooks/use-mobile.tsx",
     "src/hooks/useBetaCredits.ts",
-    "src/hooks/useBetaDonation.ts",
     "src/lib/data.ts",
     "src/lib/donation-history.ts",
-    "src/lib/funds-flow.ts",
     "src/types/index.ts",
     "wagmi-cli.config.ts"
   ],
