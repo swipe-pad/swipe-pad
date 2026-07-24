@@ -39,6 +39,7 @@
     "contracts:test": "cd contracts && forge test",
     "contracts:deploy:anvil": "cd contracts && forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast",
     "contracts:deploy:celo": "cd contracts && forge script script/Deploy.s.sol --rpc-url $CELO_RPC --broadcast --verify",
+    "contracts:deploy:celo-sepolia": "cd contracts && forge script script/Deploy.s.sol --rpc-url celo_sepolia --broadcast --verify --verifier blockscout --verifier-url https://celo-sepolia.blockscout.com/api/",
     "contracts:deploy:base": "cd contracts && forge script script/Deploy.s.sol --rpc-url $BASE_RPC --broadcast --verify"
   },
   "dependencies": {
