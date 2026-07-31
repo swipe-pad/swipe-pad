@@ -118,7 +118,7 @@
     "eslint-plugin-boundaries": "5.4.0",
     "knip": "5.85.0",
     "lint-staged": "17.0.4",
-    "postcss": "8.5.6",
+    "postcss": "8.5.18",
     "sharp": "0.34.5",
     "stylelint": "17.3.0",
     "stylelint-config-standard": "40.0.0",
