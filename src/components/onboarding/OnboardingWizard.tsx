@@ -22,6 +22,10 @@ const steps = [
         title: "Global Leaderboard",
         description: "Climb the rankings to win prizes.\nBoost your favorite projects.",
     },
+    {
+        title: "Early Access",
+        description: "You're in the SwipePad beta — some flows are still being refined.\nIf something feels off, tap the feedback icon and tell us.",
+    },
 ]
 
 const fanCards = [

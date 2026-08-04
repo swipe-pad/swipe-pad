@@ -57,7 +57,6 @@
     "src/components/beta-banner.tsx",
     "src/components/category-menu.tsx",
     "src/components/donation-modal.tsx",
-    "src/components/feedback-form.tsx",
     "src/components/minipay-wallet-connect.tsx",
     "src/components/mobile-mockup.tsx",
     "src/components/starry-background.tsx",
