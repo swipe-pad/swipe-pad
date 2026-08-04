@@ -237,6 +237,19 @@ export default defineSchema({
     .index("by_tx", ["txHash"])
     .index("by_status", ["status"]),
 
+  /** Verified swipe top-ups (BuyWidget payments credited after on-chain verification) */
+  topUps: defineTable({
+    userId: v.id("waitlistUsers"),
+    chain: v.string(), // "celo"
+    planId: v.string(),
+    swipes: v.number(),
+    amountUsd: v.string(),
+    txHash: v.string(),
+    ts: v.number(),
+  })
+    .index("by_txHash", ["txHash"])
+    .index("by_user", ["userId"]),
+
   /** User feedback for beta */
   feedback: defineTable({
     userId: v.id("waitlistUsers"),
