@@ -1,6 +1,10 @@
 "use client"
 
+import { useEffect } from "react"
+import { motion } from "framer-motion"
 import { X } from "lucide-react"
+
+import { haptic } from "@/lib/haptics"
 
 interface ZeroSwipesGuardrailProps {
   isOpen: boolean
@@ -9,11 +13,24 @@ interface ZeroSwipesGuardrailProps {
 }
 
 export function ZeroSwipesGuardrail({ isOpen, onClose, onTopUp }: ZeroSwipesGuardrailProps) {
+  useEffect(() => {
+    if (isOpen) haptic("block")
+  }, [isOpen])
+
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-110 flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
-      <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
+      className="fixed inset-0 z-110 flex items-center justify-center bg-black/70 p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.94, y: 12 }}
+        animate={{ scale: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 480, damping: 32 }}
         className="surface-panel-strong max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-surface-border shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -48,8 +65,8 @@ export function ZeroSwipesGuardrail({ isOpen, onClose, onTopUp }: ZeroSwipesGuar
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
 

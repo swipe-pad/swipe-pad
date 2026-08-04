@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react"
 
 import { mapDecisionToFundingIntent, type SwipeDecision } from "@/components/swipe/engine"
+import { haptic } from "@/lib/haptics"
 import type { Project } from "@/lib/useConvexData"
 
 type Mode = "discover" | "shared-entry"
@@ -148,6 +149,17 @@ export function useSwipeBusinessFlow(options: {
     },
   }), [cart, creditsRemaining, mode, selectedCategory, swipeCount, userProfile, userStats])
 
+  const restoreSnapshot = useCallback((snapshot: SwipeSnapshot) => {
+    isRestoringSnapshotRef.current = true
+    setMode(snapshot.prevMode)
+    setSelectedCategory(snapshot.prevSelectedCategory)
+    setSwipeCount(snapshot.prevSwipeCount)
+    setCreditsRemaining(snapshot.prevCreditsRemaining)
+    setCart(snapshot.prevCart)
+    setUserStats(snapshot.prevUserStats)
+    setUserProfile(snapshot.prevUserProfile)
+  }, [setCart, setCreditsRemaining, setMode, setSelectedCategory, setSwipeCount, setUserProfile, setUserStats])
+
   const handleSwipeRight = useCallback(async (decision?: SwipeDecision, options?: { skipDeckCommit?: boolean }) => {
     if (!canSwipe || !currentProject || isAdvancing) return
     if (!freeMode && !betaUserId) return
@@ -170,16 +182,11 @@ export function useSwipeBusinessFlow(options: {
         return
       }
 
-      const remaining = await consumeCredit()
-      if (remaining === null) {
-        if (options?.skipDeckCommit) {
-          undoDeck()
-        }
-        setIsAdvancing(false)
-        return
-      }
-
-      setCreditsRemaining(remaining)
+      // Optimistic: the card is visually gone, so the world reacts NOW —
+      // credits tick down and the deck advances without waiting a network
+      // round-trip. The server mutation reconciles (or rolls back) below.
+      setCreditsRemaining(creditsRemaining - 1)
+      haptic("tap")
 
       setUserStats((prev) => {
         const categoriesSupported = new Set(prev.categoriesSupported)
@@ -234,6 +241,19 @@ export function useSwipeBusinessFlow(options: {
         commit(decision ?? fallbackDecision("right"))
       }
       setSwipeHistory((prev) => [...prev, snapshot])
+
+      // Reconcile with the server off the critical path. Insufficient credits
+      // or a network failure rolls the optimistic swipe back, card included.
+      void consumeCredit().then((remaining) => {
+        if (remaining === null) {
+          setSwipeHistory((prev) => prev.slice(0, -1))
+          restoreSnapshot(snapshot)
+          undoDeck()
+          haptic("block")
+          return
+        }
+        setCreditsRemaining(remaining)
+      })
     } catch (error) {
       console.error("Failed to process right swipe:", error)
       if (options?.skipDeckCommit) {
@@ -339,29 +359,13 @@ export function useSwipeBusinessFlow(options: {
       const last = next.pop()
       if (!last) return prev
 
-      isRestoringSnapshotRef.current = true
-      setMode(last.prevMode)
-      setSelectedCategory(last.prevSelectedCategory)
-      setSwipeCount(last.prevSwipeCount)
-      setCreditsRemaining(last.prevCreditsRemaining)
-      setCart(last.prevCart)
-      setUserStats(last.prevUserStats)
-      setUserProfile(last.prevUserProfile)
+      restoreSnapshot(last)
       undoDeck()
+      haptic("undo")
 
       return next
     })
-  }, [
-    deckHistoryLength,
-    setCart,
-    setCreditsRemaining,
-    setMode,
-    setSelectedCategory,
-    setSwipeCount,
-    setUserProfile,
-    setUserStats,
-    undoDeck,
-  ])
+  }, [deckHistoryLength, restoreSnapshot, undoDeck])
 
   const clearSwipeHistory = useCallback(() => {
     setSwipeHistory([])

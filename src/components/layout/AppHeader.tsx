@@ -1,10 +1,11 @@
 "use client"
 
-import { useRef, type MouseEvent } from "react"
+import { useEffect, useRef, useState, type MouseEvent } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useShallow } from "zustand/react/shallow"
 
+import { motion } from "framer-motion"
 import { MessageSquarePlus } from "lucide-react"
 
 import { useApp } from "@/context/AppContext"
@@ -45,6 +46,17 @@ export function AppHeader({ donationAmountLabel, onOpenDonationSetup, onOpenFeed
     }))
   )
 
+  // Pulse the counter when the value changes: emerald going up (top-up),
+  // amber going down (a swipe just spent one). Static on first paint.
+  const prevCreditsRef = useRef(creditsRemaining)
+  const [creditsFlash, setCreditsFlash] = useState<"up" | "down" | null>(null)
+  useEffect(() => {
+    if (prevCreditsRef.current !== creditsRemaining) {
+      setCreditsFlash(creditsRemaining > prevCreditsRef.current ? "up" : "down")
+      prevCreditsRef.current = creditsRemaining
+    }
+  }, [creditsRemaining])
+
   return (
     <header className="view-header bg-transparent">
       <div className="px-3 py-2">
@@ -84,7 +96,15 @@ export function AppHeader({ donationAmountLabel, onOpenDonationSetup, onOpenFeed
             </button>
             {walletConnected ? (
               <>
-                <span className="text-xs text-muted-foreground">{creditsRemaining} swipes</span>
+                <motion.span
+                  key={`credits-${creditsRemaining}`}
+                  initial={creditsFlash ? { scale: 1.35, color: creditsFlash === "up" ? "#34d399" : "#fbbf24" } : false}
+                  animate={{ scale: 1, color: "#b4bccb" }}
+                  transition={{ type: "spring", stiffness: 550, damping: 32 }}
+                  className="inline-block text-xs tabular-nums"
+                >
+                  {creditsRemaining} swipes
+                </motion.span>
                 <button onClick={() => openTopUpDialog("header")} className="btn-sm btn-ghost hover:bg-[#2b3a5a]">
                   Add Funds
                 </button>
