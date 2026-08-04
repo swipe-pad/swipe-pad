@@ -72,6 +72,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                 <AppHeader
                                     donationAmountLabel={donationAmount ?? "0.01¢"}
                                     onOpenDonationSetup={() => overlays.setShowDonationSetup(true)}
+                                    onOpenFeedback={() => overlays.setShowFeedback(true)}
                                 />
                             ) : null
                         }
@@ -96,6 +97,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         topUpDefaultPlanId={overlays.topUpDefaultPlanId}
                         showZeroSwipesGuardrail={overlays.showZeroSwipesGuardrail}
                         enableProjectRegistration={ENABLE_PROJECT_REGISTRATION}
+                        showFeedback={overlays.showFeedback}
+                        betaUserId={overlays.betaUserId}
+                        topUpStatus={overlays.topUpStatus}
+                        checkoutResult={overlays.checkoutResult}
                         cart={overlays.cart}
                         successCategories={overlays.categoriesFromCheckout}
                         userStats={overlays.userStats}
@@ -124,6 +129,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             overlays.setTopUpReason("zero-swipes")
                             overlays.setShowTopUp(true)
                         }}
+                        onCloseFeedback={() => overlays.setShowFeedback(false)}
+                        onDismissTopUpStatus={() => overlays.setTopUpStatus(null)}
                     />
                 </>
             )}

@@ -11,15 +11,21 @@ interface CartItem {
   currency: StableCoin
 }
 
+export type CheckoutResult = {
+  mode: "onchain" | "ledger"
+  txHash: string | null
+}
+
 interface CartProps {
   items: CartItem[]
   onClose: () => void
-  onCheckout: () => void
+  onCheckout: (result: CheckoutResult) => void
 }
 
 export function Cart({ items, onClose, onCheckout }: CartProps) {
   const [isProcessing, setIsProcessing] = useState(false)
-  const { donate } = useBetaDonation("celo")
+  const [onchainError, setOnchainError] = useState<string | null>(null)
+  const { donate, error, canDonateOnchain } = useBetaDonation("celo")
 
   const totals = useMemo(() => {
     const result: Record<StableCoin, number> = {
@@ -40,21 +46,28 @@ export function Cart({ items, onClose, onCheckout }: CartProps) {
       return
     }
 
-    setIsProcessing(true)
-
-    // Real on-chain interaction: BetaDonationPool.batchDonate via the connected
-    // wallet (Option B, SP-1003). Best-effort — Convex stays the source of truth
-    // for credits/cart state, so a failed or reverted tx (pool not deployed yet
-    // for this env, wallet not connected, or no on-chain credits granted to this
-    // address) must not block the existing checkout UX. donate() already catches
-    // its own errors and returns null on failure, never throws.
-    const txHash = await donate(items)
-    if (txHash) {
-      console.log("[BetaDonation] batchDonate confirmed:", txHash)
+    // No wallet or pool not deployed for this env: the donation is recorded in
+    // the Convex beta ledger only (SP-1003 Option B) — say so instead of faking
+    // an on-chain success.
+    if (!canDonateOnchain) {
+      onCheckout({ mode: "ledger", txHash: null })
+      return
     }
 
+    setIsProcessing(true)
+    setOnchainError(null)
+
+    const txHash = await donate(items)
     setIsProcessing(false)
-    onCheckout()
+
+    if (txHash) {
+      onCheckout({ mode: "onchain", txHash })
+      return
+    }
+
+    // donate() catches internally and returns null; surface the failure instead
+    // of jumping to the success screen. Cart stays intact for retry.
+    setOnchainError(error?.message ?? "The on-chain donation didn't go through.")
   }
 
   return (
@@ -66,7 +79,10 @@ export function Cart({ items, onClose, onCheckout }: CartProps) {
         rounded-2xl border border-surface-border p-6 shadow-2xl
       " onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-start justify-between">
-          <h3 className="text-xl font-bold">Your Donations</h3>
+          <div>
+            <h3 className="text-xl font-bold">Your Donations</h3>
+            <p className="mt-1 text-xs text-gray-400">Spread your donation across at least 5 projects.</p>
+          </div>
           <button onClick={onClose} className="
             text-gray-400
             hover:text-white
@@ -123,6 +139,13 @@ export function Cart({ items, onClose, onCheckout }: CartProps) {
                 </div>
               ) : null}
 
+              {onchainError ? (
+                <div className="mb-4 rounded-lg bg-red-900/30 p-3 text-sm text-red-300">
+                  <p className="font-medium">{onchainError}</p>
+                  <p className="mt-1 text-xs text-red-200/80">No funds moved. Your selection is safe — you can retry now or try again later.</p>
+                </div>
+              ) : null}
+
               <button
                 onClick={handleCheckout}
                 disabled={items.length < 5 || isProcessing}
@@ -160,8 +183,10 @@ export function Cart({ items, onClose, onCheckout }: CartProps) {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    Processing...
+                    Sending on-chain...
                   </span>
+                ) : onchainError ? (
+                  "Retry Donation"
                 ) : (
                   "Confirm Donation"
                 )}

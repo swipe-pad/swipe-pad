@@ -3,11 +3,16 @@
 import dynamic from "next/dynamic"
 import ZeroSwipesGuardrail from "@/components/layout/ZeroSwipesGuardrail"
 
+import type { CheckoutResult } from "@/components/cart"
 import type { ConfirmSwipes, DonationAmount, StableCoin } from "@/components/amount-selector"
 import type { EditProfileFormData } from "@/components/edit-profile"
 import type { ProjectFormData } from "@/components/project-registration-form"
+import type { TopUpStatus } from "@/hooks/use-app-overlays"
+import type { Id } from "../../../convex/_generated/dataModel"
 
 const Cart = dynamic(() => import("@/components/cart").then((mod) => mod.Cart))
+const FeedbackForm = dynamic(() => import("@/components/feedback-form").then((mod) => mod.FeedbackForm))
+const TopUpStatusToast = dynamic(() => import("@/components/layout/TopUpStatusToast").then((mod) => mod.TopUpStatusToast))
 const SuccessScreen = dynamic(() => import("@/components/success-screen").then((mod) => mod.SuccessScreen))
 const BadgeNotification = dynamic(() => import("@/components/badge-notification").then((mod) => mod.BadgeNotification))
 const ProfileQuickView = dynamic(() => import("@/components/profile-quick-view").then((mod) => mod.ProfileQuickView))
@@ -30,6 +35,10 @@ interface AppOverlaysProps {
   topUpDefaultPlanId?: string
   showZeroSwipesGuardrail: boolean
   enableProjectRegistration: boolean
+  showFeedback: boolean
+  betaUserId: string | null
+  topUpStatus: TopUpStatus | null
+  checkoutResult: CheckoutResult | null
   cart: unknown[]
   successCategories: string[]
   userStats: {
@@ -46,7 +55,7 @@ interface AppOverlaysProps {
   creditsRemaining: number
   creditsMax: number
   onCloseCart: () => void
-  onCheckout: () => void
+  onCheckout: (result: CheckoutResult) => void
   onCloseSuccess: () => void
   onCloseBadgeNotification: () => void
   onCloseProfileQuickView: () => void
@@ -60,6 +69,8 @@ interface AppOverlaysProps {
   onTopUpSuccess: (result: { planId: string; swipesGranted: number; txHash?: string }) => void
   onCloseZeroSwipesGuardrail: () => void
   onOpenTopUpFromGuardrail: () => void
+  onCloseFeedback: () => void
+  onDismissTopUpStatus: () => void
 }
 
 export function AppOverlays({
@@ -76,6 +87,10 @@ export function AppOverlays({
   topUpDefaultPlanId,
   showZeroSwipesGuardrail,
   enableProjectRegistration,
+  showFeedback,
+  betaUserId,
+  topUpStatus,
+  checkoutResult,
   cart,
   successCategories,
   userStats,
@@ -101,12 +116,31 @@ export function AppOverlays({
   onTopUpSuccess,
   onCloseZeroSwipesGuardrail,
   onOpenTopUpFromGuardrail,
+  onCloseFeedback,
+  onDismissTopUpStatus,
 }: AppOverlaysProps) {
   return (
     <>
       {showCart ? <Cart items={cart as never[]} onClose={onCloseCart} onCheckout={onCheckout} /> : null}
 
-      {showSuccess ? <SuccessScreen onClose={onCloseSuccess} categories={successCategories} /> : null}
+      {showSuccess ? (
+        <SuccessScreen
+          onClose={onCloseSuccess}
+          categories={successCategories}
+          mode={checkoutResult?.mode ?? "ledger"}
+          txHash={checkoutResult?.txHash}
+        />
+      ) : null}
+
+      {showFeedback ? (
+        <FeedbackForm
+          userId={(betaUserId as Id<"waitlistUsers">) ?? undefined}
+          context="general"
+          onClose={onCloseFeedback}
+        />
+      ) : null}
+
+      {topUpStatus ? <TopUpStatusToast status={topUpStatus} onDismiss={onDismissTopUpStatus} /> : null}
 
       {showBadgeNotification ? <BadgeNotification badge={currentBadge} onClose={onCloseBadgeNotification} /> : null}
 

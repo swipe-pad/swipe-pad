@@ -42,7 +42,11 @@ type TopUpDialogProps = {
 }
 
 function getReceiverAddress(): `0x${string}` | null {
-  const receiver = process.env.NEXT_PUBLIC_TOP_UP_RECEIVER_ADDRESS
+  // Payments land on the project treasury (defaults to the donation pool, which
+  // is what disburses the actual donations). Never the user's own wallet.
+  const receiver =
+    process.env.NEXT_PUBLIC_TOP_UP_RECEIVER_ADDRESS ||
+    process.env.NEXT_PUBLIC_BETA_POOL_ADDRESS_CELO
   return receiver?.startsWith("0x") ? (receiver as `0x${string}`) : null
 }
 
@@ -163,7 +167,7 @@ export function TopUpDialog({
                 amount={selectedPlan.amountUsd}
                 currency="USD"
                 title={`Recharge ${selectedPlan.swipes} swipes`}
-                description="Funds are received by SwipePad and credits are granted after payment verification."
+                description="Funds go to the SwipePad donation pool. Swipes are credited once your payment is verified on-chain."
                 buttonLabel="Recharge swipes"
                 paymentMethods={["crypto", "card"]}
                 amountEditable={false}
@@ -177,15 +181,25 @@ export function TopUpDialog({
                   swipes: selectedPlan.swipes,
                   walletAddress: activeAddress ?? null,
                 }}
-                onSuccess={() => {
-                  onSuccess({ planId: selectedPlan.id, swipesGranted: selectedPlan.swipes })
+                onSuccess={(data) => {
+                  const txHash = data.statuses
+                    .flatMap((status) => status.transactions)
+                    .filter((tx) => tx.chainId === celo.id)
+                    .at(-1)?.transactionHash
+                  onSuccess({ planId: selectedPlan.id, swipesGranted: selectedPlan.swipes, txHash })
                   onClose()
                 }}
               />
             </div>
           ) : (
             <div className="rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-100">
-              Configure <code>NEXT_PUBLIC_TOP_UP_RECEIVER_ADDRESS</code> to enable live top-ups.
+              <p>Top-ups aren&apos;t live in this environment yet — your free swipes keep working.</p>
+              {process.env.NODE_ENV !== "production" ? (
+                <p className="mt-2 text-xs text-amber-200/80">
+                  Dev: set <code>NEXT_PUBLIC_TOP_UP_RECEIVER_ADDRESS</code> (or deploy the pool and set{" "}
+                  <code>NEXT_PUBLIC_BETA_POOL_ADDRESS_CELO</code>) to enable live top-ups.
+                </p>
+              ) : null}
             </div>
           )}
 

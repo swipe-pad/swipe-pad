@@ -31,7 +31,14 @@ export function useBetaCredits(chain: 'celo' | 'base' = 'celo'): BetaCredits {
     refetch: () => {},
   })
 
-  const poolAddress = BETA_POOL_ADDRESS[chain] as `0x${string}`
+  // Same env override as useBetaDonation — contracts.ts ships zero-address
+  // placeholders until wagmi:generate runs post-deploy.
+  const envOverride = (
+    chain === 'celo'
+      ? process.env.NEXT_PUBLIC_BETA_POOL_ADDRESS_CELO
+      : process.env.NEXT_PUBLIC_BETA_POOL_ADDRESS_BASE
+  ) as `0x${string}` | undefined
+  const poolAddress = (envOverride || BETA_POOL_ADDRESS[chain]) as `0x${string}`
   const chainConfig = chain === 'celo' ? celo : base
 
   // Skip if pool not deployed yet (placeholder address)

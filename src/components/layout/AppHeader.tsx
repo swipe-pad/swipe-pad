@@ -5,16 +5,20 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useShallow } from "zustand/react/shallow"
 
+import { MessageSquarePlus } from "lucide-react"
+
 import { useApp } from "@/context/AppContext"
 import { FarcasterMiniAppPrompt } from "@/components/farcaster-miniapp-prompt"
 import { ChevronDownIcon } from "@/components/icons"
+import { openTopUpDialog } from "@/lib/top-up-dialog"
 
 interface AppHeaderProps {
   donationAmountLabel: string
   onOpenDonationSetup: () => void
+  onOpenFeedback: () => void
 }
 
-export function AppHeader({ donationAmountLabel, onOpenDonationSetup }: AppHeaderProps) {
+export function AppHeader({ donationAmountLabel, onOpenDonationSetup, onOpenFeedback }: AppHeaderProps) {
   const router = useRouter()
   const isDev = process.env.NODE_ENV !== "production"
   const logoClickTimestampsRef = useRef<number[]>([])
@@ -45,13 +49,18 @@ export function AppHeader({ donationAmountLabel, onOpenDonationSetup }: AppHeade
     <header className="view-header bg-transparent">
       <div className="px-3 py-2">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-          <Link
-            href="/"
-            onClick={handleLogoClick}
-            className="font-display text-xs font-bold tracking-wide text-white transition-colors hover:text-primary"
-          >
-            SwipePad
-          </Link>
+          <div className="flex items-center gap-1.5">
+            <Link
+              href="/"
+              onClick={handleLogoClick}
+              className="font-display text-xs font-bold tracking-wide text-white transition-colors hover:text-primary"
+            >
+              SwipePad
+            </Link>
+            <span className="rounded-full border border-primary/40 bg-primary/10 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wide text-primary">
+              Beta
+            </span>
+          </div>
 
           <button
             onClick={onOpenDonationSetup}
@@ -66,10 +75,17 @@ export function AppHeader({ donationAmountLabel, onOpenDonationSetup }: AppHeade
           </button>
 
           <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={onOpenFeedback}
+              className="rounded-md p-1 text-muted-foreground transition-colors hover:text-white"
+              aria-label="Send feedback"
+            >
+              <MessageSquarePlus className="size-4" />
+            </button>
             {walletConnected ? (
               <>
                 <span className="text-xs text-muted-foreground">{creditsRemaining} swipes</span>
-                <button onClick={onOpenDonationSetup} className="btn-sm btn-ghost hover:bg-[#2b3a5a]">
+                <button onClick={() => openTopUpDialog("header")} className="btn-sm btn-ghost hover:bg-[#2b3a5a]">
                   Add Funds
                 </button>
               </>

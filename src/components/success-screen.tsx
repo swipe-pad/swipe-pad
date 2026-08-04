@@ -6,9 +6,11 @@ import confetti from "canvas-confetti"
 interface SuccessScreenProps {
   onClose: () => void
   categories: string[]
+  mode?: "onchain" | "ledger"
+  txHash?: string | null
 }
 
-export function SuccessScreen({ onClose, categories }: SuccessScreenProps) {
+export function SuccessScreen({ onClose, categories, mode = "ledger", txHash }: SuccessScreenProps) {
   useEffect(() => {
     // Simple one-time confetti burst
     const triggerConfetti = () => {
@@ -46,7 +48,25 @@ export function SuccessScreen({ onClose, categories }: SuccessScreenProps) {
             <CheckIcon className="size-8 text-white" />
           </div>
           <h3 className="mb-2 text-xl font-bold">Thanks for supporting these projects!</h3>
-          <p className="text-gray-300">Your donation has been processed successfully.</p>
+          {mode === "onchain" ? (
+            <>
+              <p className="text-gray-300">Your donation is confirmed on-chain.</p>
+              {txHash ? (
+                <a
+                  href={`https://celoscan.io/tx/${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-block text-sm text-[#677FEB] underline underline-offset-2 hover:text-[#8A9BF0]"
+                >
+                  View transaction
+                </a>
+              ) : null}
+            </>
+          ) : (
+            <p className="text-gray-300">
+              Your donation was recorded in the SwipePad beta ledger. On-chain settlement arrives with the public donation pool.
+            </p>
+          )}
         </div>
 
         {categories.length > 0 && (

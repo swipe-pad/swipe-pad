@@ -19,6 +19,8 @@ export interface UseBetaDonationResult {
   isLoading: boolean
   error: Error | null
   txHash: string | null
+  /** True when an on-chain donation can actually be attempted (wallet + deployed pool) */
+  canDonateOnchain: boolean
 }
 
 /**
@@ -103,5 +105,6 @@ export function useBetaDonation(chain: 'celo' | 'base' = 'celo'): UseBetaDonatio
     isLoading,
     error,
     txHash,
+    canDonateOnchain: Boolean(account?.address) && isPoolDeployed,
   }
 }
