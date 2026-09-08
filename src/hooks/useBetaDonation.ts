@@ -2,11 +2,12 @@
 
 import { useState, useCallback } from 'react'
 import { useActiveAccount, useSendTransaction } from 'thirdweb/react'
-import { getContract, prepareContractCall } from 'thirdweb'
+import { getContract, prepareContractCall, waitForReceipt, type Hex } from 'thirdweb'
 import { client } from '@/lib/thirdweb-client'
 import { celo, base } from 'thirdweb/chains'
 import { betaDonationPoolAbi, BETA_POOL_ADDRESS } from '@/types/contracts'
 import { buildBatchDonationParams } from '@/lib/beta-donation-batch'
+import { outcomeFromReceipt, toError, type DonationOutcome, type DonationPhase } from '@/lib/donation-outcome'
 import type { Project } from '@/lib/useConvexData'
 
 export interface DonationItem {
@@ -15,13 +16,21 @@ export interface DonationItem {
 }
 
 export interface UseBetaDonationResult {
-  donate: (items: DonationItem[]) => Promise<string | null>
-  isLoading: boolean
+  /** Submits the batch and waits for the receipt. Resolves with what is actually known. */
+  donate: (items: DonationItem[]) => Promise<DonationOutcome>
+  /** Re-checks an already broadcast transaction without sending anything. */
+  checkTransaction: (txHash: string) => Promise<DonationOutcome>
+  phase: DonationPhase
   error: Error | null
   txHash: string | null
   /** True when an on-chain donation can actually be attempted (wallet + deployed pool) */
   canDonateOnchain: boolean
 }
+
+// Celo blocks are ~1–5s; this bounds how long the cart spinner can sit in
+// "confirming" before we fall back to an honest "unknown" outcome.
+const CONFIRM_MAX_BLOCKS = 60
+const RECHECK_MAX_BLOCKS = 10
 
 /**
  * Hook to execute batch donations via the BetaDonationPool contract
@@ -31,7 +40,7 @@ export function useBetaDonation(chain: 'celo' | 'base' = 'celo'): UseBetaDonatio
   const account = useActiveAccount()
   const { mutateAsync: sendTransaction } = useSendTransaction()
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [phase, setPhase] = useState<DonationPhase>('idle')
   const [error, setError] = useState<Error | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
 
@@ -49,21 +58,47 @@ export function useBetaDonation(chain: 'celo' | 'base' = 'celo'): UseBetaDonatio
 
   const isPoolDeployed = poolAddress !== '0x0000000000000000000000000000000000000000'
 
+  const checkTransaction = useCallback(
+    async (hash: string): Promise<DonationOutcome> => {
+      setPhase('confirming')
+      try {
+        const receipt = await waitForReceipt({
+          client,
+          chain: chainConfig,
+          transactionHash: hash as Hex,
+          maxBlocksWaitTime: RECHECK_MAX_BLOCKS,
+        })
+        return outcomeFromReceipt(hash, receipt)
+      } catch (err) {
+        const wrapped = toError(err)
+        setError(wrapped)
+        return { status: 'unknown', txHash: hash, error: wrapped }
+      } finally {
+        setPhase('idle')
+      }
+    },
+    [chainConfig]
+  )
+
   const donate = useCallback(
-    async (items: DonationItem[]): Promise<string | null> => {
+    async (items: DonationItem[]): Promise<DonationOutcome> => {
       if (!account?.address) {
-        setError(new Error('Wallet not connected'))
-        return null
+        const err = new Error('Wallet not connected')
+        setError(err)
+        return { status: 'not_submitted', error: err }
       }
 
       if (!isPoolDeployed) {
-        setError(new Error('Beta donation pool not deployed'))
-        return null
+        const err = new Error('Beta donation pool not deployed')
+        setError(err)
+        return { status: 'not_submitted', error: err }
       }
 
-      setIsLoading(true)
+      setPhase('submitting')
       setError(null)
       setTxHash(null)
+
+      let hash: string | null = null
 
       try {
         const contract = getContract({
@@ -76,25 +111,29 @@ export function useBetaDonation(chain: 'celo' | 'base' = 'celo'): UseBetaDonatio
         // Convert items to contract format (recipients + wei amounts, precision-safe)
         const { recipients, amounts } = buildBatchDonationParams(items)
 
-        // Prepare the batchDonate call
         const tx = prepareContractCall({
           contract,
           method: 'batchDonate',
           params: [recipients, amounts],
         })
 
-        // Execute
+        // Broadcast. From here on the money may be in flight, so any failure
+        // below must be reported as "unknown", never as "nothing happened".
         const result = await sendTransaction(tx)
-        const hash = result.transactionHash
-
+        hash = result.transactionHash
         setTxHash(hash)
-        return hash
+        setPhase('confirming')
+
+        const receipt = await waitForReceipt({ ...result, maxBlocksWaitTime: CONFIRM_MAX_BLOCKS })
+        return outcomeFromReceipt(hash, receipt)
       } catch (err) {
         console.error('Donation failed:', err)
-        setError(err instanceof Error ? err : new Error(String(err)))
-        return null
+        const wrapped = toError(err)
+        setError(wrapped)
+        if (!hash) return { status: 'not_submitted', error: wrapped }
+        return { status: 'unknown', txHash: hash, error: wrapped }
       } finally {
-        setIsLoading(false)
+        setPhase('idle')
       }
     },
     [account, chainConfig, poolAddress, isPoolDeployed, sendTransaction]
@@ -102,7 +141,8 @@ export function useBetaDonation(chain: 'celo' | 'base' = 'celo'): UseBetaDonatio
 
   return {
     donate,
-    isLoading,
+    checkTransaction,
+    phase,
     error,
     txHash,
     canDonateOnchain: Boolean(account?.address) && isPoolDeployed,

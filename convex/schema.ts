@@ -237,18 +237,39 @@ export default defineSchema({
     .index("by_tx", ["txHash"])
     .index("by_status", ["status"]),
 
-  /** Verified swipe top-ups (BuyWidget payments credited after on-chain verification) */
+  /**
+   * Swipe top-ups (BuyWidget payments). One row per canonical txHash, created
+   * as soon as the client reports a payment so nothing is lost if verification
+   * has to be retried. `swipes`/`amountUsd` are the *credited* amounts (0 until
+   * status becomes "credited"). Rows without `status` predate this field and
+   * were only ever written after crediting — treat missing as "credited".
+   */
   topUps: defineTable({
     userId: v.id("waitlistUsers"),
     chain: v.string(), // "celo"
     planId: v.string(),
     swipes: v.number(),
     amountUsd: v.string(),
-    txHash: v.string(),
+    txHash: v.string(), // canonical lowercase 0x + 64 hex
     ts: v.number(),
+    status: v.optional(
+      v.union(v.literal("pending"), v.literal("credited"), v.literal("rejected"), v.literal("held"))
+    ),
+    /** Wallet that sent the cUSD (Transfer.from), lowercase */
+    payer: v.optional(v.string()),
+    /** Transaction sender (receipt.from), lowercase */
+    txFrom: v.optional(v.string()),
+    paidWei: v.optional(v.string()),
+    attempts: v.optional(v.number()),
+    lastCheckedAt: v.optional(v.number()),
+    nextRetryAt: v.optional(v.number()),
+    creditedAt: v.optional(v.number()),
+    errorCode: v.optional(v.string()),
+    errorMessage: v.optional(v.string()),
   })
     .index("by_txHash", ["txHash"])
-    .index("by_user", ["userId"]),
+    .index("by_user", ["userId"])
+    .index("by_user_status", ["userId", "status"]),
 
   /** User feedback for beta */
   feedback: defineTable({

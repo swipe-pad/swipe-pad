@@ -1,6 +1,15 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import { mapDecisionToFundingIntent, type SwipeDecision } from "@/components/swipe/engine"
+import {
+  cartAfterUndo,
+  creditsAfterUndo,
+  profileAfterUndo,
+  reconcileRightSwipe,
+  statsAfterUndo,
+  type SwipeUndoRecord,
+} from "@/components/swipe/right-swipe-reconciliation"
+import { subscribeCheckoutSettled } from "@/lib/checkout-event"
 import { haptic } from "@/lib/haptics"
 import type { Project } from "@/lib/useConvexData"
 
@@ -33,14 +42,16 @@ type UserProfileState = {
 
 type CartEntry = { project: unknown; amount: number; currency: string }
 
-type SwipeSnapshot = {
+/**
+ * One undoable swipe. Navigation state (mode, category, confirm counter) is
+ * only ever moved by swipes, so its previous value is kept verbatim; every
+ * shared consequence (credits, cart, stats, profile) is stored as the delta
+ * this swipe produced and reversed against the *current* state on undo.
+ */
+type SwipeHistoryEntry = SwipeUndoRecord<CartEntry> & {
   prevMode: Mode
   prevSelectedCategory: string
   prevSwipeCount: number
-  prevCreditsRemaining: number
-  prevCart: CartEntry[]
-  prevUserStats: UserStatsState
-  prevUserProfile: UserProfileState
 }
 
 function fallbackDecision(dir: "left" | "right"): SwipeDecision {
@@ -77,12 +88,12 @@ export function useSwipeBusinessFlow(options: {
   swipeCount: number
   setSwipeCount: (next: number) => void
   creditsRemaining: number
-  setCreditsRemaining: (next: number) => void
-  cart: CartEntry[]
-  setCart: (next: CartEntry[]) => void
-  userStats: UserStatsState
+  setCreditsRemaining: (next: number | ((prev: number) => number)) => void
+  // Cart, stats and profile are only ever written through functional
+  // updaters (append on commit, subtract on undo), so their current values
+  // are not needed here — and a captured copy would just be a stale snapshot.
+  setCart: (next: CartEntry[] | ((prev: CartEntry[]) => CartEntry[])) => void
   setUserStats: (next: UserStatsState | ((prev: UserStatsState) => UserStatsState)) => void
-  userProfile: UserProfileState
   setUserProfile: (next: UserProfileState | ((prev: UserProfileState) => UserProfileState)) => void
   confirmSwipes: number
   donationCurrency: string
@@ -107,11 +118,8 @@ export function useSwipeBusinessFlow(options: {
     setSwipeCount,
     creditsRemaining,
     setCreditsRemaining,
-    cart,
     setCart,
-    userStats,
     setUserStats,
-    userProfile,
     setUserProfile,
     confirmSwipes,
     donationCurrency,
@@ -128,36 +136,28 @@ export function useSwipeBusinessFlow(options: {
     transitionToDiscover,
   } = options
 
-  const [swipeHistory, setSwipeHistory] = useState<SwipeSnapshot[]>([])
+  const [swipeHistory, setSwipeHistory] = useState<SwipeHistoryEntry[]>([])
   const [isAdvancing, setIsAdvancing] = useState(false)
   const isRestoringSnapshotRef = useRef(false)
 
-  const buildSnapshot = useCallback((): SwipeSnapshot => ({
+  const navigationBefore = useCallback(() => ({
     prevMode: mode,
     prevSelectedCategory: selectedCategory,
     prevSwipeCount: swipeCount,
-    prevCreditsRemaining: creditsRemaining,
-    prevCart: [...cart],
-    prevUserStats: {
-      ...userStats,
-      categoriesSupported: new Set(userStats.categoriesSupported),
-    },
-    prevUserProfile: {
-      ...userProfile,
-      totalSwipes: userProfile.totalSwipes,
-      totalDonated: userProfile.totalDonated,
-    },
-  }), [cart, creditsRemaining, mode, selectedCategory, swipeCount, userProfile, userStats])
+  }), [mode, selectedCategory, swipeCount])
 
-  const restoreSnapshot = useCallback((snapshot: SwipeSnapshot) => {
+  const applyUndo = useCallback((entry: SwipeHistoryEntry) => {
     isRestoringSnapshotRef.current = true
-    setMode(snapshot.prevMode)
-    setSelectedCategory(snapshot.prevSelectedCategory)
-    setSwipeCount(snapshot.prevSwipeCount)
-    setCreditsRemaining(snapshot.prevCreditsRemaining)
-    setCart(snapshot.prevCart)
-    setUserStats(snapshot.prevUserStats)
-    setUserProfile(snapshot.prevUserProfile)
+    setMode(entry.prevMode)
+    setSelectedCategory(entry.prevSelectedCategory)
+    setSwipeCount(entry.prevSwipeCount)
+    // Functional updates against the live state: the cart may have been
+    // checked out or extended since this swipe, and only this swipe's own
+    // delta is taken back.
+    if (entry.creditsSpent !== 0) setCreditsRemaining((prev) => creditsAfterUndo(prev, entry))
+    if (entry.cartEntry) setCart((prev) => cartAfterUndo(prev, entry))
+    if (entry.stats) setUserStats((prev) => statsAfterUndo(prev, entry))
+    if (entry.profile) setUserProfile((prev) => profileAfterUndo(prev, entry))
   }, [setCart, setCreditsRemaining, setMode, setSelectedCategory, setSwipeCount, setUserProfile, setUserStats])
 
   const handleSwipeRight = useCallback(async (decision?: SwipeDecision, options?: { skipDeckCommit?: boolean }) => {
@@ -165,7 +165,7 @@ export function useSwipeBusinessFlow(options: {
     if (!freeMode && !betaUserId) return
 
     setIsAdvancing(true)
-    const snapshot = buildSnapshot()
+    const navigation = navigationBefore()
 
     try {
       if (freeMode) {
@@ -178,81 +178,106 @@ export function useSwipeBusinessFlow(options: {
         if (!options?.skipDeckCommit) {
           commit(decision ?? fallbackDecision("right"))
         }
-        setSwipeHistory((prev) => [...prev, snapshot])
+        setSwipeHistory((prev) => [
+          ...prev,
+          { ...navigation, creditsSpent: 0, cartEntry: null, stats: null, profile: null },
+        ])
         return
       }
 
-      // Optimistic: the card is visually gone, so the world reacts NOW —
-      // credits tick down and the deck advances without waiting a network
-      // round-trip. The server mutation reconciles (or rolls back) below.
-      setCreditsRemaining(creditsRemaining - 1)
-      haptic("tap")
-
-      setUserStats((prev) => {
-        const categoriesSupported = new Set(prev.categoriesSupported)
-        categoriesSupported.add(currentProject.category)
-        return {
-          totalDonations: prev.totalDonations + 1,
-          categoriesSupported,
-          streak: prev.lastDonation ? prev.streak + 1 : 1,
-          lastDonation: new Date(),
-        }
-      })
-
-      const amountNum = parseFloat(effectiveDonationAmount.split(" ")[0])
-      setUserProfile((prev) => ({
-        ...prev,
-        totalSwipes: prev.totalSwipes + 1,
-        totalDonated: prev.totalDonated + amountNum,
-      }))
-
-      setCart([...cart, { project: currentProject, amount: amountNum, currency: donationCurrency }])
-
-      if (decision) {
-        const intent = mapDecisionToFundingIntent(decision)
-        console.log("[SwipeIntent] right", {
-          action: intent.action,
-          conviction: intent.conviction,
-          multiplier: intent.quadraticMultiplier,
-          projectId: currentProject.projectId,
-        })
-      }
-
-      recordSwipe({
-        projectId: currentProject.projectId,
-        direction: "right",
-        amount: amountNum,
-      })
-
-      const newCount = swipeCount + 1
-      if (newCount >= confirmSwipes) {
-        setSwipeCount(0)
-      } else {
-        setSwipeCount(newCount)
-      }
-
-      if (mode === "shared-entry") {
-        setMode("discover")
-        setSelectedCategory("See All")
-        transitionToDiscover()
-      }
-
-      if (!options?.skipDeckCommit) {
-        commit(decision ?? fallbackDecision("right"))
-      }
-      setSwipeHistory((prev) => [...prev, snapshot])
-
-      // Reconcile with the server off the critical path. Insufficient credits
-      // or a network failure rolls the optimistic swipe back, card included.
-      void consumeCredit().then((remaining) => {
-        if (remaining === null) {
-          setSwipeHistory((prev) => prev.slice(0, -1))
-          restoreSnapshot(snapshot)
+      // Optimistic *visuals* only: the card is already gone, so the counter
+      // ticks down and the deck advances right away. Everything with
+      // consequences — the cart item, stats, the swipe event — waits for the
+      // server to accept the credit (see reconcileRightSwipe). A late
+      // rejection then only undoes those optimistic deltas, never a full
+      // snapshot that may already be stale (e.g. the cart was checked out
+      // while the request was in flight). `isAdvancing` stays true until the
+      // server answers, so swipes are serialized and `creditsRemaining` is the
+      // last acknowledged value.
+      await reconcileRightSwipe({
+        creditsBeforeSwipe: creditsRemaining,
+        consumeCredit,
+        onOptimistic: (creditsShown) => {
+          setCreditsRemaining(creditsShown)
+          haptic("tap")
+          if (!options?.skipDeckCommit) {
+            commit(decision ?? fallbackDecision("right"))
+          }
+        },
+        onRollback: (creditsRestored) => {
+          setCreditsRemaining(creditsRestored)
           undoDeck()
           haptic("block")
-          return
-        }
-        setCreditsRemaining(remaining)
+        },
+        onCommitted: (remaining) => {
+          setCreditsRemaining(remaining)
+
+          // Capture what this swipe changes so undo can subtract exactly that.
+          let stats: SwipeHistoryEntry["stats"] = null
+          setUserStats((prev) => {
+            const categoriesSupported = new Set(prev.categoriesSupported)
+            const categoryAdded = categoriesSupported.has(currentProject.category) ? null : currentProject.category
+            categoriesSupported.add(currentProject.category)
+            stats = { totalDonations: 1, categoryAdded, prevStreak: prev.streak, prevLastDonation: prev.lastDonation }
+            return {
+              totalDonations: prev.totalDonations + 1,
+              categoriesSupported,
+              streak: prev.lastDonation ? prev.streak + 1 : 1,
+              lastDonation: new Date(),
+            }
+          })
+
+          const amountNum = parseFloat(effectiveDonationAmount.split(" ")[0])
+          setUserProfile((prev) => ({
+            ...prev,
+            totalSwipes: prev.totalSwipes + 1,
+            totalDonated: prev.totalDonated + amountNum,
+          }))
+
+          // Functional update: the cart may have changed while we awaited the server.
+          const cartEntry: CartEntry = { project: currentProject, amount: amountNum, currency: donationCurrency }
+          setCart((prev) => [...prev, cartEntry])
+
+          if (decision) {
+            const intent = mapDecisionToFundingIntent(decision)
+            console.log("[SwipeIntent] right", {
+              action: intent.action,
+              conviction: intent.conviction,
+              multiplier: intent.quadraticMultiplier,
+              projectId: currentProject.projectId,
+            })
+          }
+
+          recordSwipe({
+            projectId: currentProject.projectId,
+            direction: "right",
+            amount: amountNum,
+          })
+
+          const newCount = swipeCount + 1
+          if (newCount >= confirmSwipes) {
+            setSwipeCount(0)
+          } else {
+            setSwipeCount(newCount)
+          }
+
+          if (mode === "shared-entry") {
+            setMode("discover")
+            setSelectedCategory("See All")
+            transitionToDiscover()
+          }
+
+          setSwipeHistory((prev) => [
+            ...prev,
+            {
+              ...navigation,
+              creditsSpent: 1,
+              cartEntry,
+              stats,
+              profile: { totalSwipes: 1, totalDonated: amountNum },
+            },
+          ])
+        },
       })
     } catch (error) {
       console.error("Failed to process right swipe:", error)
@@ -264,12 +289,12 @@ export function useSwipeBusinessFlow(options: {
     }
   }, [
     betaUserId,
-    buildSnapshot,
+    navigationBefore,
     canSwipe,
-    cart,
     commit,
     confirmSwipes,
     consumeCredit,
+    creditsRemaining,
     currentProject,
     donationCurrency,
     effectiveDonationAmount,
@@ -293,11 +318,13 @@ export function useSwipeBusinessFlow(options: {
     if (!currentProject || isAdvancing) return
 
     setIsAdvancing(true)
-    const snapshot = buildSnapshot()
+    const navigation = navigationBefore()
+    let profile: SwipeHistoryEntry["profile"] = null
 
     try {
       if (!freeMode) {
         setUserProfile((prev) => ({ ...prev, totalSwipes: prev.totalSwipes + 1 }))
+        profile = { totalSwipes: 1, totalDonated: 0 }
       }
 
       if (!freeMode && betaUserId) {
@@ -326,7 +353,7 @@ export function useSwipeBusinessFlow(options: {
       if (!options?.skipDeckCommit) {
         commit(decision ?? fallbackDecision("left"))
       }
-      setSwipeHistory((prev) => [...prev, snapshot])
+      setSwipeHistory((prev) => [...prev, { ...navigation, creditsSpent: 0, cartEntry: null, stats: null, profile }])
     } catch (error) {
       console.error("Failed to process left swipe:", error)
       if (options?.skipDeckCommit) {
@@ -337,7 +364,7 @@ export function useSwipeBusinessFlow(options: {
     }
   }, [
     betaUserId,
-    buildSnapshot,
+    navigationBefore,
     commit,
     currentProject,
     freeMode,
@@ -359,17 +386,21 @@ export function useSwipeBusinessFlow(options: {
       const last = next.pop()
       if (!last) return prev
 
-      restoreSnapshot(last)
+      applyUndo(last)
       undoDeck()
       haptic("undo")
 
       return next
     })
-  }, [deckHistoryLength, restoreSnapshot, undoDeck])
+  }, [applyUndo, deckHistoryLength, undoDeck])
 
   const clearSwipeHistory = useCallback(() => {
     setSwipeHistory([])
   }, [])
+
+  // Checkout settles every cart entry. Whatever was undoable before is now a
+  // donation, so the history is dropped instead of ever being replayed.
+  useEffect(() => subscribeCheckoutSettled(clearSwipeHistory), [clearSwipeHistory])
 
   const canUndo = swipeHistory.length > 0 && deckHistoryLength > 0
 

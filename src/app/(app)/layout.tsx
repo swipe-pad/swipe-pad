@@ -130,7 +130,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             overlays.setShowTopUp(true)
                         }}
                         onCloseFeedback={() => overlays.setShowFeedback(false)}
-                        onDismissTopUpStatus={() => overlays.setTopUpStatus(null)}
+                        onDismissTopUpStatus={overlays.dismissTopUpStatus}
+                        onRetryTopUpVerification={overlays.retryTopUpVerification}
                     />
                 </>
             )}

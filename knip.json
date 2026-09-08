@@ -69,7 +69,6 @@
     "src/hooks/use-mobile.tsx",
     "src/hooks/useBetaCredits.ts",
     "src/lib/data.ts",
-    "src/lib/donation-history.ts",
     "src/types/index.ts",
     "wagmi-cli.config.ts"
   ],

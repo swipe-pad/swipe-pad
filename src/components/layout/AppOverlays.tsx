@@ -7,7 +7,8 @@ import type { CheckoutResult } from "@/components/cart"
 import type { ConfirmSwipes, DonationAmount, StableCoin } from "@/components/amount-selector"
 import type { EditProfileFormData } from "@/components/edit-profile"
 import type { ProjectFormData } from "@/components/project-registration-form"
-import type { TopUpStatus } from "@/hooks/use-app-overlays"
+import type { TopUpSuccessInput } from "@/hooks/use-app-overlays"
+import type { TopUpStatus } from "@/lib/top-up-recovery"
 import type { Id } from "../../../convex/_generated/dataModel"
 
 const Cart = dynamic(() => import("@/components/cart").then((mod) => mod.Cart))
@@ -66,11 +67,12 @@ interface AppOverlaysProps {
   onCloseDonationSetup: () => void
   onSelectDonationSetup: (amount: DonationAmount, currency: StableCoin, swipes: ConfirmSwipes) => void
   onCloseTopUp: () => void
-  onTopUpSuccess: (result: { planId: string; swipesGranted: number; txHash?: string }) => void
+  onTopUpSuccess: (result: TopUpSuccessInput) => void
   onCloseZeroSwipesGuardrail: () => void
   onOpenTopUpFromGuardrail: () => void
   onCloseFeedback: () => void
   onDismissTopUpStatus: () => void
+  onRetryTopUpVerification: () => void
 }
 
 export function AppOverlays({
@@ -118,18 +120,21 @@ export function AppOverlays({
   onOpenTopUpFromGuardrail,
   onCloseFeedback,
   onDismissTopUpStatus,
+  onRetryTopUpVerification,
 }: AppOverlaysProps) {
   return (
     <>
-      {showCart ? <Cart items={cart as never[]} onClose={onCloseCart} onCheckout={onCheckout} /> : null}
-
-      {showSuccess ? (
-        <SuccessScreen
-          onClose={onCloseSuccess}
-          categories={successCategories}
-          mode={checkoutResult?.mode ?? "ledger"}
-          txHash={checkoutResult?.txHash}
+      {showCart ? (
+        <Cart
+          items={cart as never[]}
+          betaUserId={betaUserId}
+          onClose={onCloseCart}
+          onCheckout={onCheckout}
         />
+      ) : null}
+
+      {showSuccess && checkoutResult ? (
+        <SuccessScreen onClose={onCloseSuccess} categories={successCategories} result={checkoutResult} />
       ) : null}
 
       {showFeedback ? (
@@ -140,7 +145,9 @@ export function AppOverlays({
         />
       ) : null}
 
-      {topUpStatus ? <TopUpStatusToast status={topUpStatus} onDismiss={onDismissTopUpStatus} /> : null}
+      {topUpStatus ? (
+        <TopUpStatusToast status={topUpStatus} onDismiss={onDismissTopUpStatus} onRetry={onRetryTopUpVerification} />
+      ) : null}
 
       {showBadgeNotification ? <BadgeNotification badge={currentBadge} onClose={onCloseBadgeNotification} /> : null}
 

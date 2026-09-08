@@ -20,6 +20,7 @@ import type * as syncHypercerts from "../syncHypercerts.js";
 import type * as syncKarmaGap from "../syncKarmaGap.js";
 import type * as syncTalentProtocol from "../syncTalentProtocol.js";
 import type * as topups from "../topups.js";
+import type * as topupsLib from "../topupsLib.js";
 import type * as users from "../users.js";
 import type * as waitlist from "../waitlist.js";
 
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   syncKarmaGap: typeof syncKarmaGap;
   syncTalentProtocol: typeof syncTalentProtocol;
   topups: typeof topups;
+  topupsLib: typeof topupsLib;
   users: typeof users;
   waitlist: typeof waitlist;
 }>;

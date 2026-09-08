@@ -25,26 +25,33 @@ export function FeedbackForm({
   const [text, setText] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const submitFeedback = useMutation(api.waitlist.submitFeedback)
 
   const handleSubmit = async () => {
-    if (rating === 0 || !text.trim()) return
+    if (rating === 0 || !text.trim() || isSubmitting) return
+
+    setSubmitError(null)
+
+    // No fake success: without a beta account nothing can be persisted, so say
+    // so and keep the text for a retry once a wallet is connected.
+    if (!userId) {
+      setSubmitError('Your feedback could not be saved — no beta account is active yet. Connect a wallet and try again; your text is kept.')
+      return
+    }
 
     setIsSubmitting(true)
 
     try {
-      if (userId) {
-        await submitFeedback({
-          userId,
-          rating,
-          text: text.trim(),
-          context,
-        })
-      } else {
-        console.log('[DEV] Feedback submitted:', { rating, text, context })
-      }
+      await submitFeedback({
+        userId,
+        rating,
+        text: text.trim(),
+        context,
+      })
 
+      // Only the Convex ack gets us here.
       setSubmitted(true)
       setTimeout(() => {
         onSuccess?.()
@@ -52,6 +59,8 @@ export function FeedbackForm({
       }, 1500)
     } catch (err) {
       console.error('Failed to submit feedback:', err)
+      const detail = err instanceof Error ? err.message : String(err)
+      setSubmitError(`We couldn't save your feedback (${detail}). Your text is kept — try again.`)
     } finally {
       setIsSubmitting(false)
     }
@@ -129,6 +138,20 @@ export function FeedbackForm({
           "
         />
 
+        {submitError ? (
+          <div className="mt-3 rounded-lg bg-red-900/30 p-3 text-xs text-red-200" role="alert">
+            <p>{submitError}</p>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="mt-2 rounded-md border border-red-300/40 px-2 py-1 font-medium text-red-100 transition-colors hover:bg-red-500/20 disabled:opacity-50"
+            >
+              Retry
+            </button>
+          </div>
+        ) : null}
+
         {/* Submit Button */}
         <button
           onClick={handleSubmit}
@@ -145,7 +168,7 @@ export function FeedbackForm({
           }
           `}
         >
-          {isSubmitting ? 'Sending...' : 'Submit Feedback'}
+          {isSubmitting ? 'Sending...' : submitError ? 'Try again' : 'Submit Feedback'}
         </button>
 
         <p className="mt-3 text-center text-xs text-gray-500">

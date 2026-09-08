@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { client } from "@/lib/thirdweb-client"
 import { getHostEnvironmentSync } from "@/lib/farcaster/context"
 import { TOP_UP_PLANS, getTopUpPlan, type TopUpPlan } from "@/lib/top-up-plans"
+import { extractTxHashForChain, getUsableReceiverAddress } from "@/lib/top-up-recovery"
 import { TOKEN_ADDRESSES } from "@/types/contracts"
 
 const wallets = [
@@ -24,10 +25,10 @@ const wallets = [
   createWallet("io.rabby"),
 ]
 
+/** The payment reference handed to the app. Swipe amounts are decided server-side after verification. */
 type TopUpSuccess = {
   planId: string
-  swipesGranted: number
-  txHash?: string
+  txHash: string | null
 }
 
 type TopUpDialogProps = {
@@ -44,10 +45,17 @@ type TopUpDialogProps = {
 function getReceiverAddress(): `0x${string}` | null {
   // Payments land on the project treasury (defaults to the donation pool, which
   // is what disburses the actual donations). Never the user's own wallet.
-  const receiver =
-    process.env.NEXT_PUBLIC_TOP_UP_RECEIVER_ADDRESS ||
+  // Placeholders such as the `0x...` from .env.example are rejected so we never
+  // render a payment widget that would send funds nowhere.
+  return getUsableReceiverAddress(
+    process.env.NEXT_PUBLIC_TOP_UP_RECEIVER_ADDRESS,
     process.env.NEXT_PUBLIC_BETA_POOL_ADDRESS_CELO
-  return receiver?.startsWith("0x") ? (receiver as `0x${string}`) : null
+  )
+}
+
+function hasReceiverPlaceholder(): boolean {
+  const configured = process.env.NEXT_PUBLIC_TOP_UP_RECEIVER_ADDRESS || process.env.NEXT_PUBLIC_BETA_POOL_ADDRESS_CELO
+  return Boolean(configured) && !getReceiverAddress()
 }
 
 function getHostLabel() {
@@ -167,7 +175,7 @@ export function TopUpDialog({
                 amount={selectedPlan.amountUsd}
                 currency="USD"
                 title={`Recharge ${selectedPlan.swipes} swipes`}
-                description="Funds go to the SwipePad donation pool. Swipes are credited once your payment is verified on-chain."
+                description="Funds go to the SwipePad donation pool. Swipes are credited once your payment is verified on-chain — pay from the wallet connected here so the payment can be matched to your account."
                 buttonLabel="Recharge swipes"
                 paymentMethods={["crypto", "card"]}
                 amountEditable={false}
@@ -182,11 +190,10 @@ export function TopUpDialog({
                   walletAddress: activeAddress ?? null,
                 }}
                 onSuccess={(data) => {
-                  const txHash = data.statuses
-                    .flatMap((status) => status.transactions)
-                    .filter((tx) => tx.chainId === celo.id)
-                    .at(-1)?.transactionHash
-                  onSuccess({ planId: selectedPlan.id, swipesGranted: selectedPlan.swipes, txHash })
+                  // Only the hash leaves this component; the server decides how
+                  // many swipes the on-chain payment is worth.
+                  const txHash = extractTxHashForChain(data.statuses, celo.id)
+                  onSuccess({ planId: selectedPlan.id, txHash })
                   onClose()
                 }}
               />
@@ -196,8 +203,17 @@ export function TopUpDialog({
               <p>Top-ups aren&apos;t live in this environment yet — your free swipes keep working.</p>
               {process.env.NODE_ENV !== "production" ? (
                 <p className="mt-2 text-xs text-amber-200/80">
-                  Dev: set <code>NEXT_PUBLIC_TOP_UP_RECEIVER_ADDRESS</code> (or deploy the pool and set{" "}
-                  <code>NEXT_PUBLIC_BETA_POOL_ADDRESS_CELO</code>) to enable live top-ups.
+                  {hasReceiverPlaceholder() ? (
+                    <>
+                      Dev: the configured receiver is not a valid Celo address (placeholder like <code>0x...</code>?). Set a real{" "}
+                      <code>NEXT_PUBLIC_TOP_UP_RECEIVER_ADDRESS</code>.
+                    </>
+                  ) : (
+                    <>
+                      Dev: set <code>NEXT_PUBLIC_TOP_UP_RECEIVER_ADDRESS</code> (or deploy the pool and set{" "}
+                      <code>NEXT_PUBLIC_BETA_POOL_ADDRESS_CELO</code>) to enable live top-ups.
+                    </>
+                  )}
                 </p>
               ) : null}
             </div>

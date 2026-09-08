@@ -82,11 +82,9 @@ export function HomeScreen({
     confirmSwipes,
     swipeCount,
     setSwipeCount,
-    userStats,
     setUserStats,
     userProfile,
     setUserProfile,
-    cart,
     setCart,
     betaUserId,
     betaStatus,
@@ -101,11 +99,9 @@ export function HomeScreen({
       confirmSwipes: state.confirmSwipes,
       swipeCount: state.swipeCount,
       setSwipeCount: state.setSwipeCount,
-      userStats: state.userStats,
       setUserStats: state.setUserStats,
       userProfile: state.userProfile,
       setUserProfile: state.setUserProfile,
-      cart: state.cart,
       setCart: state.setCart,
       betaUserId: state.betaUserId,
       betaStatus: state.betaStatus,
@@ -120,7 +116,8 @@ export function HomeScreen({
   const [activeCardDesign, setActiveCardDesign] = useState<CardDesignId>("OZK_CARD_V1_NEON")
   const [freeModeEnabled, setFreeModeEnabled] = useState(false)
   const [showSharedEntryShare, setShowSharedEntryShare] = useState(false)
-  const overlays = useAppOverlays()
+  // The app layout's instance renders <AppOverlays> and owns top-up recovery.
+  const overlays = useAppOverlays({ ownsTopUpRecovery: false })
 
   useEffect(() => {
     const next = getStoredCardDesign()
@@ -379,11 +376,8 @@ export function HomeScreen({
     setSwipeCount,
     creditsRemaining,
     setCreditsRemaining,
-    cart,
     setCart,
-    userStats,
     setUserStats,
-    userProfile,
     setUserProfile,
     confirmSwipes,
     donationCurrency,

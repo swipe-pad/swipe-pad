@@ -130,6 +130,74 @@ export const prepareDonation = mutation({
   },
 });
 
+/**
+ * Persist a checked-out cart as a beta-ledger donation. Credits were already
+ * consumed per swipe, so this only records the batch and acknowledges with
+ * the row id — the client must not show "recorded" before that ack.
+ *
+ * - settlement "ledger": no pool in this env; row waits for the public pool.
+ * - settlement "onchain": the client confirmed a receipt; row is stored as
+ *   confirmed with its txHash for history.
+ */
+export const recordDonationBatch = mutation({
+  args: {
+    userId: v.id("waitlistUsers"),
+    chain: v.string(),
+    items: v.array(
+      v.object({
+        projectId: v.string(),
+        amount: v.number(),
+      })
+    ),
+    settlement: v.union(v.literal("ledger"), v.literal("onchain")),
+    txHash: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user || (user.status !== "active" && user.status !== "guest")) {
+      throw new Error("User not authorized for donations");
+    }
+    if (args.items.length === 0) throw new Error("Nothing to record");
+    if (args.settlement === "onchain" && !args.txHash) {
+      throw new Error("On-chain donations must include a transaction hash");
+    }
+
+    const recipients: string[] = [];
+    const amounts: number[] = [];
+
+    for (const item of args.items) {
+      if (!(item.amount > 0)) throw new Error(`Invalid amount for ${item.projectId}`);
+
+      const project = await ctx.db
+        .query("projects")
+        .withIndex("by_projectId", (q) => q.eq("projectId", item.projectId))
+        .first();
+      if (!project) throw new Error(`Project not found: ${item.projectId}`);
+
+      recipients.push(project.recipientWallet);
+      amounts.push(item.amount);
+    }
+
+    const now = Date.now();
+    const donationId = await ctx.db.insert("betaDonations", {
+      userId: args.userId,
+      chain: args.chain,
+      token: args.chain === "celo" ? "cUSD" : "USDC",
+      recipients,
+      amounts,
+      totalAmount: amounts.reduce((a, b) => a + b, 0),
+      status: args.settlement === "onchain" ? "confirmed" : "pending",
+      txHash: args.settlement === "onchain" ? args.txHash?.toLowerCase() : undefined,
+      createdAt: now,
+      confirmedAt: args.settlement === "onchain" ? now : undefined,
+    });
+
+    await markDashboardStatsDirty(ctx);
+
+    return { donationId };
+  },
+});
+
 /** Mark donation as submitted (tx broadcasted) */
 export const markSubmitted = mutation({
   args: {
