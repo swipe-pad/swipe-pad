@@ -100,7 +100,7 @@
     "thirdweb": "5.117.0",
     "vaul": "1.1.2",
     "wagmi": "3.4.1",
-    "zod": "4.3.6",
+    "zod": "4.6.6",
     "zustand": "5.0.11"
   },
   "devDependencies": {
